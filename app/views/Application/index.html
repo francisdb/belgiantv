@@ -1,0 +1,31 @@
+#{extends 'main.html' /}
+#{set title:'Home' /}
+
+${queue}
+
+<h2><a href="@{Application.index(before)}">&lt;</a> ${day.format('EEEE dd MMMM yyyy')} <a href="@{Application.index(after)}">&gt;</a></h2>
+
+<ul>
+#{list items:movies, as:'movie'}
+	<li>
+		#{if movie.imdb && movie.imdb.poster && movie.imdb.poster != "N/A"}
+		<img src="${movie.imdb.poster}"/>
+		#{/if}
+		<h3>${movie.title}</h3>
+		#{if movie.imdb}
+			#{if movie.title != movie.imdb.title}
+			${movie.imdb.title}<br/>
+			#{/if}
+			${movie.imdb.year}<br/>
+			${movie.imdb.genre}<br/>
+			Imdb rating: <a href="${movie.imdb.url}" class="rating${movie.imdb.decimalRating.format('00')}">[${movie.imdb.percentRating}/100]</a>
+			<span class="votes">${movie.imdb.votes} votes</span><br/>
+		#{/if}
+		<a href="${movie.url}">${movie.start.format('HH:mm')} @ ${movie.channel}</a>
+		<p>${movie?.imdb?.plot}</p>
+	</li>
+#{/list}
+</ul>
+
+
+*{#{welcome /}}*

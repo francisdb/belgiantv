@@ -1,0 +1,7 @@
+# Application dependencies
+
+require:
+    - play
+    - org.jsoup -> jsoup 1.6.1
+    - play -> siena 2.0.5
+    - play -> gae 1.4

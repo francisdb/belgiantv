@@ -1,0 +1,70 @@
+body {
+	font-family: "Lucida Grande", Arial, Helvetica, Verdana, sans-serif;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:HOVER {
+	text-decoration: underline;
+}
+
+img {
+	float:right;
+	max-height:200px;
+	max-width:100px;
+	margin:10px;
+}
+
+ul{
+	width:500px;
+}
+
+li{
+	min-height:200px;
+}
+
+span.votes{
+	color:#CCC;
+}
+
+.rating09{
+	color:#0D0;
+}
+
+.rating08{
+	color:#0D0;
+}
+
+.rating07{
+	color:#4F0;
+}
+
+.rating06{
+	color:#CF0;
+}
+
+.rating05{
+	color:#F70;
+}
+
+.rating04{
+	color:#F30;
+}
+
+.rating03{
+	color:#F30;
+}
+
+.rating02{
+	color:#F00;
+}
+
+.rating01{
+	color:#F00;
+}
+
+.rating00{
+	color:#DDD;
+}
