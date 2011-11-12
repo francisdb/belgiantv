@@ -1,0 +1,15 @@
+#Eclipse project files
+.classpath
+.project
+.settings
+
+#Play! temp folder
+tmp
+eclipse
+modules
+test-result
+logs
+cobertura.ser
+lib
+data
+
