@@ -6,6 +6,8 @@
 GET     /                                       Application.index
 GET     /{date}                                 Application.index
 
+GET     /test                                   Application.test
+
 # Ignore favicon requests
 GET     /favicon.ico                            404
 
