@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 
 import models.Movie;
-import models.Queue;
 import play.Logger;
 import play.mvc.Before;
 import play.mvc.Controller;
@@ -18,8 +17,7 @@ public class Application extends Controller {
 	public static void log() {
 		Logger.debug("Application call:" + request.url);
 
-		long imdbQueueSize = Queue.all().count();
-		renderArgs.put("imdbQueueSize", imdbQueueSize);
+		//renderArgs.put("imdbQueueSize", imdbQueueSize);
 	}
 
 	public static void index(Date date) {

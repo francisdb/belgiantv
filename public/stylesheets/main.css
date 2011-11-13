@@ -1,12 +1,21 @@
 body {
 	font-family: "Lucida Grande", Arial, Helvetica, Verdana, sans-serif;
 	color:#666;
+	background: #9BC;
 }
 
 footer{
 	color:#999;
 	font-size: small;
 	text-align: center;
+}
+
+h2{
+	color:white;
+}
+
+h3{
+	text-shadow: #DDDDDD 1px 1px 1px;
 }
 
 a {
@@ -31,6 +40,12 @@ ul{
 
 li.movie{
 	min-height:200px;
+	border-radius: 15px;
+	border: 3px solid #9AB;
+	background-color: white;
+	padding:10px;
+	margin: 3px;
+	list-style: none;
 }
 
 span.votes{

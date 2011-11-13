@@ -12,14 +12,31 @@ import com.google.gson.JsonElement;
 
 public class ImdbApiService {
 	
-	public ImdbApiMovie readImdb(final String title){
-		return readImdb(title, null);
+	public ImdbApiMovie findOrRead(final String title){
+		return findOrRead(title, null);
 	}
 
-	public ImdbApiMovie readImdb(final String title, final Integer year){
+	public ImdbApiMovie findOrRead(final String title, final Integer year){
 		if(title==null){
 			throw new IllegalArgumentException("NULL title");
 		}
+		ImdbApiMovie imdbMovie = ImdbApiMovie.findByTitleAndYear(title, year);
+		if(imdbMovie == null){
+			String url = apiUrl(title, year);
+			Logger.info(url);
+			try{
+				JsonElement json = WS.url(url).get().getJson();
+				Gson gson = new Gson();
+				imdbMovie = gson.fromJson(json, ImdbApiMovie.class);
+			}catch(Exception ex){
+				Logger.error(ex.getMessage(), ex);
+			}
+			imdbMovie.save();
+		}
+		return imdbMovie;
+	}
+
+	private String apiUrl(final String title, final Integer year) {
 		String url = null;
 		try {
 			url = "http://www.imdbapi.com/?t=" + URLEncoder.encode(title, "UTF-8");
@@ -29,11 +46,6 @@ public class ImdbApiService {
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
-		Logger.info(url);
-		JsonElement json = WS.url(url).get().getJson();
-		
-		Gson gson = new Gson();
-		ImdbApiMovie imdbMovie = gson.fromJson(json, ImdbApiMovie.class);
-		return imdbMovie;
+		return url;
 	}
 }

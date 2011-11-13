@@ -5,6 +5,7 @@
 # Triggers
 GET     /trigger/imdb                           Trigger.imdb
 GET     /trigger/yelo                           Trigger.yelo
+GET     /trigger/clear                          Trigger.clear
 
 # Home page
 GET     /date/{date}                            Application.index

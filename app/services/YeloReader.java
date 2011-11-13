@@ -14,7 +14,6 @@ import java.util.Map;
 
 import models.ImdbApiMovie;
 import models.Movie;
-import models.Queue;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -33,6 +32,7 @@ public class YeloReader {
     	
     	List<Movie> movies = new ArrayList<Movie>();
     	movies.addAll(readDay(date));
+    	movies.addAll(readChannel("jim", date));
     	movies.addAll(readChannel("ned1", date));
     	movies.addAll(readChannel("ned2", date));
     	movies.addAll(readChannel("ned3", date));
@@ -41,7 +41,6 @@ public class YeloReader {
     		if(!sameDay(movie.start, date)){
     			throw new RuntimeException("Movie returned for wrong day" + movie.start + ", should be " + date);
     		}
-    		movie.imdb = readOrFetch(movie);
     	}
     	
     	return movies;
@@ -60,6 +59,7 @@ public class YeloReader {
     		Movie movie = Movie.findByUrl(link.absUrl("href"));
     		if(movie == null){
     			movie = parseChannelPageMovie(link);
+    			movie.year = getYear(movie.url);
     			movie.save();
     		}
     		movies.add(movie);
@@ -87,11 +87,28 @@ public class YeloReader {
     		Movie movie = Movie.findByUrl(link.absUrl("href"));
     		if(movie == null){
     			movie = parseGuidePageMovie(link);
+    			movie.year = getYear(movie.url);
     			movie.save();
     		}
     		movies.add(movie);
     	}
 		return movies;
+	}
+	
+	Integer getYear(final String moviePageUrl){
+		Document doc = readUri(moviePageUrl);
+//		<span class="filmdata-titel">Jaar: </span>
+//		<span class="filmdata-content">2010</span>
+
+		Element yearTitleElement = doc.select("span[class=filmdata-titel]:contains(Jaar:)").first();
+		Element yearElement = yearTitleElement.nextElementSibling();
+		Integer year = null;
+		try{
+			year = Integer.valueOf(yearElement.text());
+		}catch(NumberFormatException ex){
+			Logger.warn("Could not parse year: [%s]", yearElement.text());
+		}
+		return year;
 	}
 
 	
@@ -101,7 +118,7 @@ public class YeloReader {
 		Element em = link.siblingElements().select("em").first();
 		
 		Movie movie = new Movie();
-		movie.title = link.text();
+		movie.title = link.text().trim();
 		URI movieUri;
 		try {
 			movieUri = new URI(link.absUrl("href"));
@@ -137,7 +154,11 @@ public class YeloReader {
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
-		movie.title = link.attr("title").replace("FILM OP 2: ", "").replace("Z@ppbios: ", "");
+		movie.title = link.attr("title")
+				.replace("FILM OP 2: ", "")
+				.replace("Z@ppbios: ", "")
+				.replace("Sunday Movie: ", "")
+				.replace("Saturday Movie: ", "").trim();
 		Map<String,String> params = splitParameters(movieUri);
 		try {
 			movie.start = dayFormat.parse(params.get("date"));
@@ -187,12 +208,7 @@ public class YeloReader {
 	
 	private ImdbApiMovie readOrFetch(final Movie movie){
 		ImdbApiMovie imdbMovie = ImdbApiMovie.findByTitle(movie.title);
-		if(imdbMovie == null){
-			Queue queue = new Queue();
-			queue.movie = movie;
-			queue.save();
-			System.err.println(queue);
-		}else{
+		if(imdbMovie != null){
 			movie.imdb = imdbMovie;
 			movie.save();
 		}

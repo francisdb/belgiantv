@@ -14,11 +14,11 @@ ${day.format('EEEE dd MMMM yyyy')}
 		<h3>${movie.title}</h3>
 		#{if movie.imdb}
 			#{if movie.title != movie.imdb.title}
-			${movie.imdb.title} ???<br/>
+			${movie.imdb.title}? (possible IMDB mismatch)<br/>
 			#{/if}
-			${movie.imdb.year}<br/>
+			${movie.year} #{if movie.year != movie.imdb.year}(${movie.imdb.year} IMDB mismatch?)#{/if}<br/>
 			${movie.imdb.genre}<br/>
-			Imdb rating: <a href="${movie.imdb.url}" class="rating${movie.imdb.decimalRating.format('00')}">[${movie.imdb.percentRating}/100]</a>
+			IMDB rating: <a href="${movie.imdb.url}" class="rating${movie.imdb.decimalRating.format('00')}">[${movie.imdb.percentRating}/100]</a>
 			<span class="votes">${movie.imdb.votes} votes</span><br/>
 		#{/if}
 		<a href="${movie.url}">${movie.start.format('HH:mm')} @ ${movie.channel}</a>

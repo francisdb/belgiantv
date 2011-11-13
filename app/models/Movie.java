@@ -4,20 +4,23 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import play.Logger;
 import services.TimeUtil;
 import siena.Generator;
 import siena.Id;
 import siena.Index;
 import siena.Model;
 import siena.Query;
+import siena.SienaException;
 
 public class Movie extends Model{
 	
 	@Id(Generator.UUID)
 	public String id;
 
-	public String title;
 	public String url;
+	public String title;
+	public Integer year;
 	public String channel;
 	public Date start;
 	public Date end;
@@ -25,13 +28,18 @@ public class Movie extends Model{
 	@Index("imdb_index")
 	public ImdbApiMovie imdb;
 	
-	static Query<Movie> all() {
+	public static Query<Movie> all() {
         return Model.all(Movie.class);
     }
 	
     public static Movie findByUrl(String url) {
         return all().filter("url", url).get();
     }
+    
+
+	public static List<Movie> findWithoutImdb() {
+		return all().filter("imdb", null).fetch();
+	}
     
     public static List<Movie> findByDate(Date date) {
     	Calendar start = Calendar.getInstance();
@@ -46,7 +54,11 @@ public class Movie extends Model{
     	// TODO find cleaner way?
     	for(Movie movie:movies){
     		if(movie.imdb != null){
-    			movie.imdb.get();
+    			try{
+    				movie.imdb.get();
+    			}catch(SienaException ex){
+    				Logger.warn(ex.getMessage());
+    			}
     		}
     	}
     	return movies;

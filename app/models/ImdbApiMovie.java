@@ -36,7 +36,7 @@ public class ImdbApiMovie extends Model{
 	public String plot;
 	
 	@SerializedName("Year")
-	public String year;
+	public Integer year;
 	
 	@SerializedName("Released")
 	public String released;
@@ -44,7 +44,7 @@ public class ImdbApiMovie extends Model{
 	@SerializedName("Director")
 	public String director;
 	
-	static Query<ImdbApiMovie> all() {
+	public static Query<ImdbApiMovie> all() {
         return Model.all(ImdbApiMovie.class);
     }
 	
@@ -54,6 +54,10 @@ public class ImdbApiMovie extends Model{
  
     public static ImdbApiMovie findByTitle(String title) {
         return all().filter("title", title).get();
+    }
+    
+    public static ImdbApiMovie findByTitleAndYear(String title, Integer year) {
+        return all().filter("title", title).filter("year", year).get();
     }
     
 	public int getPercentRating(){

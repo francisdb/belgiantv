@@ -5,17 +5,15 @@ import java.util.List;
 
 import models.ImdbApiMovie;
 import models.Movie;
-import models.Queue;
 import play.Logger;
 import play.mvc.Before;
 import play.mvc.Controller;
 import services.ImdbApiService;
 import services.YeloReader;
-import siena.SienaException;
 
 public class Trigger extends Controller{
 	
-	private static final int DAYS_TO_FETCH = 7;
+	private static final int DAYS_TO_FETCH = 8;
 
 	@Before
 	public static void log(){
@@ -23,35 +21,33 @@ public class Trigger extends Controller{
 	}
 
 	public static void imdb() {
-		
-		List<Queue> queues = Queue.all().fetch();
-		for(Queue queue:queues){
-			try{
-				queue.movie.get();
-				loadMovie( queue.movie);
-			}catch(SienaException ex){
-				Logger.warn("Movie with id %s not found", queue.movie.id);
+		int found = 0;
+		List<Movie> moviesWithoutImdb = Movie.findWithoutImdb();
+		for(Movie movie:moviesWithoutImdb){
+			ImdbApiMovie imdbApiMovie = loadMovie( movie);
+			if(imdbApiMovie != null){
+				found++;
 			}
-			queue.delete();
 		}
 		
-		renderText("IMDB fetching done for " + queues.size());
+		renderText("IMDB fetching done, found %s of %s" , found, moviesWithoutImdb.size());
 	}
 
-	private static void loadMovie(Movie movie) {
+	private static ImdbApiMovie loadMovie(Movie movie) {
+		ImdbApiMovie imdbMovie = null;
 		ImdbApiService service = new ImdbApiService();
 		if(movie.title != null){
-			ImdbApiMovie imdbMovie = service.readImdb(movie.title, null);
-			if(imdbMovie.id == null || imdbMovie.id.isEmpty()){
-				Logger.warn("Movie id is null for: %s", movie.title);
+			imdbMovie = service.findOrRead(movie.title, movie.year);
+			if(imdbMovie == null || imdbMovie.id == null || imdbMovie.id.isEmpty()){
+				Logger.warn("IMDB Movie is null, or it's id is null for: %s", movie.title);
 			}else{
-				imdbMovie.save();
 				movie.imdb = imdbMovie;
 				movie.save();
 			}
 		}else{
 			Logger.warn("No title for movie %s", movie);
 		}
+		return imdbMovie;
 	}
 
 	public static void yelo() {
@@ -61,7 +57,13 @@ public class Trigger extends Controller{
 			reader.read(cal.getTime());
 			cal.add(Calendar.DAY_OF_MONTH, 1);
 		}
-		renderText("Yelo fetching done for next % days", DAYS_TO_FETCH);
+		renderText("Yelo fetching done for next %s days", DAYS_TO_FETCH);
+	}
+
+	public static void clear() {
+		Movie.all().delete();
+		ImdbApiMovie.all().delete();
+		renderText("Database cleared");
 	}
 
 }
