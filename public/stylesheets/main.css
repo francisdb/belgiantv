@@ -20,8 +20,9 @@ a:HOVER {
 img {
 	float:right;
 	max-height:200px;
-	max-width:100px;
+	/*max-width:100px;*/
 	margin:10px;
+	width:100px;
 }
 
 ul{

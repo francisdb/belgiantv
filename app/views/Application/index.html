@@ -1,5 +1,5 @@
 #{extends 'main.html' /}
-#{set title:'Home' /}
+#{set title:'Movies on Belgian TV' /}
 
 <h2><a href="@{Application.index(before)}">&lt;</a>
 ${day.format('EEEE dd MMMM yyyy')}
@@ -9,12 +9,12 @@ ${day.format('EEEE dd MMMM yyyy')}
 #{list items:movies, as:'movie'}
 	<li class="movie">
 		#{if movie.imdb && movie.imdb.poster && movie.imdb.poster != "N/A"}
-		<img src="${movie.imdb.poster}"/>
+		<img src="${movie.imdb.poster}" alt="${movie.imdb.title}"/>
 		#{/if}
 		<h3>${movie.title}</h3>
 		#{if movie.imdb}
 			#{if movie.title != movie.imdb.title}
-			${movie.imdb.title}<br/>
+			${movie.imdb.title} ???<br/>
 			#{/if}
 			${movie.imdb.year}<br/>
 			${movie.imdb.genre}<br/>
