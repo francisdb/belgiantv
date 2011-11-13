@@ -4,12 +4,12 @@
 	<cron>
 		<url>/trigger/yelo</url>
 		<description>Load yelo data for the next days</description>
-		<schedule>every day at 02:00</schedule>
+		<schedule>every day 02:00</schedule>
 	</cron>
 	<cron>
 		<url>/trigger/imdb</url>
 		<description>Load imdb data</description>
-		<schedule>every hour</schedule>
+		<schedule>every 1 hours synchronized</schedule>
 	</cron>
 	<!-- <cron>
 		<url>/weeklyreport</url>
