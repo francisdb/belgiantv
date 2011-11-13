@@ -2,16 +2,16 @@
 <cronentries>
 	<!-- http://code.google.com/appengine/docs/java/config/cron.html -->
 	<cron>
-		<url>/recache</url>
-		<description>Repopulate the cache every 2 minutes</description>
-		<schedule>every 2 minutes</schedule>
+		<url>/trigger/yelo</url>
+		<description>Load yelo data for the next days</description>
+		<schedule>every day at 02:00</schedule>
 	</cron>
 	<cron>
-		<url>/test</url>
-		<description>Test</description>
-		<schedule>every 1 minutes</schedule>
+		<url>/trigger/imdb</url>
+		<description>Load imdb data</description>
+		<schedule>every hour</schedule>
 	</cron>
-	<cron>
+	<!-- <cron>
 		<url>/weeklyreport</url>
 		<description>Mail out a weekly report</description>
 		<schedule>every monday 08:30</schedule>
@@ -23,5 +23,5 @@
 		<schedule>every monday 08:30</schedule>
 		<timezone>America/New_York</timezone>
 		<target>version-2</target>
-	</cron>
+	</cron> -->
 </cronentries>

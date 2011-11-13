@@ -12,5 +12,13 @@
     </head>
     <body>
         #{doLayout /}
+        
+        <ul>
+	        <li><a href="@{Trigger.imdb}">Trigger IMDB</a></li>
+	        <li><a href="@{Trigger.yelo}">Trigger Yelo</a></li>
+        </ul>
+        <footer>
+			IMDB queue size: ${imdbQueueSize} - developed using <a href="http://www.playframework.com">play!</a> by <a href="http://www.twitter.com/somatik">@somatik</a>
+		</footer>
     </body>
 </html>

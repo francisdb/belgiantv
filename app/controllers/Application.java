@@ -1,44 +1,45 @@
 package controllers;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import models.Movie;
 import models.Queue;
 import play.Logger;
+import play.mvc.Before;
 import play.mvc.Controller;
-import services.YeloReader;
+import services.DescendingMovieRatingComparator;
 
 public class Application extends Controller {
 
-    public static void index(Date date) {
-    	Date day = new Date();
-    	if(date != null){
-    		day = date;
-    	}
-    	
-    	YeloReader reader = new YeloReader();
-    	
-    	
-    	List<Movie> movies = reader.read(day);
-    	
-    	Calendar cal = Calendar.getInstance();
-    	cal.setTime(day);
-    	cal.add(Calendar.DAY_OF_WEEK, -1);
-    	Date before = cal.getTime();
-    	cal.setTime(day);
-    	cal.add(Calendar.DAY_OF_WEEK, +1);
-    	Date after = cal.getTime();
-    	
-    	long queue = Queue.all().count();
-    	
-        render(movies, day, before, after, queue);
-    }
+	@Before
+	public static void log() {
+		Logger.debug("Application call:" + request.url);
 
-	public static void test() {
-		Logger.info("test");
-		ok();
+		long imdbQueueSize = Queue.all().count();
+		renderArgs.put("imdbQueueSize", imdbQueueSize);
+	}
+
+	public static void index(Date date) {
+		Date day = new Date();
+		if (date != null) {
+			day = date;
+		}
+
+		List<Movie> movies = Movie.findByDate(day);
+		Collections.sort(movies, new DescendingMovieRatingComparator());
+
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(day);
+		cal.add(Calendar.DAY_OF_WEEK, -1);
+		Date before = cal.getTime();
+		cal.setTime(day);
+		cal.add(Calendar.DAY_OF_WEEK, +1);
+		Date after = cal.getTime();
+
+		render(movies, day, before, after);
 	}
 
 }

@@ -41,6 +41,9 @@ public class ImdbApiMovie extends Model{
 	@SerializedName("Released")
 	public String released;
 	
+	@SerializedName("Director")
+	public String director;
+	
 	static Query<ImdbApiMovie> all() {
         return Model.all(ImdbApiMovie.class);
     }

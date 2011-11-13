@@ -2,17 +2,21 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Home page
-GET     /                                       Application.index
-GET     /{date}                                 Application.index
+# Triggers
+GET     /trigger/imdb                           Trigger.imdb
+GET     /trigger/yelo                           Trigger.yelo
 
-GET     /test                                   Application.test
+# Home page
+GET     /date/{date}                            Application.index
+GET     /                                       Application.index
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
 
 # Map static resources from the /app/public folder to the /public path
 GET     /public/                                staticDir:public
+
+*       /admin                                  module:crudsiena
 
 # Catch all
 *       /{controller}/{action}                  {controller}.{action}

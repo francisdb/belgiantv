@@ -7,8 +7,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +21,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import play.Logger;
 import play.libs.WS;
 import play.libs.WS.HttpResponse;
 
@@ -40,12 +39,10 @@ public class YeloReader {
     	
     	for(Movie movie:movies){
     		if(!sameDay(movie.start, date)){
-    			throw new RuntimeException("Movie returned for wrong day" + movie.start);
+    			throw new RuntimeException("Movie returned for wrong day" + movie.start + ", should be " + date);
     		}
     		movie.imdb = readOrFetch(movie);
     	}
-    	
-    	Collections.sort(movies, new DescendingMovieRatingComparator());
     	
     	return movies;
 	}
@@ -121,7 +118,7 @@ public class YeloReader {
 		}
 		try {
 			Date hour = hourFormat.parse(em.text());
-			movie.start = merge(movie.start, hour);
+			movie.start = TimeUtil.merge(movie.start, hour);
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
@@ -151,21 +148,11 @@ public class YeloReader {
 		movie.channel = params.get("channel");
 		try {
 			Date hour = hourFormat.parse(em.text());
-			movie.start = merge(movie.start, hour);
+			movie.start = TimeUtil.merge(movie.start, hour);
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
 		return movie;
-	}
-
-	private Date merge(Date day, Date hour) {
-		Calendar hourCal = Calendar.getInstance();
-		hourCal.setTime(hour);
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(day);
-		cal.set(Calendar.HOUR_OF_DAY, hourCal.get(Calendar.HOUR_OF_DAY));
-		cal.set(Calendar.MINUTE, hourCal.get(Calendar.MINUTE));
-		return cal.getTime();
 	}
 	
 
@@ -180,7 +167,7 @@ public class YeloReader {
 	}
 	
 	private Document readUri(String uri) {
-		System.out.println(uri);
+		Logger.info(uri);
     	HttpResponse response = WS.url(uri).get();
     	String html = response.getString();
     	Document doc = Jsoup.parse(html, BASE_URI);
@@ -204,22 +191,11 @@ public class YeloReader {
 			Queue queue = new Queue();
 			queue.movie = movie;
 			queue.save();
+			System.err.println(queue);
 		}else{
 			movie.imdb = imdbMovie;
 			movie.save();
 		}
 		return imdbMovie;
-	}
-	
-	
-	
-	private static final class DescendingMovieRatingComparator implements Comparator<Movie> {
-		@Override
-		public int compare(Movie o1, Movie o2) {
-			if(o1.imdb == null || o2.imdb == null){
-				return o1.title.compareTo(o2.title);
-			}
-			return o2.imdb.getPercentRating() - o1.imdb.getPercentRating();
-		}
 	}
 }

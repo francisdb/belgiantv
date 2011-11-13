@@ -1,13 +1,13 @@
 #{extends 'main.html' /}
 #{set title:'Home' /}
 
-${queue}
-
-<h2><a href="@{Application.index(before)}">&lt;</a> ${day.format('EEEE dd MMMM yyyy')} <a href="@{Application.index(after)}">&gt;</a></h2>
+<h2><a href="@{Application.index(before)}">&lt;</a>
+${day.format('EEEE dd MMMM yyyy')}
+<a href="@{Application.index(after)}">&gt;</a></h2>
 
 <ul>
 #{list items:movies, as:'movie'}
-	<li>
+	<li class="movie">
 		#{if movie.imdb && movie.imdb.poster && movie.imdb.poster != "N/A"}
 		<img src="${movie.imdb.poster}"/>
 		#{/if}
@@ -26,6 +26,5 @@ ${queue}
 	</li>
 #{/list}
 </ul>
-
 
 *{#{welcome /}}*
