@@ -5,7 +5,7 @@ body {
 }
 
 footer{
-	color:#999;
+	color:#EEE;
 	font-size: small;
 	text-align: center;
 }
@@ -19,6 +19,7 @@ h3{
 }
 
 a {
+	color:#66F;
 	text-decoration: none;
 }
 
@@ -65,7 +66,7 @@ span.votes{
 }
 
 .rating06{
-	color:#CF0;
+	color:#DE0;
 }
 
 .rating05{

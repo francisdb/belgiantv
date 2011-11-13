@@ -28,10 +28,10 @@ public class ImdbApiService {
 				JsonElement json = WS.url(url).get().getJson();
 				Gson gson = new Gson();
 				imdbMovie = gson.fromJson(json, ImdbApiMovie.class);
+				imdbMovie.save();
 			}catch(Exception ex){
 				Logger.error(ex.getMessage(), ex);
 			}
-			imdbMovie.save();
 		}
 		return imdbMovie;
 	}
