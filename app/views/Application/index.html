@@ -11,18 +11,30 @@ ${day.format('EEEE dd MMMM yyyy')}
 		#{if movie.imdb && movie.imdb.poster && movie.imdb.poster != "N/A"}
 		<img src="${movie.imdb.poster}" alt="${movie.imdb.title}"/>
 		#{/if}
+		#{if movie.tmdb && movie.tmdb.posters && movie.tmdb.posters[0]}
+		<img src="${movie.tmdb.posters[0].image.url}" alt="${movie.tmdb.name}"/>
+		#{/if}
 		<h3>${movie.title}</h3>
 		#{if movie.imdb}
 			#{if movie.title != movie.imdb.title}
-			${movie.imdb.title}? (possible IMDB mismatch)<br/>
+				${movie.imdb.title}? (possible IMDB mismatch)<br/>
 			#{/if}
 			${movie.year} #{if movie.year != movie.imdb.year}(${movie.imdb.year} IMDB mismatch?)#{/if}<br/>
 			${movie.imdb.genre}<br/>
 			IMDB rating: <a href="${movie.imdb.url}" class="rating${movie.imdb.decimalRating.format('00')}">[${movie.imdb.percentRating}/100]</a>
-			<span class="votes">${movie.imdb.votes} votes</span><br/>
+			<span class="votes">${movie.imdb.votes} votes</span>
+			<p>${movie?.imdb?.plot}</p>
+		#{/if}
+		#{if movie.tmdb}
+			#{if movie.title != movie.tmdb.name}
+				${movie.tmdb.name}? (possible TMDB mismatch)<br/>
+			#{/if}
+			${movie.year} #{if movie.year != movie.tmdb.year}(${movie.tmdb.year} TMDB mismatch?)#{/if}<br/>
+			TMDB rating: <a href="${movie.tmdb.url}" class="rating${movie.tmdb.decimalRating.format('00')}">[${movie.tmdb.percentRating}/100]</a>
+			<span class="votes">${movie.tmdb.votes} votes</span>
+			<p>${movie?.tmdb?.overview}</p>
 		#{/if}
 		<a href="${movie.url}">${movie.start.format('HH:mm')} @ ${movie.channel}</a>
-		<p>${movie?.imdb?.plot}</p>
 	</li>
 #{/list}
 </ul>

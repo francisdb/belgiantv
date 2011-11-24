@@ -79,5 +79,10 @@ public class ImdbApiMovie extends Model{
 	public String getUrl(){
 		return "http://www.imdb.com/title/" + id;
 	}
+	
+	@Override
+	public String toString() {
+		return id + " " + title;
+	}
 
 }

@@ -28,6 +28,9 @@ public class Movie extends Model{
 	@Index("imdb_index")
 	public ImdbApiMovie imdb;
 	
+	@Index("tmdb_index")
+	public TmdbMovie tmdb;
+	
 	public static Query<Movie> all() {
         return Model.all(Movie.class);
     }
@@ -39,6 +42,10 @@ public class Movie extends Model{
 
 	public static List<Movie> findWithoutImdb() {
 		return all().filter("imdb", null).fetch();
+	}
+	
+	public static List<Movie> findWithoutTmdb() {
+		return all().filter("tmdb", null).fetch();
 	}
     
     public static List<Movie> findByDate(Date date) {
@@ -56,6 +63,16 @@ public class Movie extends Model{
     		if(movie.imdb != null){
     			try{
     				movie.imdb.get();
+    			}catch(SienaException ex){
+    				Logger.warn(ex.getMessage());
+    			}
+    		}
+    	}
+    	// TODO find cleaner way?
+    	for(Movie movie:movies){
+    		if(movie.tmdb != null){
+    			try{
+    				movie.tmdb.get();
     			}catch(SienaException ex){
     				Logger.warn(ex.getMessage());
     			}

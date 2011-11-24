@@ -9,7 +9,12 @@
 	<cron>
 		<url>/trigger/imdb</url>
 		<description>Load imdb data</description>
-		<schedule>every 3 hours synchronized</schedule>
+		<schedule>every 6 hours synchronized</schedule>
+	</cron>
+	<cron>
+		<url>/trigger/tmdb</url>
+		<description>Load tmdb data</description>
+		<schedule>every day 03:00</schedule>
 	</cron>
 	<!-- <cron>
 		<url>/weeklyreport</url>

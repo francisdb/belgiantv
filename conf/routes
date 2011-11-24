@@ -4,6 +4,7 @@
 
 # Triggers
 GET     /trigger/imdb                           Trigger.imdb
+GET     /trigger/tmdb                           Trigger.tmdb
 GET     /trigger/yelo                           Trigger.yelo
 GET     /trigger/clear                          Trigger.clear
 
