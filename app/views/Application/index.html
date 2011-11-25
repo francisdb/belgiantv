@@ -1,5 +1,5 @@
 #{extends 'main.html' /}
-#{set title:'Movies on Belgian TV' /}
+#{set title:'Movies on Belgian TV ' + day.format('EEEE dd MMMM yyyy') /}
 
 <h2><a href="@{Application.index(before)}">&lt;</a>
 ${day.format('EEEE dd MMMM yyyy')}
