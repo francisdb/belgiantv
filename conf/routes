@@ -8,6 +8,11 @@ GET     /trigger/tmdb                           Trigger.tmdb
 GET     /trigger/yelo                           Trigger.yelo
 GET     /trigger/clear                          Trigger.clear
 
+GET     /task/imdb                              Task.imdb
+GET     /task/tmdb                              Task.tmdb
+GET     /task/yelo                              Task.yelo
+GET     /task/clear                             Task.clear
+
 # Home page
 GET     /date/{date}                            Application.index
 GET     /                                       Application.index

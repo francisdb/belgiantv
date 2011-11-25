@@ -11,6 +11,16 @@
         #{get 'moreScripts' /}
     </head>
     <body>
+		#{ifErrors}
+		   <h1>Oops...</h1>
+		   #{errors}
+		       <li>${error}</li>
+		   #{/errors}
+		#{/ifErrors}
+		#{if flash.success}
+			<p style="color:green">${flash.success}</p>
+		#{/if}
+    
         #{doLayout /}
         
         <ul>
