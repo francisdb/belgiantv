@@ -1,11 +1,13 @@
 package controllers;
 
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import models.Movie;
+
+import org.joda.time.DateTime;
+
 import play.Logger;
 import play.mvc.Before;
 import play.mvc.Controller;
@@ -20,24 +22,31 @@ public class Application extends Controller {
 		//renderArgs.put("imdbQueueSize", imdbQueueSize);
 	}
 
-	public static void index(Date date) {
-		Date day = new Date();
+	public static void index() {
+		date(new DateTime());
+	}
+
+	public static void date(DateTime date) {
+		DateTime actualDate = new DateTime();
 		if (date != null) {
-			day = date;
+			actualDate = date;
 		}
 
-		List<Movie> movies = Movie.findByDate(day);
+		List<Movie> movies = Movie.findByDate(actualDate);
 		Collections.sort(movies, new DescendingMovieRatingComparator());
-
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(day);
-		cal.add(Calendar.DAY_OF_WEEK, -1);
-		Date before = cal.getTime();
-		cal.setTime(day);
-		cal.add(Calendar.DAY_OF_WEEK, +1);
-		Date after = cal.getTime();
-
+		
+		Date before = actualDate.minusDays(1).toDate();
+		Date after = actualDate.plusDays(1).toDate();
+		Date day = actualDate.toDate();
 		render(movies, day, before, after);
+	}
+
+	public static void week(DateTime date) {
+		DateTime firstDay = new DateTime();
+		if (date != null) {
+			firstDay = date;
+		}
+		render();
 	}
 
 }

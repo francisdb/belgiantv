@@ -1,9 +1,6 @@
 package controllers;
 
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withTaskName;
-
-import java.util.Date;
-
 import play.Logger;
 import play.mvc.Before;
 import play.mvc.Controller;
@@ -24,7 +21,7 @@ public class Trigger extends Controller{
 		queue.add(withTaskName("imdb " + System.currentTimeMillis())
 				.url(Router.reverse("Task.imdb").url));
 		flash.success("Queued imdb update for background processing.");
-		Application.index(new Date());
+		Application.index();
 	}
 	
 	public static void tmdb() {
@@ -32,7 +29,7 @@ public class Trigger extends Controller{
 		queue.add(withTaskName("tmdb" + System.currentTimeMillis())
 				.url(Router.reverse("Task.tmdb").url));
 		flash.success("Queued tmdb update for background processing.");
-		Application.index(new Date());
+		Application.index();
 	}
 
 	public static void yelo() {
@@ -40,7 +37,7 @@ public class Trigger extends Controller{
 		queue.add(withTaskName("yelo" + System.currentTimeMillis())
 				.url(Router.reverse("Task.yelo").url));
 		flash.success("Queued yelo update for background processing.");
-		Application.index(new Date());
+		Application.index();
 	}
 
 	public static void clear() {
@@ -48,6 +45,6 @@ public class Trigger extends Controller{
 		queue.add(withTaskName("clear" + System.currentTimeMillis())
 				.url(Router.reverse("Task.clear").url));
 		flash.success("Queued database clear for background processing.");
-		Application.index(new Date());
+		Application.index();
 	}
 }

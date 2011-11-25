@@ -9,13 +9,6 @@ public class TimeUtil {
 		throw new UnsupportedOperationException("Utility class");
 	}
 	
-	public static void midnight(final Calendar calendar) {
-		calendar.set(Calendar.HOUR_OF_DAY, 0);
-    	calendar.set(Calendar.MINUTE, 0);
-    	calendar.set(Calendar.SECOND, 0);
-    	calendar.set(Calendar.MILLISECOND, 0);
-	}
-	
 	public static Date merge(final Date date, final Date time) {
 		Calendar hourCal = Calendar.getInstance();
 		hourCal.setTime(time);

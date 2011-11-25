@@ -1,9 +1,9 @@
 #{extends 'main.html' /}
 #{set title:'Movies on Belgian TV ' + day.format('EEEE dd MMMM yyyy') /}
 
-<h2><a href="@{Application.index(before)}">&lt;</a>
+<h2><a href="@{Application.date(before)}">&lt;</a>
 ${day.format('EEEE dd MMMM yyyy')}
-<a href="@{Application.index(after)}">&gt;</a></h2>
+<a href="@{Application.date(after)}">&gt;</a></h2>
 
 <ul>
 #{list items:movies, as:'movie'}

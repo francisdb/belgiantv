@@ -14,7 +14,11 @@ GET     /task/yelo                              Task.yelo
 GET     /task/clear                             Task.clear
 
 # Home page
-GET     /date/{date}                            Application.index
+
+GET     /date                                   Application.date
+GET     /date/{date}                            Application.date
+GET     /week                                   Application.week
+GET     /week/{date}                            Application.week
 GET     /                                       Application.index
 
 # Ignore favicon requests
@@ -26,4 +30,4 @@ GET     /public/                                staticDir:public
 *       /admin                                  module:crudsiena
 
 # Catch all
-*       /{controller}/{action}                  {controller}.{action}
+#*       /{controller}/{action}                  {controller}.{action}

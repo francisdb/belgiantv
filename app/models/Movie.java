@@ -1,11 +1,11 @@
 package models;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.joda.time.DateTime;
+
 import play.Logger;
-import services.TimeUtil;
 import siena.Generator;
 import siena.Id;
 import siena.Index;
@@ -48,15 +48,10 @@ public class Movie extends Model{
 		return all().filter("tmdb", null).fetch();
 	}
     
-    public static List<Movie> findByDate(Date date) {
-    	Calendar start = Calendar.getInstance();
-    	start.setTime(date);
-    	TimeUtil.midnight(start);
-    	Calendar end = Calendar.getInstance();
-    	end.setTime(date);
-    	end.add(Calendar.DAY_OF_MONTH, 1);
-    	TimeUtil.midnight(end);
-    	List<Movie> movies = all().filter("start>", start.getTime()).filter("start<", end.getTime())
+    public static List<Movie> findByDate(DateTime date) {
+    	DateTime start = date.withTime(0, 0, 0, 0);
+    	DateTime end = start.plusDays(1);
+    	List<Movie> movies = all().filter("start>", start.toDate()).filter("start<", end.toDate())
     			.order("-start").fetch();
     	// TODO find cleaner way?
     	for(Movie movie:movies){
