@@ -1,6 +1,6 @@
 package controllers;
 
-import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withTaskName;
 
 import java.util.Date;
 
@@ -21,28 +21,28 @@ public class Trigger extends Controller{
 
 	public static void imdb() {
 		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(withUrl(Router.reverse("Task.imdb").url));
+		queue.add(withTaskName("imdb").url(Router.reverse("Task.imdb").url));
 		flash.success("Queued imdb update for background processing.");
 		Application.index(new Date());
 	}
 	
 	public static void tmdb() {
 		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(withUrl(Router.reverse("Task.tmdb").url));
+		queue.add(withTaskName("tmdb").url(Router.reverse("Task.tmdb").url));
 		flash.success("Queued tmdb update for background processing.");
 		Application.index(new Date());
 	}
 
 	public static void yelo() {
 		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(withUrl(Router.reverse("Task.yelo").url));
+		queue.add(withTaskName("yelo").url(Router.reverse("Task.yelo").url));
 		flash.success("Queued yelo update for background processing.");
 		Application.index(new Date());
 	}
 
 	public static void clear() {
 		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(withUrl(Router.reverse("Task.clear").url));
+		queue.add(withTaskName("clear").url(Router.reverse("Task.clear").url));
 		flash.success("Queued database clear for background processing.");
 		Application.index(new Date());
 	}
