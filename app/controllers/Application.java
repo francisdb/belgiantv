@@ -46,7 +46,10 @@ public class Application extends Controller {
 		if (date != null) {
 			firstDay = date;
 		}
-		render();
+		List<Movie> movies = Movie.findByWeek(firstDay);
+		Collections.sort(movies, new DescendingMovieRatingComparator());
+		Date day = firstDay.toDate();
+		render(movies, day);
 	}
 
 }

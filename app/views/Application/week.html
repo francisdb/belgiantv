@@ -1,10 +1,8 @@
 #{extends 'main.html' /}
-#{set title:'Movies on ' + day.format('EEEE dd MMMM yyyy') /}
+#{set title:'Movies for 8 days starting at ' + day.format('EEEE dd MMMM yyyy') /}
 
-<a href="@{Application.week()}">WEEK</a>
-<h2><a href="@{Application.date(before)}">&lt;</a>
-<a href="@{Application.date(after)}">&gt;</a>
-${day.format('EEEE dd MMMM yyyy')}</h2>
+<a href="@{Application.date(day)}">DAY</a>
+<h2>Next 8 days on Belgian TV</h2>
 
 <ul>
 #{list items:movies, as:'movie'}
@@ -52,5 +50,3 @@ ${day.format('EEEE dd MMMM yyyy')}</h2>
 	</li>
 #{/list}
 </ul>
-
-*{#{welcome /}}*

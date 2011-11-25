@@ -18,6 +18,12 @@ h3{
 	text-shadow: #DDDDDD 1px 1px 1px;
 }
 
+h3 span{
+	color:#999;
+	font-size: small;
+	text-shadow:none;
+}
+
 a {
 	color:#66F;
 	text-decoration: none;
@@ -27,12 +33,16 @@ a:HOVER {
 	text-decoration: underline;
 }
 
-img {
+img.poster{
 	float:right;
 	max-height:200px;
 	/*max-width:100px;*/
 	margin:10px;
 	width:100px;
+}
+
+img.tv{
+	/*height:16px;*/
 }
 
 ul{
@@ -51,6 +61,11 @@ li.movie{
 
 span.votes{
 	color:#CCC;
+}
+
+div.warning{
+	font-size: xx-small;
+	color: red;
 }
 
 .rating09{
