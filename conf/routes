@@ -7,18 +7,18 @@ GET     /trigger/imdb                           Trigger.imdb
 GET     /trigger/tmdb                           Trigger.tmdb
 GET     /trigger/yelo                           Trigger.yelo
 GET     /trigger/clear                          Trigger.clear
+GET     /trigger/keepalive                      Trigger.keepalive
 
-GET     /task/imdb                              Task.imdb
-GET     /task/tmdb                              Task.tmdb
-GET     /task/yelo                              Task.yelo
-GET     /task/clear                             Task.clear
+POST     /task/imdb                              Task.imdb
+POST     /task/tmdb                              Task.tmdb
+POST     /task/yelo                              Task.yelo
+POST     /task/clear                             Task.clear
 
 # Home page
-
-GET     /date                                   Application.date
 GET     /date/{date}                            Application.date
-GET     /week                                   Application.week
+GET     /date                                   Application.date
 GET     /week/{date}                            Application.week
+GET     /week                                   Application.week
 GET     /                                       Application.index
 
 # Ignore favicon requests

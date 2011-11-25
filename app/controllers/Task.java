@@ -32,7 +32,8 @@ public class Task extends Controller{
 				found++;
 			}
 		}
-		renderText("TMDB fetching done, found %s of %s" , found, moviesWithoutImdb.size());
+		Logger.info("TMDB fetching done, found %s of %s" , found, moviesWithoutImdb.size());
+		ok();
 	}
 	
 	public static void tmdb() {
@@ -42,10 +43,12 @@ public class Task extends Controller{
 			TmdbMovie tmdbMovie = loadMovieTmdb(movie);
 			if(tmdbMovie != null){
 				found++;
+			}else{
+				
 			}
 		}
-		
-		renderText("TMDB fetching done, found %s of %s" , found, moviesWithoutTmdb.size());
+		Logger.info("TMDB fetching done, found %s of %s" , found, moviesWithoutTmdb.size());
+		ok();
 	}
 
 	public static void yelo() {
@@ -55,13 +58,16 @@ public class Task extends Controller{
 			reader.read(cal.getTime());
 			cal.add(Calendar.DAY_OF_MONTH, 1);
 		}
-		renderText("Yelo fetching done for next %s days", DAYS_TO_FETCH);
+		Logger.info("Yelo fetching done for next %s days", DAYS_TO_FETCH);
+		ok();
 	}
 
 	public static void clear() {
 		Movie.all().delete();
 		ImdbApiMovie.all().delete();
-		renderText("Database cleared");
+		TmdbMovie.all().delete();
+		Logger.info("Database cleared");
+		ok();
 	}
 	
 	private static ImdbApiMovie loadMovie(Movie movie) {

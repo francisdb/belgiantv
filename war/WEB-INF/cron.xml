@@ -16,6 +16,11 @@
 		<description>Load tmdb data</description>
 		<schedule>every day 03:00</schedule>
 	</cron>
+	<cron>
+		<url>/trigger/keepalive</url>
+		<description>Keep an instance online</description>
+		<schedule>every 2 minutes synchronized</schedule>
+	</cron>
 	<!-- <cron>
 		<url>/weeklyreport</url>
 		<description>Mail out a weekly report</description>
