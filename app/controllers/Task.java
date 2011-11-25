@@ -37,15 +37,15 @@ public class Task extends Controller{
 	
 	public static void tmdb() {
 		int found = 0;
-		List<Movie> moviesWithoutImdb = Movie.findWithoutImdb();
-		for(Movie movie:moviesWithoutImdb){
+		List<Movie> moviesWithoutTmdb = Movie.findWithoutTmdb();
+		for(Movie movie:moviesWithoutTmdb){
 			TmdbMovie tmdbMovie = loadMovieTmdb(movie);
 			if(tmdbMovie != null){
 				found++;
 			}
 		}
 		
-		renderText("TMDB fetching done, found %s of %s" , found, moviesWithoutImdb.size());
+		renderText("TMDB fetching done, found %s of %s" , found, moviesWithoutTmdb.size());
 	}
 
 	public static void yelo() {
