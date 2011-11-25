@@ -132,7 +132,7 @@ public class YeloReader {
 			throw new RuntimeException(e);
 		}
 		Map<String,String> params = splitParameters(movieUri);
-		movie.url = movieUri.toString();
+		movie.url = switchToHdWhereProssible(movieUri.toString());
 		movie.channel = params.get("channel");
 		try {
 			movie.start = dayFormat.parse(params.get("date"));
@@ -171,7 +171,7 @@ public class YeloReader {
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
-		movie.url = movieUri.toString();
+		movie.url = switchToHdWhereProssible(movieUri.toString());
 		movie.channel = params.get("channel");
 		try {
 			Date hour = hourFormat.parse(em.text());
@@ -227,5 +227,11 @@ public class YeloReader {
 			movie.save();
 		}
 		return imdbMovie;
+	}
+	
+	private String switchToHdWhereProssible(final String url){
+		return url.replace("channel=een-hd", "channel=een-hd")
+				.replace("channel=ketnetcanvas", "channel=ketnetcanvas-hd")
+				.replace("channel=vtm", "channel=vtm-hd");
 	}
 }
