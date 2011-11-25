@@ -23,6 +23,7 @@ import org.jsoup.select.Elements;
 import play.Logger;
 import play.libs.WS;
 import play.libs.WS.HttpResponse;
+import play.libs.WS.WSRequest;
 
 public class YeloReader {
 
@@ -77,12 +78,17 @@ public class YeloReader {
 	private List<Movie> readDayPart(final Date date, final long part) {
 		DateFormat dayFormat = new SimpleDateFormat("dd-MM-yyyy");
 		String day = dayFormat.format(date);
+		
+//		String guideUriAjax = BASE_URI + "tv-gids/groep/vlaams?date=" + day +"&part="+part + "&orientation=vertical";
+//		Document ajaxDoc = readUri(guideUriAjax, "application/json, text/javascript, */*");
+//		System.err.println(ajaxDoc);
+		
 		String guideUri = BASE_URI + "tv-gids?date="+day+"&part="+part;
 		Document doc = readUri(guideUri);
     	
     	List<Movie> movies = new ArrayList<Movie>();
-    	
-    	Elements links = doc.select("a[href~=(/film/).*");
+    	Element tvgidsDiv = doc.select("div[class=tvgids-lijst box]").first();
+    	Elements links = tvgidsDiv.select("a[href~=(/film/).*");
     	for(Element link:links){
     		Movie movie = Movie.findByUrl(link.absUrl("href"));
     		if(movie == null){
@@ -188,8 +194,16 @@ public class YeloReader {
 	}
 	
 	private Document readUri(String uri) {
+		return this.readUri(uri, null);
+	}
+	
+	private Document readUri(String uri, final String accept) {
 		Logger.info(uri);
-    	HttpResponse response = WS.url(uri).get();
+		WSRequest req = WS.url(uri);
+		if(accept != null){
+			req.setHeader("accept", accept);
+		}
+    	HttpResponse response = req.get();
     	String html = response.getString();
     	Document doc = Jsoup.parse(html, BASE_URI);
 		return doc;

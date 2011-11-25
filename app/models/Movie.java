@@ -81,6 +81,15 @@ public class Movie extends Model{
     	return movies;
     }
 
+    public int getAssembledPercentRating(){
+    	int rating = -1;
+    	if(imdb != null && imdb.rating != null){
+    		rating = imdb.getPercentRating();
+    	}else if(tmdb != null && tmdb.rating != null){
+    		rating = tmdb.getPercentRating();
+    	}
+    	return rating;
+    }
     
     public String toString() {
     	return String.format("[%s] at %s", title, url);
