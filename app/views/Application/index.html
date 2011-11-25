@@ -8,9 +8,6 @@ ${day.format('EEEE dd MMMM yyyy')}
 <ul>
 #{list items:movies, as:'movie'}
 	<li class="movie">
-		#{if movie.imdb && movie.imdb.poster && movie.imdb.poster != "N/A"}
-		<img src="${movie.imdb.poster}" alt="${movie.imdb.title}"/>
-		#{/if}
 		#{if movie.tmdb && movie.tmdb.posters && movie.tmdb.posters[0]}
 		<img src="${movie.tmdb.posters[0].image.url}" alt="${movie.tmdb.name}"/>
 		#{/if}
