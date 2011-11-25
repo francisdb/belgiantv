@@ -38,10 +38,16 @@ public class TmdbApiService {
 		if(tmdbMovie == null){
 			try{
 				TmdbMovie[] result = search(title, year);
-				tmdbMovie = result[0];
-				tmdbMovie.save();
+				if(result.length == 0 && year != null){
+					// try a second search without year
+					result = search(title);
+				}
+				if(result.length != 0){
+					tmdbMovie = result[0];
+					tmdbMovie.save();
+				}
 			}catch(Exception ex){
-				Logger.error(ex.getMessage(), ex);
+				Logger.error(ex, ex.getMessage());
 			}
 		}
 		return tmdbMovie;
@@ -67,7 +73,9 @@ public class TmdbApiService {
 				.setHeader("Accept","application/json").get().getJson();
 		
 		if(element.isJsonArray() && element.getAsJsonArray().get(0).isJsonPrimitive()){
-			throw new RuntimeException(element.getAsJsonArray().get(0).getAsString());
+			String message = element.getAsJsonArray().get(0).getAsString();
+			Logger.warn("%s returns %s", url, message);
+			return new TmdbMovie[0];
 		}
 		
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
