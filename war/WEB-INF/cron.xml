@@ -19,7 +19,8 @@
 	<cron>
 		<url>/trigger/keepalive</url>
 		<description>Keep an instance online</description>
-		<schedule>every 2 minutes synchronized</schedule>
+		<schedule>every 2 minutes from 07:00 to 11:30</schedule>
+		<timezone>Europe/Brussels</timezone>
 	</cron>
 	<!-- <cron>
 		<url>/weeklyreport</url>
