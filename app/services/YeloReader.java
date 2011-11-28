@@ -57,7 +57,7 @@ public class YeloReader {
     	
     	Elements links = doc.select("a[class][href~=(/film/).*");
     	for(Element link:links){
-    		Movie movie = Movie.findByUrl(link.absUrl("href"));
+    		Movie movie = Movie.findByUrl(switchToHdWhereProssible(link.absUrl("href")));
     		if(movie == null){
     			movie = parseChannelPageMovie(link);
     			movie.year = getYear(movie.url);
@@ -90,7 +90,7 @@ public class YeloReader {
     	Element tvgidsDiv = doc.select("div[class=tvgids-lijst box]").first();
     	Elements links = tvgidsDiv.select("a[href~=(/film/).*");
     	for(Element link:links){
-    		Movie movie = Movie.findByUrl(link.absUrl("href"));
+    		Movie movie = Movie.findByUrl(switchToHdWhereProssible(link.absUrl("href")));
     		if(movie == null){
     			movie = parseGuidePageMovie(link);
     			movie.year = getYear(movie.url);
