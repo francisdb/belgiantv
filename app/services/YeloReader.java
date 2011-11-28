@@ -230,7 +230,7 @@ public class YeloReader {
 	}
 	
 	private String switchToHdWhereProssible(final String url){
-		return url.replace("channel=een-hd", "channel=een-hd")
+		return url.replace("channel=een", "channel=een-hd")
 				.replace("channel=ketnetcanvas", "channel=ketnetcanvas-hd")
 				.replace("channel=vtm", "channel=vtm-hd");
 	}
