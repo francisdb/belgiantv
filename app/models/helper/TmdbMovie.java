@@ -1,22 +1,18 @@
-package models;
+package models.helper;
 
 import java.util.List;
+
+import javax.persistence.Embedded;
 
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import play.Logger;
-import siena.Generator;
-import siena.Id;
-import siena.Model;
-import siena.Query;
-import siena.embed.Embedded;
 
 import com.google.gson.annotations.SerializedName;
 
-public class TmdbMovie extends Model{
+public class TmdbMovie{
 	
-	@Id(Generator.NONE)
 	public long id;
 	
 	@SerializedName("imdb_id")
@@ -49,23 +45,6 @@ public class TmdbMovie extends Model{
 	
 	@Embedded
 	public List<TmdbBackDrop> backdrops;
-	
-	public static Query<TmdbMovie> all() {
-        return Model.all(TmdbMovie.class);
-    }
-	
-    public static TmdbMovie findById(String id) {
-        return all().filter("id", id).get();
-    }
- 
-    public static TmdbMovie findByTitle(String title) {
-        return all().filter("name", title).get();
-    }
-    
-    public static TmdbMovie findByTitleAndYear(String title, Integer year) {
-    	// TODO implement year search
-        return all().filter("name", title).get();
-    }
     
     public Integer getYear() {
     	if(released == null){

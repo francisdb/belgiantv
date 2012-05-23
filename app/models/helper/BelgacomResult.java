@@ -1,6 +1,7 @@
-package models;
+package models.helper;
 
 import java.util.List;
+
 
 public class BelgacomResult {
 	public int currentPage;

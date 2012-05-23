@@ -1,15 +1,14 @@
-#Eclipse project files
-.classpath
-.project
-.settings
-
-#Play! temp folder
-tmp
-eclipse
-modules
-test-result
 logs
-cobertura.ser
-lib
-data
-precompiled
+project/project
+project/target
+target
+tmp
+.history
+dist
+
+#eclipse
+.classpath
+.settings
+.project
+
+.cache

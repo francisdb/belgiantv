@@ -1,16 +1,11 @@
 package models;
 
 import play.Logger;
-import siena.Generator;
-import siena.Id;
-import siena.Model;
-import siena.Query;
 
 import com.google.gson.annotations.SerializedName;
 
-public class ImdbApiMovie extends Model{
+public class ImdbApiMovie{
 	
-	@Id(Generator.NONE)
 	@SerializedName("ID")
 	public String id;
 	
@@ -44,22 +39,6 @@ public class ImdbApiMovie extends Model{
 	@SerializedName("Director")
 	public String director;
 	
-	public static Query<ImdbApiMovie> all() {
-        return Model.all(ImdbApiMovie.class);
-    }
-	
-    public static ImdbApiMovie findById(String id) {
-        return all().filter("id", id).get();
-    }
- 
-    public static ImdbApiMovie findByTitle(String title) {
-        return all().filter("title", title).get();
-    }
-    
-    public static ImdbApiMovie findByTitleAndYear(String title, Integer year) {
-        return all().filter("title", title).filter("year", year).get();
-    }
-    
 	public int getPercentRating(){
 		if(rating == null){
 			return -1;

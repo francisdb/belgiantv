@@ -3,7 +3,7 @@ package services;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import models.TmdbMovie;
+import models.helper.TmdbMovie;
 import play.Logger;
 import play.Play;
 import play.libs.WS;
@@ -11,6 +11,7 @@ import play.libs.WS;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 public class TmdbApiService {
 	
@@ -23,7 +24,7 @@ public class TmdbApiService {
 	private final String apiKey;
 	
 	public TmdbApiService() {
-		this.apiKey = Play.configuration.getProperty("tmdb.apikey");
+		this.apiKey = Play.application().configuration().getString("tmdb.apikey");
 	}
 	
 	public TmdbMovie findOrRead(final String title){
@@ -34,7 +35,7 @@ public class TmdbApiService {
 		if(title==null){
 			throw new IllegalArgumentException("NULL title");
 		}
-		TmdbMovie tmdbMovie = TmdbMovie.findByTitleAndYear(title, year);
+		TmdbMovie tmdbMovie = null;//TmdbMovie.findByTitleAndYear(title, year);
 		if(tmdbMovie == null){
 			try{
 				TmdbMovie[] result = search(title, year);
@@ -44,10 +45,10 @@ public class TmdbApiService {
 				}
 				if(result.length != 0){
 					tmdbMovie = result[0];
-					tmdbMovie.save();
+					//tmdbMovie.save();
 				}
 			}catch(Exception ex){
-				Logger.error(ex, ex.getMessage());
+				Logger.error(ex.getMessage(), ex);
 			}
 		}
 		return tmdbMovie;
@@ -69,12 +70,12 @@ public class TmdbApiService {
 		
 		String url = BASE + "/Movie.search/" + LANG_EN + "/" + TYPE_JSON + "/" + apiKey + "/" + encodedSearch;
 		Logger.info(url);
-		JsonElement element = WS.url(url)
-				.setHeader("Accept","application/json").get().getJson();
+		JsonElement element = new JsonParser().parse(WS.url(url)
+				.setHeader("Accept","application/json").get().get().getBody());
 		
 		if(element.isJsonArray() && element.getAsJsonArray().get(0).isJsonPrimitive()){
 			String message = element.getAsJsonArray().get(0).getAsString();
-			Logger.warn("%s returns %s", url, message);
+			Logger.warn(String.format("%s returns %s", url, message));
 			return new TmdbMovie[0];
 		}
 		
@@ -85,8 +86,8 @@ public class TmdbApiService {
 	
 	String getToken(){
 		String url = BASE+"/Auth.getToken/"+TYPE_JSON+"/" + apiKey;
-		JsonElement element = WS.url(url)
-			.setHeader("Accept","application/json").get().getJson();
+		JsonElement element = new JsonParser().parse(WS.url(url)
+			.setHeader("Accept","application/json").get().get().getBody());
 		return element.getAsJsonObject().get("token").getAsString();
 	}
 	

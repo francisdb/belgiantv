@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<queue-entries>
-	<!-- http://code.google.com/appengine/docs/java/config/queue.html -->
-	<!-- Change the refresh rate of the default queue to 1/s -->
-<!-- 	<queue>
-		<name>default</name>
-		<rate>1/s</rate>
-	</queue> -->
-</queue-entries>

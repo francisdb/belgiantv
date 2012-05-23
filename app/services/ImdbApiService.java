@@ -9,6 +9,7 @@ import play.libs.WS;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 public class ImdbApiService {
 	
@@ -20,15 +21,15 @@ public class ImdbApiService {
 		if(title==null){
 			throw new IllegalArgumentException("NULL title");
 		}
-		ImdbApiMovie imdbMovie = ImdbApiMovie.findByTitleAndYear(title, year);
+		ImdbApiMovie imdbMovie = null;//ImdbApiMovie.findByTitleAndYear(title, year);
 		if(imdbMovie == null){
 			String url = apiUrl(title, year);
 			Logger.info(url);
 			try{
-				JsonElement json = WS.url(url).get().getJson();
+				JsonElement json = new JsonParser().parse(WS.url(url).get().get().getBody());
 				Gson gson = new Gson();
 				imdbMovie = gson.fromJson(json, ImdbApiMovie.class);
-				imdbMovie.save();
+				//imdbMovie.save();
 			}catch(Exception ex){
 				Logger.error(ex.getMessage(), ex);
 			}

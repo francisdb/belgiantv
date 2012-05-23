@@ -2,32 +2,8 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Triggers
-GET     /trigger/imdb                           Trigger.imdb
-GET     /trigger/tmdb                           Trigger.tmdb
-GET     /trigger/yelo                           Trigger.yelo
-GET     /trigger/clear                          Trigger.clear
-GET     /trigger/keepalive                      Trigger.keepalive
-
-POST     /task/imdb                              Task.imdb
-POST     /task/tmdb                              Task.tmdb
-POST     /task/yelo                              Task.yelo
-POST     /task/clear                             Task.clear
-
 # Home page
-GET     /date/{date}                            Application.date
-GET     /date                                   Application.date
-GET     /week/{date}                            Application.week
-GET     /week                                   Application.week
-GET     /                                       Application.index
+GET     /                           controllers.Application.index
 
-# Ignore favicon requests
-GET     /favicon.ico                            404
-
-# Map static resources from the /app/public folder to the /public path
-GET     /public/                                staticDir:public
-
-*       /admin                                  module:crudsiena
-
-# Catch all
-#*       /{controller}/{action}                  {controller}.{action}
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)

@@ -1,8 +1,6 @@
-package models;
+package models.helper;
 
-import siena.embed.EmbeddedMap;
 
-@EmbeddedMap
 public class TmdbImage{
 	public String id;
 	public String type;

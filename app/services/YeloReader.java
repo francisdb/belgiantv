@@ -15,8 +15,8 @@ import java.util.Map.Entry;
 
 import models.ImdbApiMovie;
 import models.Movie;
-import models.YeloTVGids;
-import models.YeloTVGids.Broadcast;
+import models.helper.YeloTVGids;
+import models.helper.YeloTVGids.Broadcast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -25,12 +25,13 @@ import org.jsoup.select.Elements;
 
 import play.Logger;
 import play.libs.WS;
-import play.libs.WS.HttpResponse;
-import play.libs.WS.WSRequest;
+import play.libs.WS.Response;
+import play.libs.WS.WSRequestHolder;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 public class YeloReader {
 
@@ -64,11 +65,11 @@ public class YeloReader {
     	
     	Elements links = doc.select("a[class][href~=(/film/).*");
     	for(Element link:links){
-    		Movie movie = Movie.findByUrl(switchToHdWhereProssible(link.absUrl("href")));
+    		Movie movie = null;//Movie.findByUrl(switchToHdWhereProssible(link.absUrl("href")));
     		if(movie == null){
     			movie = parseChannelPageMovie(link);
     			//movie.year = getYear(movie.url);
-    			movie.save();
+    			// movie.save();
     		}
     		movies.add(movie);
     	}
@@ -222,24 +223,24 @@ public class YeloReader {
 	
 	private Document readUri(String uri, final String accept) {
 		Logger.info(uri);
-		WSRequest req = WS.url(uri);
+		WSRequestHolder req = WS.url(uri);
 		if(accept != null){
 			req.setHeader("accept", accept);
 		}
-    	HttpResponse response = req.get();
-    	String html = response.getString();
+    	Response response = req.get().get();
+    	String html = response.getBody();
     	Document doc = Jsoup.parse(html, BASE_URI);
 		return doc;
 	}
 	
 	private JsonElement readUriJson(String uri, final String accept) {
 		Logger.info(uri);
-		WSRequest req = WS.url(uri);
+		WSRequestHolder req = WS.url(uri);
 		if(accept != null){
 			req.setHeader("accept", accept);
 		}
-    	HttpResponse response = req.get();
-    	return response.getJson();
+		Response response = req.get().get();
+    	return new JsonParser().parse(response.getBody());
 	}
 	
 	private Map<String,String> splitParameters(URI uri){
@@ -254,10 +255,10 @@ public class YeloReader {
 	}
 	
 	private ImdbApiMovie readOrFetch(final Movie movie){
-		ImdbApiMovie imdbMovie = ImdbApiMovie.findByTitle(movie.title);
+		ImdbApiMovie imdbMovie = null;//ImdbApiMovie.findByTitle(movie.title);
 		if(imdbMovie != null){
 			movie.imdb = imdbMovie;
-			movie.save();
+			//movie.save();
 		}
 		return imdbMovie;
 	}

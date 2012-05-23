@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import models.BelgacomChannel;
-import models.BelgacomMovie;
-import models.BelgacomProgram;
-import models.BelgacomResult;
+import models.helper.BelgacomChannel;
+import models.helper.BelgacomMovie;
+import models.helper.BelgacomProgram;
+import models.helper.BelgacomResult;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -17,6 +17,7 @@ import play.libs.WS;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 public class BelgacomReader {
 
@@ -35,7 +36,7 @@ public class BelgacomReader {
 	public List<BelgacomMovie> readMovies(final Date date, final int dayOffset){
 		String url = BASE + "/get-movies-data/" + dayOffset + "?_=" + date.getTime();
 		Logger.info(url);
-		JsonElement json = WS.url(url).get().getJson();
+		JsonElement json = new JsonParser().parse(WS.url(url).get().get().getBody());
 		Gson gson = new Gson();
 		Type listType = new com.google.gson.reflect.TypeToken<List<BelgacomMovie>>() {}.getType();
 		List<BelgacomMovie> movies = gson.fromJson(json, listType);
@@ -70,7 +71,7 @@ public class BelgacomReader {
 		int dayOffset = 0;
 		String url = BASE + "/get-channel-data/"+channelsPerPage+"/"+page+"/"+language+"/"+dayOffset+"?_=" + date.getTime();
 		Logger.info(url);
-		JsonElement json = WS.url(url).get().getJson();
+		JsonElement json = new JsonParser().parse(WS.url(url).get().get().getBody());
 		Gson gson = new Gson();
 		BelgacomResult result = gson.fromJson(json, BelgacomResult.class);
 		return result;
