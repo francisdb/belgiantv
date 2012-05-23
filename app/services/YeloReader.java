@@ -11,9 +11,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import models.ImdbApiMovie;
 import models.Movie;
+import models.YeloTVGids;
+import models.YeloTVGids.Broadcast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -24,6 +27,10 @@ import play.Logger;
 import play.libs.WS;
 import play.libs.WS.HttpResponse;
 import play.libs.WS.WSRequest;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 
 public class YeloReader {
 
@@ -60,7 +67,7 @@ public class YeloReader {
     		Movie movie = Movie.findByUrl(switchToHdWhereProssible(link.absUrl("href")));
     		if(movie == null){
     			movie = parseChannelPageMovie(link);
-    			movie.year = getYear(movie.url);
+    			//movie.year = getYear(movie.url);
     			movie.save();
     		}
     		movies.add(movie);
@@ -83,39 +90,55 @@ public class YeloReader {
 //		Document ajaxDoc = readUri(guideUriAjax, "application/json, text/javascript, */*");
 //		System.err.println(ajaxDoc);
 		
-		String guideUri = BASE_URI + "tv-gids?date="+day+"&part="+part;
-		Document doc = readUri(guideUri);
+		String guideUri = BASE_URI + "detail/tvgids?date="+day;
+		JsonElement element = readUriJson(guideUri, null);
+		//printJson(element);
+		
+		Gson gson = new Gson();
+		YeloTVGids gids = gson.fromJson(element, YeloTVGids.class);
+		for(Entry<String,Broadcast> entry:gids.result.meta.pvrbroadcasts.entrySet()){
+			Broadcast broadcast = entry.getValue();
+			if(broadcast.is_serie == 0){
+				System.out.println(new Date(broadcast.start_time*1000) + "@" + broadcast.channel_webpvr_id + " " + broadcast.title);
+			}
+		}
+		
     	
     	List<Movie> movies = new ArrayList<Movie>();
-    	Element tvgidsDiv = doc.select("div[class=tvgids-lijst box]").first();
-    	Elements links = tvgidsDiv.select("a[href~=(/film/).*");
-    	for(Element link:links){
-    		Movie movie = Movie.findByUrl(switchToHdWhereProssible(link.absUrl("href")));
-    		if(movie == null){
-    			movie = parseGuidePageMovie(link);
-    			movie.year = getYear(movie.url);
-    			movie.save();
-    		}
-    		movies.add(movie);
-    	}
+//    	Element tvgidsDiv = doc.select("div[class=tvgids-lijst box]").first();
+//    	Elements links = tvgidsDiv.select("a[href~=(/film/).*");
+//    	for(Element link:links){
+//    		Movie movie = Movie.findByUrl(switchToHdWhereProssible(link.absUrl("href")));
+//    		if(movie == null){
+//    			movie = parseGuidePageMovie(link);
+//    			movie.year = getYear(movie.url);
+//    			movie.save();
+//    		}
+//    		movies.add(movie);
+//    	}
 		return movies;
 	}
-	
-	Integer getYear(final String moviePageUrl){
-		Document doc = readUri(moviePageUrl);
-//		<span class="filmdata-titel">Jaar: </span>
-//		<span class="filmdata-content">2010</span>
 
-		Element yearTitleElement = doc.select("span[class=filmdata-titel]:contains(Jaar:)").first();
-		Element yearElement = yearTitleElement.nextElementSibling();
-		Integer year = null;
-		try{
-			year = Integer.valueOf(yearElement.text());
-		}catch(NumberFormatException ex){
-			Logger.warn("Could not parse year: [%s]", yearElement.text());
-		}
-		return year;
+	private void printJson(JsonElement element) {
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		System.out.println(gson.toJson(element));
 	}
+	
+//	Integer getYear(final String moviePageUrl){
+//		Document doc = readUri(moviePageUrl);
+////		<span class="filmdata-titel">Jaar: </span>
+////		<span class="filmdata-content">2010</span>
+//
+//		Element yearTitleElement = doc.select("span[class=filmdata-titel]:contains(Jaar:)").first();
+//		Element yearElement = yearTitleElement.nextElementSibling();
+//		Integer year = null;
+//		try{
+//			year = Integer.valueOf(yearElement.text());
+//		}catch(NumberFormatException ex){
+//			Logger.warn("Could not parse year: [%s]", yearElement.text());
+//		}
+//		return year;
+//	}
 
 	
 	private Movie parseGuidePageMovie(Element link){
@@ -207,6 +230,16 @@ public class YeloReader {
     	String html = response.getString();
     	Document doc = Jsoup.parse(html, BASE_URI);
 		return doc;
+	}
+	
+	private JsonElement readUriJson(String uri, final String accept) {
+		Logger.info(uri);
+		WSRequest req = WS.url(uri);
+		if(accept != null){
+			req.setHeader("accept", accept);
+		}
+    	HttpResponse response = req.get();
+    	return response.getJson();
 	}
 	
 	private Map<String,String> splitParameters(URI uri){
