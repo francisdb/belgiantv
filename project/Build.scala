@@ -9,7 +9,7 @@ object ApplicationBuild extends Build {
 
     val appDependencies = Seq(
       "com.google.code.gson" % "gson" % "2.2.1",
-      "org.jsoup" % "jsoup" % "1.6.2"
+      "org.jsoup" % "jsoup" % "1.6.2"            
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
