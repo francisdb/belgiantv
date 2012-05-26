@@ -1,9 +1,14 @@
-@(message: String)
+@()(implicit flash:Flash)
 
 @main("Welcome to Play 2.0") {
     
     @* @play20.welcome(message) *@
     
-    @message
+    @flash.get("message")
+    
+    <ul>
+    	<li><a href="@routes.Application.yelo">yelo</a></li>
+    	<li><a href="@routes.Application.humo">humo</a></li>
+    </ul>
     
 }
