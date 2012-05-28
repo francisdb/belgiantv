@@ -12,7 +12,7 @@ public class ImdbApiMovie{
 	@SerializedName("Title")
 	public String title;
 	
-	@SerializedName("Rating")
+	@SerializedName("imdbRating")
 	public String rating;
 	
 	@SerializedName("Votes")

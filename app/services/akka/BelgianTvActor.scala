@@ -8,6 +8,7 @@ import services.HumoReader
 import services.ImdbApiService
 import controllers.Application
 import services.TomatoesApiService
+import models.Movie
 
 class BelgianTvActor extends Actor {
   
@@ -33,6 +34,11 @@ class BelgianTvActor extends Actor {
       //Logger.warn("not implemented")
       val movie = ImdbApiService.findOrRead(msg.title, msg.year)
       println("IMDB result -> " + movie)
+      movie.map{ m =>
+        val dbMovie = new Movie(null, m.title, m.id, m.rating)
+        Movie.create(dbMovie)
+      }
+      
     }
     
     case msg: SearchTomatoes => {

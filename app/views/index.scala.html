@@ -1,4 +1,4 @@
-@()(implicit flash:Flash)
+@(movies:List[models.Movie])(implicit flash:Flash)
 
 @main("BelgianTV") {
     
@@ -7,8 +7,15 @@
     @flash.get("message")
     
     <ul>
+    @for(movie <- movies){
+    	<li><a href="http://www.imdb.com/title/@movie.imdbId">@movie.name</a> @movie.imdbRating</li>
+    }
+    </ul>
+    
+    <ul>
     	<li><a href="@routes.Application.yelo">yelo</a></li>
     	<li><a href="@routes.Application.humo">humo</a></li>
     </ul>
+    
     
 }

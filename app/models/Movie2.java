@@ -4,7 +4,7 @@ import java.util.Date;
 
 import models.helper.TmdbMovie;
 
-public class Movie{
+public class Movie2{
 
 	public String id;
 

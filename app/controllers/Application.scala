@@ -13,13 +13,17 @@ import org.joda.time.format.DateTimeFormatter
 import org.joda.time.format.DateTimeFormat
 import services.YeloReader2
 import play.api.libs.concurrent.Promise
+import models.Movie
 
 object Application extends Controller {
 
   val channelFilter = List("Canvas", "VTM", "2BE", "VT4", "VIJFtv", "Ketnet", "Ned 3", "Vitaya")
 
   def index = Action { implicit request =>
-    Ok(views.html.index())
+    
+    val movies = Movie.findAll();
+    
+    Ok(views.html.index(movies))
   }
   
   def humo = Action {
