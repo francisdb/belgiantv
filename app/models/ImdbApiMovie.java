@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class ImdbApiMovie{
 	
-	@SerializedName("ID")
+	@SerializedName("imdbID")
 	public String id;
 	
 	@SerializedName("Title")

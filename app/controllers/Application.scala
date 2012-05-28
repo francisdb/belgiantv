@@ -24,14 +24,9 @@ object Application extends Controller {
   
   def humo = Action {
     val date = new DateMidnight()
-    val url = HumoReader.urlForDay(date)
-    println(url);
-    
-    Async {
-      WS.url(url).get().map { response =>
 
-        val movies = HumoReader.parseDay(date, response.body).filter(result => channelFilter.contains(result.channel))
-        movies.foreach(movie => println(movie.readable))
+    Async {
+      HumoReader.fetchDay(date, channelFilter).map { movies =>
         Redirect(routes.Application.index).flashing("message" -> (movies.length + " movies found on humo"))
       }
     }

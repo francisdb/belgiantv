@@ -7,19 +7,30 @@ import org.jsoup.Jsoup
 import scala.collection.mutable.ArrayBuffer
 import org.joda.time.LocalTime
 import org.joda.time.format.DateTimeFormat
+import play.api.libs.ws.WS2
+import play.api.Logger
 
 object HumoReader {
-
+  
   val dateFormat = DateTimeFormat.forPattern("YYYY-MM-dd")
   val timeFormat = DateTimeFormat.forPattern("HH'u'mm")
   
+  def fetchDay(day: DateMidnight, channelFilter: List[String] = List()) = {
+    val url = HumoReader.urlForDay(day)
+    Logger.info("Fetching " + url)
+    // TODO fixed with new play version
+    // WS.url(url)/*.withFollowRedirects(true)*/.get().map { response =>
+    WS2.url(url).get().map { response =>
+      parseDay(day, response.body).filter(result => channelFilter.isEmpty || channelFilter.contains(result.channel))
+    }
+  }
   
-  def urlForDay(day: DateMidnight) = {
+  private def urlForDay(day: DateMidnight) = {
     "http://www.humo.be/tv-gids/"+dateFormat.print(day)+"/genres/film"
   }
   
-  def parseDay(day: DateMidnight, body: String): List[HumoEvent] = {
-
+  private def parseDay(day: DateMidnight, body: String): List[HumoEvent] = {
+	
     val doc = Jsoup.parse(body)
 
     val section = doc.getElementsContainingOwnText("Hoofdzenders").get(0)
@@ -30,17 +41,17 @@ object HumoReader {
     for (zender <- zenders) {
       val channelName = zender.getElementsByTag("img").first().attr("title")
       val programs = zender.getElementsByAttributeValue("class", "programme")
-      //println(channelName)
       for (program <- programs) {
         val movieName = program.getElementsByAttributeValue("class", "title").first().text()
         val time = LocalTime.parse(program.getElementsByAttributeValue("class", "starttime").first().text(), timeFormat)
-        
-        //println("\t" + movieName)
-        val movie = HumoEvent(day, channelName, time, movieName)
+        val yearSpan = Option(program.getElementsByAttributeValue("class", "year"))
+        // this check for empty is actually strage because the list should be empty if none found
+        // and seems to contain an empty element here
+        val year = if(yearSpan.size > 0 && !yearSpan.head.text().isEmpty()) Option(yearSpan.head.text().toInt) else None
+        val movie = HumoEvent(day, channelName, time, movieName, year)
         buf += movie
       }
     }
-    
     buf.distinct.result.toList
   }
 
@@ -50,9 +61,10 @@ case class HumoEvent(
     day: DateMidnight, 
     channel: String,
     time: LocalTime,
-    movie: String){
+    title: String,
+    year: Option[Int]){
   
   val readable = {
-    day + "\t" + channel + "("+time+")" + "\t" + movie
+    day + "\t" + channel + "("+time+")" + "\t" + title
   }
 }
