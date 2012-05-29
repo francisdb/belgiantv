@@ -15,7 +15,7 @@ public class ImdbApiMovie{
 	@SerializedName("imdbRating")
 	public String rating;
 	
-	@SerializedName("Votes")
+	@SerializedName("imdbVotes")
 	public String votes;
 	
 	@SerializedName("Runtime")
