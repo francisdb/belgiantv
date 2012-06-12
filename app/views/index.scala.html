@@ -1,21 +1,33 @@
-@(movies:List[models.Movie])(implicit flash:Flash)
+@(infos:List[models.helper.BroadcastInfo])(implicit flash:Flash)
 
 @main("BelgianTV") {
-    
-    @* @play20.welcome(message) *@
+  
+  
+<h1>Movies on Belgian TV for the coming 7 days ordered by IMDB score</h1>
+
+<p>Click on the Yelo links to program your telenet digicorder</p>
     
     @flash.get("message")
-    
+
     <ul>
-    @for(movie <- movies){
-    	<li><a href="http://www.imdb.com/title/@movie.imdbId">@movie.name</a> @movie.imdbRating</li>
+    @for(info <- infos){
+    	<li>@info.broadcast.name <span class="year">(@info.broadcast.year)</span> 
+    		@info.movie.map{ m => 
+    		  <a href="@m.imdbUrl">@m.imdbRating</a> 
+    		  <img src="@m.imgUrl" alt="poster for m.name" class="poster"/>
+    		}<br/>
+    		<small>@info.broadcast.channel @info.broadcast.humanDate 
+    		<a href="@info.broadcast.humoUrl">Humo</a>
+    		@info.broadcast.yeloUrl.map{ y => 
+    		<a href="@y">Yelo</a>
+    		}
+    		</small>
+    	</li>
     }
     </ul>
     
-    <ul>
-    	<li><a href="@routes.Application.yelo">yelo</a></li>
-    	<li><a href="@routes.Application.humo">humo</a></li>
-    </ul>
     
-    
+<footer>
+<a href="http://www.twitter.com/somatik">@@Somatik</a> &#149; built with the <a href="http://imdbapi.com/">The IMDb API</a> &#149; <a href="@routes.Application.scan">force rescan</a>
+</footer>
 }

@@ -14,12 +14,17 @@ class Master extends Actor{
     case Start => {
       Logger.info("[" + this + "] - Received [start] from " + sender)
       val today = new DateMidnight()
-      val msgOut = FetchHumo(today)
-      workerRouter ! msgOut
+      workerRouter ! FetchHumo(today)
+      workerRouter ! FetchHumo(today.plusDays(1))
+      workerRouter ! FetchHumo(today.plusDays(2))
+      workerRouter ! FetchHumo(today.plusDays(3))
+      workerRouter ! FetchHumo(today.plusDays(4))
+      workerRouter ! FetchHumo(today.plusDays(5))
+      workerRouter ! FetchHumo(today.plusDays(6))
     }
     
-    case _ => {
-      Logger.warn("[" + this + "] - Received unknown message from " + sender)
+    case x => {
+      Logger.warn("[" + this + "] - Received unknown message [" + x + "] from " + sender)
     }
   }
 }

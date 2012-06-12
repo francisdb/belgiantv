@@ -3,6 +3,8 @@ package controllers
 import play.api._
 import play.api.mvc._
 import play.api.libs.ws.WS
+import play.api.Play.current
+import play.api.libs.concurrent._
 import java.io.StringReader
 import java.io.ByteArrayOutputStream
 import org.jsoup.Jsoup
@@ -11,44 +13,43 @@ import services.HumoReader
 import org.joda.time.DateMidnight
 import org.joda.time.format.DateTimeFormatter
 import org.joda.time.format.DateTimeFormat
-import services.YeloReader2
-import play.api.libs.concurrent.Promise
+import services.YeloReader
 import models.Movie
+import models.Broadcast
+import akka.actor.Props
+import services.akka.Master
+import services.akka.Start
+import models.helper.BroadcastInfo
+import org.joda.time.Interval
+import akka.actor.ActorRef
+import org.joda.time.DateTimeZone
 
 object Application extends Controller {
 
-  val channelFilter = List("Canvas", "VTM", "2BE", "VT4", "VIJFtv", "Ketnet", "Ned 3", "Vitaya")
+  val channelFilter = List("Canvas", "VTM", "2BE", "VT4", "VIJFtv", "Ketnet", "Acht", "Ned 1", "Ned 2", "Ned 3", "Vitaya", "BBC 1", "BBC 2", "BBC 3")
+  val timezone = DateTimeZone.forID("Europe/Brussels")
+  
+  var masterActorRef: ActorRef = null
 
   def index = Action { implicit request =>
     
-    val movies = Movie.findAll();
+    val date = new DateMidnight()
     
-    Ok(views.html.index(movies))
+    val broadcasts = Broadcast.findByInterval(new Interval(date, date.plusDays(7)))
+    
+    val infos = broadcasts.map{ broadcast =>
+      val movie = broadcast.imdbId.flatMap(Movie.findByImdbId(_))
+      BroadcastInfo(broadcast, movie)
+    }
+    
+    val sorted = infos.sortWith(_.movie.map(_.imdbRating.toDouble).getOrElse(0.0) > _.movie.map(_.imdbRating.toDouble).getOrElse(0.0))  
+    
+    Ok(views.html.index(sorted))
   }
   
-  def humo = Action {
-    val date = new DateMidnight()
-
-    Async {
-      HumoReader.fetchDay(date, channelFilter).map { movies =>
-        Redirect(routes.Application.index).flashing("message" -> (movies.length + " movies found on humo"))
-      }
-    }
-  }
-  
-  def yelo = Action {
-    val date = new DateMidnight()
-    val url = YeloReader2.urlForDay(date)
-    println(url);
-
-    Async {
-      WS.url(url).get().map { response =>
-
-        val movies = YeloReader2.parseDay(date, response.json)
-        //movies.foreach(movie => println(movie))
-        Redirect(routes.Application.index).flashing("message" -> (movies.length + " events found on yelo"))
-      }
-    }
+  def scan = Action {
+    masterActorRef ! Start
+    Redirect(routes.Application.index).flashing("message" -> "Started database update...")
   }
 
 }

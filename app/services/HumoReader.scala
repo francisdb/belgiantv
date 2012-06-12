@@ -9,15 +9,19 @@ import org.joda.time.LocalTime
 import org.joda.time.format.DateTimeFormat
 import play.api.libs.ws.WS2
 import play.api.Logger
+import org.joda.time.DateTimeZone
+import controllers.Application
 
 object HumoReader {
   
-  val dateFormat = DateTimeFormat.forPattern("YYYY-MM-dd")
-  val timeFormat = DateTimeFormat.forPattern("HH'u'mm")
+  private val logger = Logger("application.humo")
+  
+  private val dateFormat = DateTimeFormat.forPattern("YYYY-MM-dd")
+  private val timeFormat = DateTimeFormat.forPattern("HH'u'mm")
   
   def fetchDay(day: DateMidnight, channelFilter: List[String] = List()) = {
-    val url = HumoReader.urlForDay(day)
-    Logger.info("Fetching " + url)
+    val url = urlForDay(day)
+    logger.info("Fetching " + url)
     // TODO fixed with new play version
     // WS.url(url)/*.withFollowRedirects(true)*/.get().map { response =>
     WS2.url(url).get().map { response =>
@@ -47,8 +51,10 @@ object HumoReader {
         val yearSpan = Option(program.getElementsByAttributeValue("class", "year"))
         // this check for empty is actually strage because the list should be empty if none found
         // and seems to contain an empty element here
-        val year = if(yearSpan.size > 0 && !yearSpan.head.text().isEmpty()) Option(yearSpan.head.text().toInt) else None
-        val movie = HumoEvent(day, channelName, time, movieName, year)
+        val year = if(yearSpan.size > 0 && !yearSpan.head.text().isEmpty()) Option(yearSpan.head.text().toInt) else None        
+        val id = program.attr("id").replaceAll("event_", "")
+        val url = program.getElementsByTag("a").first().attr("href")
+        val movie = HumoEvent(id, url, day, channelName, time, movieName, year)
         buf += movie
       }
     }
@@ -58,13 +64,29 @@ object HumoReader {
 }
 
 case class HumoEvent(
+    id:String,
+    url:String,
     day: DateMidnight, 
     channel: String,
     time: LocalTime,
     title: String,
     year: Option[Int]){
   
+  def toDateTime() = {
+    try{
+      // artificial check, we say 6:00 starts the day
+      if(time.isBefore(LocalTime.parse("6:00"))){
+        time.toDateTime(day.plusDays(1).withZoneRetainFields(Application.timezone))
+      }else{
+        time.toDateTime(day.withZoneRetainFields(Application.timezone))
+      }
+    }catch{
+      case ex: Exception => Logger.error(ex.getMessage, ex)
+        throw ex
+    }
+  }
+  
   val readable = {
-    day + "\t" + channel + "("+time+")" + "\t" + title
+    id + "\t" + day + "\t" + channel + "("+time+")" + "\t" + title
   }
 }
