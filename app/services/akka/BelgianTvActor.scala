@@ -13,6 +13,7 @@ import models.Broadcast
 import services.YeloReader
 import java.util.TimeZone
 import org.joda.time.DateTimeZone
+import services.TmdbApiService
 
 class BelgianTvActor extends Actor {
   
@@ -34,6 +35,24 @@ class BelgianTvActor extends Actor {
   
   protected def receive: Receive = {
 
+    case msg: LinkTmdb => {
+      logger.info("[" + this + "] - Received [" + msg + "] from " + sender)
+      
+      val service = new TmdbApiService()
+      
+      val tmdbmovie = msg.broadcast.year.map{ year =>
+        service.findOrRead(msg.broadcast.name, msg.broadcast.year.get)
+      }.getOrElse(service.findOrRead(msg.broadcast.name))
+      
+      if(tmdbmovie != null){
+        Broadcast.setTmdb(msg.broadcast, tmdbmovie.id.toString)
+        val poster = Option.apply(tmdbmovie.getFirstPoster())
+        poster.map(Broadcast.setTmdbImg(msg.broadcast, _))
+      }else{
+        logger.warn("No TMDb movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
+      }
+    }
+    
     case msg: LinkImdb => {
       logger.info("[" + this + "] - Received [" + msg + "] from " + sender)
       
@@ -57,6 +76,7 @@ class BelgianTvActor extends Actor {
       }.getOrElse(
           logger.warn("No IMDB movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
       )
+      
     }
     
     case msg: LinkTomatoes => {
@@ -82,6 +102,7 @@ class BelgianTvActor extends Actor {
           }.getOrElse{
             val saved = Broadcast.create(broadcast)
         	self ! LinkImdb(saved)
+        	self ! LinkTmdb(saved)
         	//self ! LinkTomatoes(broadcast)
         	saved
           }

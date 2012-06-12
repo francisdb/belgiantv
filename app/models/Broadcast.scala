@@ -26,7 +26,9 @@ class Broadcast(
     @BeanProperty @JsonProperty("humoUrl") val humoUrl: Option[String] = None,
     @BeanProperty @JsonProperty("yeloId") val yeloId: Option[String] = None,
     @BeanProperty @JsonProperty("yeloUrl") val yeloUrl: Option[String] = None,
-    @BeanProperty @JsonProperty("imdbId") val imdbId: Option[String] = None
+    @BeanProperty @JsonProperty("imdbId") val imdbId: Option[String] = None,
+    @BeanProperty @JsonProperty("tmdbId") val tmdbId: Option[String] = None,
+    @BeanProperty @JsonProperty("tmdbImg") val tmdbImg: Option[String] = None
     ) {
   @ObjectId
   @Id
@@ -35,6 +37,10 @@ class Broadcast(
   def humanDate() = {
     val format = DateTimeFormat.forPattern("dd MMM HH:mm")
     format.print(datetime.withZone(Application.timezone))
+  }
+  
+  def tmdbUrl() = {
+    tmdbId.map("http://www.themoviedb.org/movie/%s".format(_))
   }
   
 }
@@ -76,5 +82,15 @@ object Broadcast {
   def setImdb(b:Broadcast, imdbId:String) {
     logger.debug("Saving IMDB link for " + b.name + " with id " + b.id)
     db.updateById(b.id, DBUpdate.set("imdbId", imdbId))
+  }
+  
+  def setTmdb(b:Broadcast, tmdbId:String) {
+    logger.debug("Saving TMDb link for " + b.name + " with id " + b.id)
+    db.updateById(b.id, DBUpdate.set("tmdbId", tmdbId))
+  }
+  
+  def setTmdbImg(b:Broadcast, tmdbImg:String) {
+    logger.debug("Saving TMDb img for " + b.name + " with id " + b.id)
+    db.updateById(b.id, DBUpdate.set("tmdbImg", tmdbImg))
   }
 }

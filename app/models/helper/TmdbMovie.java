@@ -45,6 +45,13 @@ public class TmdbMovie{
 	
 	@Embedded
 	public List<TmdbBackDrop> backdrops;
+	
+	public String getFirstPoster() {
+		if(posters != null && !posters.isEmpty()){
+			return posters.get(0).image.url;
+		}
+		return null;
+	}
     
     public Integer getYear() {
     	if(released == null){

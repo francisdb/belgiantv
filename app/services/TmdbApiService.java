@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 
 import models.helper.TmdbMovie;
 import play.Logger;
+import play.Logger.ALogger;
 import play.Play;
 import play.libs.WS;
 
@@ -21,6 +22,9 @@ public class TmdbApiService {
 	//private static final String TYPE_XML = "xml";
 	
 	private static final String BASE = "http://api.themoviedb.org/2.1";
+	private static final ALogger logger = Logger.of("application.tmdb");
+	
+	
 	private final String apiKey;
 	
 	public TmdbApiService() {
@@ -48,7 +52,7 @@ public class TmdbApiService {
 					//tmdbMovie.save();
 				}
 			}catch(Exception ex){
-				Logger.error(ex.getMessage(), ex);
+				logger.error(ex.getMessage(), ex);
 			}
 		}
 		return tmdbMovie;
@@ -69,13 +73,13 @@ public class TmdbApiService {
 		encodedSearch = encodedSearch.replace("%3F", "");
 		
 		String url = BASE + "/Movie.search/" + LANG_EN + "/" + TYPE_JSON + "/" + apiKey + "/" + encodedSearch;
-		Logger.info(url);
+		logger.info(url);
 		JsonElement element = new JsonParser().parse(WS.url(url)
 				.setHeader("Accept","application/json").get().get().getBody());
 		
 		if(element.isJsonArray() && element.getAsJsonArray().get(0).isJsonPrimitive()){
 			String message = element.getAsJsonArray().get(0).getAsString();
-			Logger.warn(String.format("%s returns %s", url, message));
+			logger.warn(String.format("%s returns %s", url, message));
 			return new TmdbMovie[0];
 		}
 		
