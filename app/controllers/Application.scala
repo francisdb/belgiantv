@@ -23,6 +23,9 @@ import models.helper.BroadcastInfo
 import org.joda.time.Interval
 import akka.actor.ActorRef
 import org.joda.time.DateTimeZone
+import java.sql.Date
+import org.joda.time.DateTime
+import org.joda.time.DateMidnight
 
 object Application extends Controller {
 
@@ -33,9 +36,12 @@ object Application extends Controller {
 
   def index = Action { implicit request =>
     
-    val date = new DateMidnight()
+    // anything that has started more than an hour ago is not interesting
+    val start = new DateTime().minusHours(1)
+    // for seven days in the future (midnight)
+    val end = new DateMidnight().plusDays(7)
     
-    val broadcasts = Broadcast.findByInterval(new Interval(date, date.plusDays(7)))
+    val broadcasts = Broadcast.findByInterval(new Interval(start, end))
     
     val infos = broadcasts.map{ broadcast =>
       val movie = broadcast.imdbId.flatMap(Movie.findByImdbId(_))
