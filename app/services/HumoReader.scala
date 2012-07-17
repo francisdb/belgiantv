@@ -7,10 +7,10 @@ import org.jsoup.Jsoup
 import scala.collection.mutable.ArrayBuffer
 import org.joda.time.LocalTime
 import org.joda.time.format.DateTimeFormat
-import play.api.libs.ws.WS2
 import play.api.Logger
 import org.joda.time.DateTimeZone
 import controllers.Application
+import play.api.libs.ws.WS
 
 object HumoReader {
   
@@ -22,9 +22,7 @@ object HumoReader {
   def fetchDay(day: DateMidnight, channelFilter: List[String] = List()) = {
     val url = urlForDay(day)
     logger.info("Fetching " + url)
-    // TODO fixed with new play version
-    // WS.url(url)/*.withFollowRedirects(true)*/.get().map { response =>
-    WS2.url(url).get().map { response =>
+    WS.url(url).get().map { response =>
       parseDay(day, response.body).filter(result => channelFilter.isEmpty || channelFilter.contains(result.channel))
     }
   }

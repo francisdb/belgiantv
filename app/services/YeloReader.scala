@@ -8,9 +8,8 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.JsObject
 import play.api.Logger
 import org.jsoup.Jsoup
-import play.api.libs.ws.WS2
-
 import scala.collection.JavaConversions._
+import play.api.libs.ws.WS
 
 
 object YeloReader {
@@ -22,12 +21,10 @@ object YeloReader {
   def fetchDay(day: DateMidnight, channelFilter: List[String] = List()) = {
     val urls = urlsForDay(day)
     logger.info("Fetching " + urls)
-    // TODO fixed with new play version
-    // WS.url(url)/*.withFollowRedirects(true)*/.get().map { response =>
-    val first = WS2.url(urls(0)).get().map { response =>
+    val first = WS.url(urls(0)).get().map { response =>
       parseDay(day, response.json).filter(result => channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(yeloChannelToHumoChannel(result.channel).toLowerCase))
     }
-    val second = WS2.url(urls(1)).get().map { response =>
+    val second = WS.url(urls(1)).get().map { response =>
       parseDay(day, response.json).filter(result => channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(yeloChannelToHumoChannel(result.channel).toLowerCase))
     }
     for( f <- first; s <- second ) yield ( f ++ s )

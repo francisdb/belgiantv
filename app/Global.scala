@@ -16,7 +16,7 @@ object Global extends GlobalSettings{
   override def onStart(app: play.api.Application){
     Logger.info("Scheduling actor trigger")
     Application.masterActorRef = Akka.system.actorOf(Props[Master], name = "masterActor")
-    Akka.system.scheduler.schedule(0 seconds, 12 hours, Application.masterActorRef, Start)
+    //Akka.system.scheduler.schedule(0 seconds, 12 hours, Application.masterActorRef, Start)
   }
 
 }

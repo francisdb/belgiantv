@@ -5,6 +5,9 @@ target
 tmp
 .history
 dist
+bin
+test-result
+.target
 
 #eclipse
 .classpath

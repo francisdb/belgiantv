@@ -5,8 +5,10 @@ import play.api.Logger
 import com.google.gson.JsonParser
 import com.google.gson.Gson
 import models.helper.TomatoesSearch
-
 import scala.collection.JavaConversions._
+import models.helper.TomatoesSearch
+import com.codahale.jerkson.Json._
+import models.helper.TomatoesSearch
 
 object TomatoesApiService {
   
@@ -25,12 +27,11 @@ object TomatoesApiService {
         Logger.warn("Tomatoes api error: " + error.get)
         None
       }else{
-	    val gsonJson = new JsonParser().parse(response.body)
-	    val searchResult = gson.fromJson(gsonJson, classOf[TomatoesSearch])
-	    if(searchResult.movies.isEmpty){
+	    val search = parse[TomatoesSearch](response.body)
+	    if(search.movies.isEmpty){
 	      None
 	    }else{
-	      val movies = searchResult.movies.toList
+	      val movies = search.movies
 	      // putting year in the query does not seem to return the correct movie as first item
 	      if(year.isDefined){
 		      Option(movies.filter(m => (m.year == year.get.toString())))
