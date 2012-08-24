@@ -29,7 +29,7 @@ import org.joda.time.DateMidnight
 
 object Application extends Controller {
 
-  val channelFilter = List("Canvas", "VTM", "2BE", "VT4", "VIJFtv", "Ketnet", "Acht", "Ned 1", "Ned 2", "Ned 3", "Vitaya", "BBC 1", "BBC 2", "BBC 3")
+  val channelFilter = List("één", "Canvas", "VTM", "2BE", "VT4", "VIJFtv", "Ketnet", "Acht", "Ned 1", "Ned 2", "Ned 3", "Vitaya", "BBC 1", "BBC 2", "BBC 3")
   val timezone = DateTimeZone.forID("Europe/Brussels")
   
   var masterActorRef: ActorRef = null
