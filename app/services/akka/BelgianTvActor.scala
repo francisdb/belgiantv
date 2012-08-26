@@ -44,7 +44,7 @@ class BelgianTvActor extends Actor {
       tmdbmovie.map { mOption =>
         mOption.map{ m =>
            Broadcast.setTmdb(msg.broadcast, m.id.toString)
-           val poster = Option.apply(m.getFirstPoster())
+           val poster = Option.apply(m.posterUrl)
            poster.map(Broadcast.setTmdbImg(msg.broadcast, _))
         }.getOrElse{
         	logger.warn("No TMDb movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))

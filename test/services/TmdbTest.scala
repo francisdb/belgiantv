@@ -13,8 +13,8 @@ class TmdbTest extends Specification {
 	        val result = TmdbApiService.findOrRead("don", Option.apply(2006))
 	        val movie = result.await(30, TimeUnit.SECONDS).get.get
 	        
-	        movie.name must_== ("Don")
-	        movie.released must startWith("2006")
+	        movie.title must_== ("Don")
+	        movie.release_date must startWith("2006")
         }
     }
   }
@@ -24,8 +24,18 @@ class TmdbTest extends Specification {
         running(FakeApplication()) {
 	        val result = TmdbApiService.findOrRead("Pulp Fiction")
 	        val movie = result.await(30, TimeUnit.SECONDS).get.get
-	        movie.name must startWith("Pulp Fiction")
-	        movie.released must startWith("1994")
+	        movie.title must startWith("Pulp Fiction")
+	        movie.release_date must startWith("1994")
+        }
+    }
+  }
+  
+  "the search for hafsjkdhfkdjshadslkfhaskf" should {
+    "return nothing" in {
+        running(FakeApplication()) {
+	        val result = TmdbApiService.findOrRead("hafsjkdhfkdjshadslkfhaskf")
+	        val movie = result.await(30, TimeUnit.SECONDS).get
+	        movie must beNone
         }
     }
   }
