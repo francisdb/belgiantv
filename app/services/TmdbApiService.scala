@@ -21,18 +21,14 @@ import models.helper.TmdbMovie
 
 object TmdbApiService {
 	
-	val LANG_EN = "en"
-	val TYPE_JSON = "json"
-	//private static final String TYPE_YAML = "yaml";
-	//private static final String TYPE_XML = "xml";
-	
 	val BASE = "http://api.themoviedb.org/3"
-	val logger = Logger("application.tmdb")
+	  
+	private val logger = Logger("application.tmdb")
 
-	val apiKey = Play.current.configuration.getString("tmdb.apikey")
+	private val apiKey = Play.current.configuration.getString("tmdb.apikey")
 	  .getOrElse(throw new RuntimeException("Missing tmdb api key"))
 	
-	val mapper = new ObjectMapper()
+	private val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
 
 	def findOrRead(title:String, year:Option[Int] = None): Promise[Option[TmdbMovieSearch]] = {
@@ -40,15 +36,14 @@ object TmdbApiService {
 			throw new IllegalArgumentException("NULL title")
 		}
 		val result = search(title, year)
+		// TODO fall back to title only search if none found?
+		// create test to see if this is needed
 		result.map(list => list.headOption)
 	}
 	
 	
 	def search(title:String, year:Option[Int] = None) = {
 	  
-		// remove question mark as this doesn't work
-		// val encodedSearch = urlEncodeUtf8(search).replace("%3F", "")
-		
 		val url = BASE + "/search/movie";
 		
 		val qs = List(("api_key"-> apiKey), ("query" -> title))
@@ -71,24 +66,6 @@ object TmdbApiService {
 		  }
 	      
 		}
-	}
-	
-	def getToken() = {
-		val url = BASE+"/Auth.getToken/"+TYPE_JSON+"/" + apiKey
-	    val request = WS.url(url)
-	      .withHeaders("Accept" -> "application/json")
-	      .withQueryString("api_key"-> apiKey).get()
-		val element = request.value.get.json
-		(element \ "token").asOpt[String].getOrElse(throw new RuntimeException("Missing token"))
-	}
-	
-	def auth(token:String) = {
-		// redirect here
-		"http://www.themoviedb.org/auth/" + token
-	}
-
-	def urlEncodeUtf8(string: String) = {
-		URLEncoder.encode(string, "UTF-8")
 	}
 	
 	private def deserialize[T: Manifest](value: String) : T =
