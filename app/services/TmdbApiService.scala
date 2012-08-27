@@ -68,7 +68,7 @@ object TmdbApiService {
 		}
 	}
 	
-	private def deserialize[T: Manifest](value: String) : T =
+  private def deserialize[T: Manifest](value: String) : T =
     mapper.readValue(value, new TypeReference[T]() {
       override def getType = new ParameterizedType {
         val getActualTypeArguments = manifest[T].typeArguments.map(_.erasure.asInstanceOf[Type]).toArray
