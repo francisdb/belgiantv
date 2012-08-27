@@ -8,7 +8,7 @@ import java.util.Date
 class BelgacomReaderTest extends Specification {
  "the search for today" should {
     "return data" in {
-      pending("ignored")
+      //pending("ignored")
         running(FakeApplication()) {
 	        val result = BelgacomReader.read(new Date)
 	        result.map{ r =>
