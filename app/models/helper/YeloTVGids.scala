@@ -1,50 +1,37 @@
-package models.helper;
+package models.helper
 
-import java.util.Map;
+import org.codehaus.jackson.annotate.JsonProperty
 
-import com.google.gson.annotations.SerializedName;
+case class YeloTVGids(
+  @JsonProperty("Succes") succes: String,
 
-public class YeloTVGids {
-	@SerializedName("Succes")
-	public String succes;
-	
-	@SerializedName("Result")
-	public Result result;
-	
-	public static class Result{
-		@SerializedName("IsToday")
-		public boolean isToday;
-		
-		@SerializedName("ViewStart")
-		public String viewStart;
-		
-		@SerializedName("ViewEnd")
-		public String viewEnd;
-		
-		@SerializedName("Channels")
-		public String channelsHtml;
-		
-		@SerializedName("Events")
-		public String eventsHtml;
-		
-		@SerializedName("Meta")
-		public Meta meta;
-	}
-	
-	public static class Meta{
-		//public schedules;
-		public Map<String, Broadcast> pvrbroadcasts;
-	}
-	
-	public static class Broadcast{
-		public String event_id;
-		public String code;
-		public int is_serie;
-		public String title;
-		public long start_time;
-		public long end_time;
-		public String channel_webpvr_id;
-	}
+  @JsonProperty("Result") result: Result)
+
+case class Result(
+  @JsonProperty("IsToday") isToday: Boolean,
+
+  @JsonProperty("ViewStart") viewStart: String,
+
+  @JsonProperty("ViewEnd") viewEnd: String,
+
+  @JsonProperty("Channels") channelsHtml: String,
+
+  @JsonProperty("Events") eventsHtml: String,
+
+  @JsonProperty("Meta") meta: Meta)
+
+case class Meta(
+  //schedules;
+  pvrbroadcasts: Map[String, Broadcast])
+
+case class Broadcast(
+  event_id: String,
+  code: String,
+  is_serie: String,
+  title: String,
+  start_time: Long,
+  end_time: Long,
+  channel_webpvr_id: String)
 	
 //	
 //	 <li channel="1"><img src="http://img.yelo.be/uploads/channels/detail/MM067.png?v=0.1.11" alt="VTM" class="thumb_channel" width="100" height="50" border="0" /></li>
@@ -63,4 +50,3 @@ public class YeloTVGids {
 //     <li channel="22"><img src="http://img.yelo.be/uploads/channels/detail/MM072.png?v=0.1.11" alt="Ned1" class="thumb_channel" width="100" height="50" border="0" /></li>
 //     <li channel="23"><img src="http://img.yelo.be/uploads/channels/detail/MM073.png?v=0.1.11" alt="Ned2" class="thumb_channel" width="100" height="50" border="0" /></li>
 //     <li channel="24"><img src="http://img.yelo.be/uploads/channels/detail/MM074.png?v=0.1.11" alt="Ned3" class="thumb_channel" width="100" height="50" border="0" /></li>
-}

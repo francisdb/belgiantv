@@ -1,6 +1,5 @@
 package models.helper
 
-import models.Broadcast
 import models.Movie
 
-case class BroadcastInfo(broadcast:Broadcast, movie:Option[Movie])
+case class BroadcastInfo(broadcast:models.Broadcast, movie:Option[Movie])

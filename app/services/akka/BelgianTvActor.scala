@@ -14,6 +14,7 @@ import services.YeloReader
 import java.util.TimeZone
 import org.joda.time.DateTimeZone
 import services.TmdbApiService
+import java.util.concurrent.TimeUnit
 
 class BelgianTvActor extends Actor {
   
@@ -60,7 +61,7 @@ class BelgianTvActor extends Actor {
         Movie.findByNameAndYear(msg.broadcast.name, year)).getOrElse(Movie.findByName(msg.broadcast.name))
 
       val movie2 = movie.orElse {
-        val movie = ImdbApiService.findOrRead(msg.broadcast.name, msg.broadcast.year)
+        val movie = ImdbApiService.findOrRead(msg.broadcast.name, msg.broadcast.year).await(30, TimeUnit.SECONDS).get
 
         movie.map { m =>
           val dbMovie = new Movie(null, m.title, m.id, m.rating, m.year, m.poster)

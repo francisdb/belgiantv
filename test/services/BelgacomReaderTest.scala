@@ -17,7 +17,7 @@ class BelgacomReaderTest extends Specification {
 	            //println(" - " + program.getStart + " " + program.title)
 	          }
 	        }
-	        result.length must be >(0)
+	        result must not be empty
         }
     }
   }
@@ -29,7 +29,7 @@ class BelgacomReaderTest extends Specification {
 	        result.map{ movie =>
 	          println(movie.channelname + " " + movie.getStart + " " + movie.title)
 	        }
-	        result.length must be >(0)
+	        result must not be empty
         }
     }
   }
