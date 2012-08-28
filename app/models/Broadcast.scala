@@ -26,7 +26,10 @@ class Broadcast(
     @BeanProperty @JsonProperty("humoUrl") val humoUrl: Option[String] = None,
     @BeanProperty @JsonProperty("yeloId") val yeloId: Option[String] = None,
     @BeanProperty @JsonProperty("yeloUrl") val yeloUrl: Option[String] = None,
+    @BeanProperty @JsonProperty("belgacomId") val belgacomId: Option[String] = None,
+    @BeanProperty @JsonProperty("belgacomUrl") val belgacomUrl: Option[String] = None,
     @BeanProperty @JsonProperty("imdbId") val imdbId: Option[String] = None,
+    @BeanProperty @JsonProperty("tomatoesId") val tomatoesId: Option[String] = None,
     @BeanProperty @JsonProperty("tmdbId") val tmdbId: Option[String] = None,
     @BeanProperty @JsonProperty("tmdbImg") val tmdbImg: Option[String] = None
     ) {
@@ -39,10 +42,11 @@ class Broadcast(
     format.print(datetime.withZone(Application.timezone))
   }
   
-  def tmdbUrl() = {
-    tmdbId.map("http://www.themoviedb.org/movie/%s".format(_))
-  }
+  def imdbUrl = imdbId.map("http://www.imdb.com/title/%s".format(_))
+  def tmdbUrl = tmdbId.map("http://www.themoviedb.org/movie/%s".format(_))
+  def tomatoesUrl = tomatoesId.map("http://www.rottentomatoes.com/m/%s".format(_))
   
+  override def toString() = name + " " + channel + "@" + datetime 
 }
 
 object Broadcast {
@@ -79,9 +83,19 @@ object Broadcast {
     db.updateById(b.id, DBUpdate.set("yeloId", yeloId).set("yeloUrl", yeloUrl))
   }
   
+  def setBelgacom(b:Broadcast, belgacomId:String, belgacomUrl:String) {
+    logger.debug("Saving Belgacom link for " + b.name + " with id " + b.id)
+    db.updateById(b.id, DBUpdate.set("belgacomId", belgacomId).set("belgacomUrl", belgacomUrl))
+  }
+  
   def setImdb(b:Broadcast, imdbId:String) {
     logger.debug("Saving IMDB link for " + b.name + " with id " + b.id)
     db.updateById(b.id, DBUpdate.set("imdbId", imdbId))
+  }
+  
+  def setTomatoes(b:Broadcast, tomatoesId:String) {
+    logger.debug("Saving Tomatoes link for " + b.name + " with id " + b.id)
+    db.updateById(b.id, DBUpdate.set("tomatoesId", tomatoesId))
   }
   
   def setTmdb(b:Broadcast, tmdbId:String) {

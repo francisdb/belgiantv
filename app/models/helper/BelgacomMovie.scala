@@ -3,6 +3,7 @@ package models.helper
 import java.util.Date
 import org.codehaus.jackson.annotate.JsonProperty
 import org.codehaus.jackson.annotate.JsonIgnoreProperties
+import org.joda.time.DateTime
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 case class BelgacomMovie(
@@ -57,7 +58,7 @@ case class BelgacomMovie(
 	//def shour; // obsolete start hour:minutes
 ) {
 	def getProgramUrl() = {
-		"http://sphinx.skynet.be/tv-overal/tv-gids/programma/" + programKey
+		"http://sphinx.skynet.be/tv-overal/tv-gids/programma/" + programId
 	}
 	
 	def getStart() = {
@@ -67,4 +68,8 @@ case class BelgacomMovie(
 	def getEnd() = {
 		new Date(endTimeSeconds * 1000)
 	}
+	
+	def toDateTime() = new DateTime(startTimeSeconds * 1000)
+	
+	override def toString() = title + " " + channelname + "@" + toDateTime
 }

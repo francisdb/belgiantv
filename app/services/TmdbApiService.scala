@@ -31,7 +31,7 @@ object TmdbApiService {
 	private val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
 
-	def findOrRead(title:String, year:Option[Int] = None): Promise[Option[TmdbMovieSearch]] = {
+	def find(title:String, year:Option[Int] = None): Promise[Option[TmdbMovieSearch]] = {
 		if(title==null){
 			throw new IllegalArgumentException("NULL title")
 		}

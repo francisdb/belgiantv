@@ -15,7 +15,7 @@ object ImdbApiService {
   private val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
-  def findOrRead(title: String, year: Option[Int] = None) = {
+  def find(title: String, year: Option[Int] = None) = {
     val url = "http://www.imdbapi.com/"
     var request = WS.url(url).withQueryString("t" -> title)
     if (year.isDefined) {

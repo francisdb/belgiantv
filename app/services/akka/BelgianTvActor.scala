@@ -15,6 +15,7 @@ import java.util.TimeZone
 import org.joda.time.DateTimeZone
 import services.TmdbApiService
 import java.util.concurrent.TimeUnit
+import services.BelgacomReader
 
 class BelgianTvActor extends Actor {
   
@@ -38,9 +39,7 @@ class BelgianTvActor extends Actor {
     case msg: LinkTmdb => {
       logger.info("[" + this + "] - Received [" + msg + "] from " + sender)
 
-      val tmdbmovie = msg.broadcast.year.map { year =>
-        TmdbApiService.findOrRead(msg.broadcast.name, msg.broadcast.year)
-      }.getOrElse(TmdbApiService.findOrRead(msg.broadcast.name))
+      val tmdbmovie = TmdbApiService.find(msg.broadcast.name, msg.broadcast.year)
 
       tmdbmovie.map { mOption =>
         mOption.map{ m =>
@@ -61,7 +60,7 @@ class BelgianTvActor extends Actor {
         Movie.findByNameAndYear(msg.broadcast.name, year)).getOrElse(Movie.findByName(msg.broadcast.name))
 
       val movie2 = movie.orElse {
-        val movie = ImdbApiService.findOrRead(msg.broadcast.name, msg.broadcast.year).await(30, TimeUnit.SECONDS).get
+        val movie = ImdbApiService.find(msg.broadcast.name, msg.broadcast.year).await(30, TimeUnit.SECONDS).get
 
         movie.map { m =>
           val dbMovie = new Movie(null, m.title, m.id, m.rating, m.year, m.poster)
@@ -81,7 +80,14 @@ class BelgianTvActor extends Actor {
     case msg: LinkTomatoes => {
       logger.info("[" + this + "] - Received [" + msg + "] from " + sender)
       val movie = TomatoesApiService.find(msg.broadcast.name, msg.broadcast.year)
-      logger.info("Tomatoes result -> " + movie)
+      movie.map { mOption =>
+        mOption.map{ m =>
+           Broadcast.setTomatoes(msg.broadcast, m.id.toString)
+        }.getOrElse{
+        	logger.warn("No Tomatoes movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
+        	None
+        }      
+      }
     }
 
     case msg: FetchHumo => {
@@ -102,12 +108,13 @@ class BelgianTvActor extends Actor {
             val saved = Broadcast.create(broadcast)
             self ! LinkImdb(saved)
             self ! LinkTmdb(saved)
-            //self ! LinkTomatoes(broadcast)
+            self ! LinkTomatoes(saved)
             saved
           }
         }
 
         self ! FetchYelo(msg.day, broadcasts)
+        self ! FetchBelgacom(msg.day, broadcasts)
       }
     }
 
@@ -126,6 +133,28 @@ class BelgianTvActor extends Actor {
               Broadcast.setYelo(broadcast, event.id.toString, event.url)
             }.getOrElse {
               logger.warn("No yelo match for " + broadcast.channel + " " + broadcast.humanDate + " " + broadcast.name)
+            }
+          }
+        }
+      }
+    }
+    
+    case msg: FetchBelgacom => {
+      logger.info("[" + this + "] - Received [" + msg + "] from " + sender)
+      
+      BelgacomReader.readMovies(msg.day).onRedeem{ movies =>
+        msg.events.foreach { broadcast =>
+          if (broadcast.belgacomUrl.isEmpty) {
+            val found = movies.filter{belgacomMovie => 
+              if(BelgacomReader.belgacomChannelToHumoChannel(belgacomMovie.channelname).toLowerCase == broadcast.channel.toLowerCase){
+            	  println(msg.day + " > " + belgacomMovie + "\n = " + broadcast)
+              }
+              BelgacomReader.belgacomChannelToHumoChannel(belgacomMovie.channelname).toLowerCase == broadcast.channel.toLowerCase && belgacomMovie.toDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC)
+            }.headOption
+            found.map { event =>
+              Broadcast.setBelgacom(broadcast, event.programId.toString, event.getProgramUrl)
+            }.getOrElse {
+              logger.warn("No belgacom match for " + broadcast.channel + " " + broadcast.humanDate + " " + broadcast.name)
             }
           }
         }

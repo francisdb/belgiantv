@@ -8,7 +8,7 @@ import akka.actor.ActorLogging
 
 class Master extends Actor{
 
-  val workerRouter = context.actorOf(Props[BelgianTvActor].withRouter(RoundRobinRouter(10)), name = "BelgianTV")
+  val workerRouter = context.actorOf(Props[BelgianTvActor].withRouter(RoundRobinRouter(2)), name = "BelgianTV")
 
   protected def receive: Receive = {
     case Start => {

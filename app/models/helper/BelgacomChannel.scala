@@ -9,7 +9,7 @@ case class BelgacomChannel(
 	channelId:String,
 	
 	@JsonProperty("cname")
-	channelname:String,
+	channelName:String,
 	
 	@JsonProperty("cnum")
 	channelNumber:String,
@@ -20,4 +20,7 @@ case class BelgacomChannel(
 	pr:List[BelgacomProgram]    
 ) {
 
+  override def toString() = {
+    channelName + " [" + pr.size + "]"
+  }
 }

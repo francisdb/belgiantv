@@ -20,3 +20,5 @@ case class LinkTomatoes(broadcast:Broadcast) extends BelgianTvMessage
 case class FetchHumo(day:DateMidnight) extends BelgianTvMessage
 
 case class FetchYelo(day:DateMidnight, events: List[Broadcast]) extends BelgianTvMessage
+
+case class FetchBelgacom(day:DateMidnight, events: List[Broadcast]) extends BelgianTvMessage

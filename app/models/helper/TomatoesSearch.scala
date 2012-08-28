@@ -8,14 +8,18 @@ case class TomatoesSearch(total:Int, movies:List[TomatoesMovie]) {
 case class TomatoesMovie(
     id:Int, 
     title:String, 
-    year:String, 
+    year:Int, 
     runtime:String, 
-    ratings:List[TomatoesRatings], 
-    alternate_ids:TomatoesAlternateIds,
-    critics_consensus:String) {
+    ratings:TomatoesRatings, 
+    alternate_ids:Option[TomatoesAlternateIds],
+    critics_consensus:Option[String]) {
 }
 
-case class TomatoesRatings (critics_rating:String, critics_score:Int, audience_rating:String, audience_score:Int){
+case class TomatoesRatings (
+    critics_rating:Option[String], 
+    critics_score:Int, 
+    audience_rating:Option[String], 
+    audience_score:Int){
 }
 	
 case class TomatoesAlternateIds(imdb: String){
