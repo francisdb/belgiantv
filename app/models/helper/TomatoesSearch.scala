@@ -2,13 +2,15 @@ package models.helper
 
 import com.codahale.jerkson.Json._
 
-case class TomatoesSearch(total:Int, movies:List[TomatoesMovie]) {	
+case class TomatoesSearch(
+    total:Int, 
+    movies:List[TomatoesMovie]) {	
 }
 
 case class TomatoesMovie(
     id:Int, 
     title:String, 
-    year:Int, 
+    year:Option[Int], 
     runtime:String, 
     ratings:TomatoesRatings, 
     alternate_ids:Option[TomatoesAlternateIds],

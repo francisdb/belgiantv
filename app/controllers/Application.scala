@@ -49,9 +49,9 @@ object Application extends Controller {
     }
     
     val sorted = infos.sortWith(
-        _.movie.map(m => ratingToDouble(m.imdbRating)).getOrElse(0.0)
+        _.movie.map(m => m.rating).getOrElse(0.0)
         > 
-        _.movie.map(m => ratingToDouble(m.imdbRating)).getOrElse(0.0))  
+        _.movie.map(m => m.rating).getOrElse(0.0))  
     
     Ok(views.html.index(sorted))
   }
@@ -61,10 +61,6 @@ object Application extends Controller {
     Redirect(routes.Application.index).flashing("message" -> "Started database update...")
   }
   
-  private def ratingToDouble(rating:String) = try{
-    rating.toDouble
-  } catch {
-     case e : NumberFormatException => 0.0
-  }
+
 
 }

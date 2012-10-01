@@ -4,7 +4,10 @@ import org.specs2.mutable._
 import play.api.test._
 import play.api.test.Helpers._
 import java.util.concurrent.TimeUnit
+import org.junit.runner.RunWith
+import org.specs2.runner.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class TomatoesTest extends Specification {
 
   "the search for Pulp Fiction" should {
@@ -13,7 +16,7 @@ class TomatoesTest extends Specification {
         val result = TomatoesApiService.find("Pulp Fiction")
         val movie = result.await(30, TimeUnit.SECONDS).get.get
         movie.title must startWith("Pulp Fiction")
-        movie.year must beEqualTo(1994)
+        movie.year.get must beEqualTo(1994)
       }
     }
   }
@@ -26,7 +29,20 @@ class TomatoesTest extends Specification {
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("Don")
-        movie.year must beEqualTo(2006)
+        movie.year.get must beEqualTo(2006)
+      }
+    }
+  }
+
+"the search for The Beach 2000" should {
+    "return the correct movie" in {
+      running(FakeApplication()) {
+        val result = TomatoesApiService.find("The Beach", Option(2000))
+        val movieOption = result.await(30, TimeUnit.SECONDS).get
+        movieOption must beSome
+        val movie = movieOption.get
+        movie.title must_== ("The Beach")
+        movie.year.get must beEqualTo(2000)
       }
     }
   }
@@ -39,7 +55,7 @@ class TomatoesTest extends Specification {
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("Cape Fear")
-        movie.year must beEqualTo(1962)
+        movie.year.get must beEqualTo(1962)
       }
     }
   }
@@ -52,7 +68,7 @@ class TomatoesTest extends Specification {
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("This Is England")
-        movie.year must beEqualTo(2006)
+        movie.year.get must beEqualTo(2006)
       }
     }
   }
@@ -65,7 +81,7 @@ class TomatoesTest extends Specification {
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("Spring Breakdown")
-        movie.year must beEqualTo(2008)
+        movie.year.get must beEqualTo(2008)
       }
     }
   }

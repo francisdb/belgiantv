@@ -13,17 +13,20 @@
 
     <ul>
     @for(info <- infos){
-    	<li>@info.broadcast.name <span class="year">(@info.broadcast.year)</span> 
+    	<li><div class="poster">
+	    		@info.broadcast.tmdbImg.map{ img => 
+	    		    <img src="@img" alt="poster for @info.broadcast.name"/>
+		    	}.getOrElse{
+		    	  @info.movie.map{ m => 
+		    		<img src="@m.imgUrl" alt="poster for @m.name"/>
+		    	  }
+		    	}
+	    	</div>
+	    	@info.broadcast.name <span class="year">(@info.broadcast.year)</span> 
     		@info.movie.map{ m => 
     		  <a href="@m.imdbUrl">@m.imdbRating</a>
     		}
-    		@info.broadcast.tmdbImg.map{ img => 
-    		    <img src="@img" alt="poster for @info.broadcast.name" class="poster"/>
-	    	}.getOrElse{
-	    	  @info.movie.map{ m => 
-	    		<img src="@m.imgUrl" alt="poster for @m.name" class="poster"/>
-	    	  }
-	    	}
+
     		<br/>
     		<small>@info.broadcast.channel @info.broadcast.humanDate
     		<a href="@info.broadcast.humoUrl">Humo</a>

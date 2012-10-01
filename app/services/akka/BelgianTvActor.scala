@@ -21,15 +21,6 @@ class BelgianTvActor extends Actor {
   
   val logger = Logger("application.actor")
   
-//  val numOfTweets = 10
-//  val workerRouter = context.actorOf(Props[WebScrapperWorker]
-//                                     .withRouter(RoundRobinRouter(numOfTweets)),
-//                                     name = "twitterSearch")
-
-  //var sendMessages = 0;
-  //var receivedMessages = 0;
-  //var list: ListBuffer[TweetNews] = new ListBuffer[TweetNews]
-  
   override def preRestart(reason: Throwable, message: Option[Any]) {
     logger.error("Restarting due to [{}] when processing [{}]".format(reason.getMessage, message.getOrElse("")), reason)
   }
@@ -44,8 +35,7 @@ class BelgianTvActor extends Actor {
       tmdbmovie.map { mOption =>
         mOption.map{ m =>
            Broadcast.setTmdb(msg.broadcast, m.id.toString)
-           val poster = Option.apply(m.posterUrl)
-           poster.map(Broadcast.setTmdbImg(msg.broadcast, _))
+           m.posterUrl.map(Broadcast.setTmdbImg(msg.broadcast, _))
         }.getOrElse{
         	logger.warn("No TMDb movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
         	None

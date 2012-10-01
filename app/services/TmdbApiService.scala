@@ -25,7 +25,7 @@ object TmdbApiService {
 	  
 	private val logger = Logger("application.tmdb")
 
-	private val apiKey = Play.current.configuration.getString("tmdb.apikey")
+	private lazy val apiKey = Play.current.configuration.getString("tmdb.apikey")
 	  .getOrElse(throw new RuntimeException("Missing tmdb api key"))
 	
 	private val mapper = new ObjectMapper()
@@ -52,7 +52,7 @@ object TmdbApiService {
 		logger.info(url)
 		val response = WS.url(url)
 		  .withHeaders("Accept" -> "application/json")
-		  .withQueryString(qs:_*).get
+		  .withQueryString(qs2:_*).get
 		  
 		response.map{ r =>
 		  logger.info(url + " " + r.status)

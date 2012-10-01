@@ -10,7 +10,9 @@ import models.helper.TomatoesSearch
 
 object TomatoesApiService {
   
-  val apikey = Play.current.configuration.getString("tomatoes.apikey").getOrElse("")
+  private lazy val apikey = Play.current.configuration.getString("tomatoes.apikey")
+    .getOrElse(Option(System.getenv("TOMATOES_API_KEY"))
+      .getOrElse(throw new IllegalStateException("No tomatoes api key defined")))
   
   def find(title:String, year:Option[Int] = None) = {
     val url = "http://api.rottentomatoes.com/api/public/v1.0/movies.json"
@@ -21,6 +23,7 @@ object TomatoesApiService {
       val error = (json \ "error").asOpt[String]
       if (error.isDefined) {
         Logger.warn("Tomatoes api error: " + error.get)
+        println(response.body)
         None
       } else {
         val search = parse[TomatoesSearch](response.body)
@@ -44,11 +47,11 @@ object TomatoesApiService {
 
   private def yearMatchIfExists(year: Option[Int], movies: List[models.helper.TomatoesMovie]) = {
     year.map { y =>
-      movies.filter(m => (m.year == y)).headOption.orElse(movies.headOption)
+      movies.filter(m => (m.year.getOrElse(Int.MinValue) == y)).headOption.orElse(movies.headOption)
     } getOrElse {
       movies.headOption
     }
-}
+  }
   
   
 

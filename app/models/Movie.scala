@@ -22,6 +22,10 @@ class Movie(
   def getId = id;
   
   def imdbUrl() = "http://www.imdb.com/title/" + imdbId
+  
+  def rating() = {
+    Movie.ratingToDouble(imdbRating)
+  }
 }
 
 object Movie {
@@ -57,5 +61,11 @@ object Movie {
     val result = movie.orElse(findByName(name))
     logger.debug("Search for %s %s gives %s".format(name, year, result))
     result
+  }
+  
+  private def ratingToDouble(rating:String) = try{
+    rating.toDouble
+  } catch {
+     case e : NumberFormatException => 0.0
   }
 }

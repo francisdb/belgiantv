@@ -18,6 +18,6 @@ case class TmdbMovieSearch(
 
   def posterUrl = {
     // http://help.themoviedb.org/kb/api/configuration
-    "http://cf2.imgobject.com/t/p/w154/" + poster_path
+    Option(poster_path).map("http://cf2.imgobject.com/t/p/w154/" + _)
   }
 }
