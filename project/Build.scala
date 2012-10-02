@@ -8,8 +8,9 @@ object ApplicationBuild extends Build {
     val appVersion      = "1.0-SNAPSHOT"
 
     val appDependencies = Seq(
-      "org.jsoup" % "jsoup" % "1.6.2",
-      "net.vz.mongodb.jackson" %% "play-mongo-jackson-mapper" % "1.0.0-rc.4"
+      "org.jsoup" % "jsoup" % "1.7.1",
+      "commons-lang" % "commons-lang" % "2.6",
+      "net.vz.mongodb.jackson" %% "play-mongo-jackson-mapper" % "1.0.0"
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
