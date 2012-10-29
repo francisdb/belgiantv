@@ -25,6 +25,8 @@ class BelgianTvActor extends Actor {
     logger.error("Restarting due to [{}] when processing [{}]".format(reason.getMessage, message.getOrElse("")), reason)
   }
 
+   
+  
   protected def receive: Receive = {
 
     case msg: LinkTmdb => {
@@ -136,10 +138,10 @@ class BelgianTvActor extends Actor {
         msg.events.foreach { broadcast =>
           if (broadcast.belgacomUrl.isEmpty) {
             val found = movies.filter{belgacomMovie => 
-              if(BelgacomReader.belgacomChannelToHumoChannel(belgacomMovie.channelname).toLowerCase == broadcast.channel.toLowerCase){
+              if(BelgacomReader.belgacomChannelToHumoChannel(belgacomMovie.channelName).toLowerCase == broadcast.channel.toLowerCase){
             	  println(msg.day + " > " + belgacomMovie + "\n = " + broadcast)
               }
-              BelgacomReader.belgacomChannelToHumoChannel(belgacomMovie.channelname).toLowerCase == broadcast.channel.toLowerCase && belgacomMovie.toDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC)
+              BelgacomReader.belgacomChannelToHumoChannel(belgacomMovie.channelName).toLowerCase == broadcast.channel.toLowerCase && belgacomMovie.toDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC)
             }.headOption
             found.map { event =>
               Broadcast.setBelgacom(broadcast, event.programId.toString, event.getProgramUrl)

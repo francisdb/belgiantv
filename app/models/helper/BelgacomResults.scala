@@ -2,9 +2,9 @@ package models.helper
 
 case class BelgacomResult(
 	currentPage:Int,
-	maxPage:Int,
+    maxPage:Option[Int],
 	baseTimestamp:Long,
-	data:List[BelgacomChannel]    
+	data:List[BelgacomProgram]    
 ) {
 
 }

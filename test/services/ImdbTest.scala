@@ -4,7 +4,10 @@ import org.specs2.mutable._
 import play.api.test._
 import play.api.test.Helpers._
 import java.util.concurrent.TimeUnit
+import org.junit.runner.RunWith
+import org.specs2.runner.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class ImdbTest extends Specification {
   "the search for Pulp Fiction" should {
     "return the correct movie" in {
