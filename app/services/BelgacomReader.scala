@@ -22,6 +22,7 @@ import play.api.libs.concurrent.Promise$
 import play.api.libs.concurrent.Promise
 import models.helper.BelgacomListing
 import models.helper.BelgacomListing
+import org.codehaus.jackson.JsonParseException
 
 
 object BelgacomReader {
@@ -63,11 +64,8 @@ object BelgacomReader {
 	//tvmovies[languages][]:nl
 	//tvmovies[page]:1
     
-    val params = Map(
-        "tvmovies[day]"->Seq(dayOffset.toString),
-        "tvmovies[page]"->Seq(page.toString))
-    
-    WS.url(url).post(params).map{ response =>
+    val qs = List(("tvmovies[day]"-> dayOffset.toString), ("tvmovies[page]" -> page.toString))
+    WS.url(url).withQueryString(qs:_*).get().map{ response =>
       //println(response.body)
       deserialize[BelgacomListing](response.body)
     }
@@ -75,11 +73,17 @@ object BelgacomReader {
   }
 
   private def deserialize[T: Manifest](value: String) : T =
-    mapper.readValue(value, new TypeReference[T]() {
-      override def getType = new ParameterizedType {
-        val getActualTypeArguments = manifest[T].typeArguments.map(_.erasure.asInstanceOf[Type]).toArray
-        val getRawType = manifest[T].erasure
-        val getOwnerType = null
-      }
-  })
+    try{
+	    mapper.readValue(value, new TypeReference[T]() {
+	      override def getType = new ParameterizedType {
+	        val getActualTypeArguments = manifest[T].typeArguments.map(_.erasure.asInstanceOf[Type]).toArray
+	        val getRawType = manifest[T].erasure
+	        val getOwnerType = null
+	      }
+	    })
+    }catch{
+      case ex:JsonParseException => 
+        System.err.println(value)
+        throw ex;
+    }
 }
