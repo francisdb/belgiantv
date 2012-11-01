@@ -10,6 +10,8 @@ import play.api.Logger
 import org.jsoup.Jsoup
 import scala.collection.JavaConversions._
 import play.api.libs.ws.WS
+import java.text.ParseException
+import org.joda.time.DateTime
 
 
 object YeloReader {
@@ -37,7 +39,7 @@ object YeloReader {
     )
   }
   
-  private def parseDay(day: DateMidnight, body: JsValue) = {
+  private def parseDay(day: DateMidnight, body: JsValue): Seq[YeloEvent] = {
 
     val channels = (body \ "Result" \ "Channels").as[String]
     val channelsDoc = Jsoup.parse(channels)
@@ -58,17 +60,25 @@ object YeloReader {
     
     val pvrbroadcasts = (body \ "Result" \ "Meta" \ "pvrbroadcasts").as[JsObject]
     
-    pvrbroadcasts.fields.map{ field =>
+    //println("bc = " + pvrbroadcasts)
+    
+    pvrbroadcasts.fields.map{ case (eventIdentification, eventObject) =>
+      val eventId = eventIdentification.toInt
+      val title = (eventObject \ "title").as[String]
+      val channelWebpvrIid = (eventObject \ "channel_webpvr_id").as[String]
+      val startTime = (eventObject \ "start_time").as[String].toLong * 1000;
+      val endTime = (eventObject \ "end_time").as[String].toLong * 1000
       
-      val eventDiv = doc.getElementsByAttributeValue("id", "js-event-" + field._1).first()
-      val url = "http://yelo.be" + eventDiv.getElementsByTag("a").attr("href")
+      val eventDiv = Option(doc.getElementsByAttributeValue("id", "js-event-" + eventId).first())
+      eventDiv.map{ div =>
+        val url = "http://yelo.be" + div.getElementsByTag("a").attr("href")
+        val channel = channelMap.get(channelWebpvrIid).getOrElse("UNKNOWN")
+        YeloEvent(eventId, title, url, "UNKNOWN", new Interval(startTime, endTime))
+      }.getOrElse{
+        logger.warn("No div found for %s %s at %s" .format(eventId, title, new DateTime(startTime)))
+        YeloEvent(eventId, title, null, null, new Interval(startTime, endTime))
+      }
       
-      val interval = new Interval((field._2 \ "start_time").as[String].toLong * 1000, (field._2 \ "end_time").as[String].toLong * 1000)
-      
-      val channelWebpvrIid = (field._2 \ "channel_webpvr_id").as[String]
-      val channel = channelMap.get(channelWebpvrIid).getOrElse("UNKNOWN")
-      
-      YeloEvent(field._1.toInt, (field._2 \ "title").toString(), url, channel, interval)
     }
 
   }
