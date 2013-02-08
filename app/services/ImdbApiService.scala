@@ -16,6 +16,9 @@ object ImdbApiService extends JacksonMapper {
 
 
   def find(title: String, year: Option[Int] = None) = {
+
+    // TODO fallback to a search without year if no result was found for a search including the year
+
     //val url = "http://www.imdbapi.com/"
     val url = "http://www.omdbapi.com/"
     var request = WS.url(url).withQueryString("t" -> title)
