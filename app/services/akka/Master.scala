@@ -10,7 +10,7 @@ class Master extends Actor{
 
   val workerRouter = context.actorOf(Props[BelgianTvActor].withRouter(RoundRobinRouter(2)), name = "BelgianTV")
 
-  protected def receive: Receive = {
+  def receive: Receive = {
     case Start => {
       Logger.info("[" + this + "] - Received [start] from " + sender)
       val today = new DateMidnight()

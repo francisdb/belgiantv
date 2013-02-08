@@ -12,6 +12,8 @@ import org.joda.time.DateTimeZone
 import controllers.Application
 import play.api.libs.ws.WS
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 object HumoReader {
   
   private val logger = Logger("application.humo")

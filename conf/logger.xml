@@ -16,7 +16,8 @@
       <pattern>%-18coloredLevel %-18logger{15} - %message%n%xException{5}</pattern>
     </encoder>
   </appender>
-  
+
+  <logger name="ch.qos.logback" level="WARN"/>
   <logger name="play" level="INFO" />
   <logger name="application" level="INFO" />
 

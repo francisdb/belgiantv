@@ -1,6 +1,5 @@
 package services.akka
 import org.joda.time.DateMidnight
-import services.HumoEvent
 import models.Broadcast
 
 

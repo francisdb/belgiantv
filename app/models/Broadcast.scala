@@ -1,110 +1,188 @@
 package models
 
-import scala.collection.JavaConversions._
-import play.api.Play.current
-import play.modules.mongodb.jackson.MongoDB
-import net.vz.mongodb.jackson.{Id, ObjectId}
-import org.codehaus.jackson.annotate.JsonProperty
-import reflect.BeanProperty
-import com.mongodb.DBObject
 import play.api.Logger
-import org.joda.time.DateMidnight
-import org.joda.time.DateTime
-import net.vz.mongodb.jackson.DBUpdate
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.DateTimeZone
-import org.joda.time.Interval
-import controllers.Application
 
-class Broadcast(
-    @ObjectId @Id val id: String,
-    @BeanProperty @JsonProperty("name") val name: String,
-    @BeanProperty @JsonProperty("channel") val channel: String,
-    @BeanProperty @JsonProperty("datetime") val datetime: DateTime,
-    @BeanProperty @JsonProperty("year") val year: Option[Int] = None,
-    @BeanProperty @JsonProperty("humoId") val humoId: Option[String] = None,
-    @BeanProperty @JsonProperty("humoUrl") val humoUrl: Option[String] = None,
-    @BeanProperty @JsonProperty("yeloId") val yeloId: Option[String] = None,
-    @BeanProperty @JsonProperty("yeloUrl") val yeloUrl: Option[String] = None,
-    @BeanProperty @JsonProperty("belgacomId") val belgacomId: Option[String] = None,
-    @BeanProperty @JsonProperty("belgacomUrl") val belgacomUrl: Option[String] = None,
-    @BeanProperty @JsonProperty("imdbId") val imdbId: Option[String] = None,
-    @BeanProperty @JsonProperty("tomatoesId") val tomatoesId: Option[String] = None,
-    @BeanProperty @JsonProperty("tmdbId") val tmdbId: Option[String] = None,
-    @BeanProperty @JsonProperty("tmdbImg") val tmdbImg: Option[String] = None
-    ) {
-  @ObjectId
-  @Id
-  def getId = id;
-  
+import org.joda.time.{Interval, DateTime}
+import org.joda.time.format.DateTimeFormat
+import controllers.Application
+import concurrent.Future
+
+import reactivemongo.bson._
+import reactivemongo.bson.handlers.{BSONWriter, BSONReader}
+import reactivemongo.bson.handlers.DefaultBSONHandlers.DefaultBSONDocumentWriter
+import reactivemongo.bson.handlers.DefaultBSONHandlers.DefaultBSONReaderHandler
+
+import reactivemongo.api.QueryBuilder
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import util.{Try, Failure, Success}
+import reactivemongo.core.commands.LastError
+
+case class Broadcast(
+  id: Option[BSONObjectID],
+  name: String,
+  channel: String,
+// TODO remove option for datetime
+  datetime: DateTime,
+  year: Option[Int] = None,
+  humoId: Option[String] = None,
+  humoUrl: Option[String] = None,
+  yeloId: Option[String] = None,
+  yeloUrl: Option[String] = None,
+  belgacomId: Option[String] = None,
+  belgacomUrl: Option[String] = None,
+  imdbId: Option[String] = None,
+  tomatoesId: Option[String] = None,
+  tmdbId: Option[String] = None,
+  tmdbImg: Option[String] = None
+){
+
   def humanDate() = {
     val format = DateTimeFormat.forPattern("dd MMM HH:mm")
     format.print(datetime.withZone(Application.timezone))
   }
-  
+
   def imdbUrl = imdbId.map("http://www.imdb.com/title/%s".format(_))
   def tmdbUrl = tmdbId.map("http://www.themoviedb.org/movie/%s".format(_))
   def tomatoesUrl = tomatoesId.map("http://www.rottentomatoes.com/m/%s".format(_))
-  
-  override def toString() = name + " " + channel + "@" + datetime 
+
+  override def toString() = name + " " + channel + "@" + datetime
 }
 
-object Broadcast {
+
+object Broadcast extends MongoSupport{
   
-  private val logger = Logger("application.db")
-  
-  private lazy val db = MongoDB.collection("broadcasts", classOf[Broadcast], classOf[String])
+  protected override val logger = Logger("application.db")
+
+  private lazy val broadcastCollection = Application.db("broadcasts")
+
+  implicit object BroadcastBSONReader extends BSONReader[Broadcast] {
+    def fromBSON(document: BSONDocument) :Broadcast = {
+      val doc = document.toTraversable
+      Broadcast(
+        doc.getAs[BSONObjectID]("_id"),
+        doc.getAs[BSONString]("name").get.value,
+        doc.getAs[BSONString]("channel").get.value,
+        doc.getAs[BSONLong]("datetime").map(dt => new DateTime(dt.value)).get,
+        doc.getAs[BSONInteger]("year").map(y => y.value),
+        doc.getAs[BSONString]("humoId").map(i => i.value),
+        doc.getAs[BSONString]("humoUrl").map(i => i.value),
+        doc.getAs[BSONString]("yeloId").map(i => i.value),
+        doc.getAs[BSONString]("yeloUrl").map(i => i.value),
+        doc.getAs[BSONString]("belgacomId").map(i => i.value),
+        doc.getAs[BSONString]("belgacomUrl").map(i => i.value),
+        doc.getAs[BSONString]("imdbId").map(i => i.value),
+        doc.getAs[BSONString]("tomatoesId").map(i => i.value),
+        doc.getAs[BSONString]("tmdbId").map(i => i.value),
+        doc.getAs[BSONString]("tmdbImg").map(i => i.value)
+      )
+    }
+  }
+
+  implicit object BroadcastBSONWriter extends BSONWriter[Broadcast] {
+    def toBSON(broadcast: Broadcast) = {
+      BSONDocument(
+        "_id" -> broadcast.id.getOrElse(BSONObjectID.generate),
+        "name" -> BSONString(broadcast.name),
+        "channel" -> BSONString(broadcast.channel),
+        //"datetime" -> movie.datetime.map(dt => BSONDateTime(dt.getMillis)),
+        "datetime" -> BSONLong(broadcast.datetime.getMillis),
+        "year" -> broadcast.year.map(BSONInteger(_)),
+        "humoId" -> broadcast.humoId.map(BSONString(_)),
+        "humoUrl" -> broadcast.humoUrl.map(BSONString(_)),
+        "yeloId" -> broadcast.yeloId.map(BSONString(_)),
+        "yeloUrl" -> broadcast.yeloUrl.map(BSONString(_)),
+        "belgacomId" -> broadcast.belgacomId.map(BSONString(_)),
+        "belgacomUrl" -> broadcast.belgacomUrl.map(BSONString(_)),
+        "imdbId" -> broadcast.imdbId.map(BSONString(_)),
+        "tomatoesId" -> broadcast.tomatoesId.map(BSONString(_)),
+        "tmdbId" -> broadcast.tmdbId.map(BSONString(_)),
+        "tmdbImg" -> broadcast.tmdbImg.map(BSONString(_))
+      )
+    }
+  }
+
+
+  // TODO make all these properly anync
 
   def create(broadcast: Broadcast) = {
-    val result = db.save(broadcast);
-    val id = result.getSavedId();
-    logger.debug("saved " + broadcast + " with id " + id)
-    db.findOneById(id)
-  }
-  
-  def update(broadcast: Broadcast) {
-    val result = db.save(broadcast);
-    val id = result.getSavedId();
-    logger.debug("saved " + broadcast + " with id " + id)
-  }
-  
-  def findAll() = { db.find().toArray.toList }
-  
-  def findByInterval(interval:Interval) = {
-    db.find().greaterThan("datetime", interval.getStart).lessThan("datetime", interval.getEnd).toArray.toList
+    val id = BSONObjectID.generate
+    val withId = broadcast.copy(id = Some(id))
+    broadcastCollection.insert(withId)
+      .onComplete(le => mongoLogger(le, "saved broadcast " + withId + " with id " + id))
+    withId
   }
 
-  def findById(id: String) = Option(db.findOneById(id))
-  
-  def findByDateTimeAndChannel(datetime: DateTime, channel: String) = db.find().is("datetime", datetime).is("channel", channel).headOption
+  def findByInterval(interval:Interval): Future[List[Broadcast]] = {
+
+    val broadcastsInInterval = QueryBuilder()
+      .query(BSONDocument(
+      "datetime" -> BSONDocument("$gt" -> BSONLong(interval.getStart.getMillis)),
+      "datetime" -> BSONDocument("$lt" ->  BSONLong(interval.getEnd.getMillis))))
+      .sort(BSONDocument("datetime" -> BSONInteger(1)))
+
+    //    val broadcastsInInterval = BSONDocument(
+    //      "$orderby" -> BSONDocument("datetime" -> BSONInteger(1)),
+    //      "$query" -> BSONDocument(
+    //        "datetime" -> BSONDocument("$gt" -> BSONLong(interval.getStart.getMillis)),
+    //        "datetime" -> BSONDocument("$lt" ->  BSONLong(interval.getEnd.getMillis))
+    //      )
+    //    )
+
+    //    val broadcastsInInterval = QueryBuilder().query( Json.obj(
+    //            "datetime" -> Json.obj("$gt" -> interval.getStart.getMillis),
+    //            "datetime" -> Json.obj("$lt" -> interval.getEnd.getMillis)))//.sort( "created" -> SortOrder.Descending)
+
+    broadcastCollection.find(broadcastsInInterval).toList
+  }
+
+  def findByDateTimeAndChannel(datetime: DateTime, channel: String): Future[Option[Broadcast]] = {
+    broadcastCollection.find(BSONDocument(
+      "datetime" -> BSONLong(datetime.getMillis),
+      "channel" -> BSONString(channel)
+    )).headOption()
+  }
 
   def setYelo(b:Broadcast, yeloId:String, yeloUrl:String) {
-    logger.debug("Saving Yelo link for " + b.name + " with id " + b.id)
-    db.updateById(b.id, DBUpdate.set("yeloId", yeloId).set("yeloUrl", yeloUrl))
+    broadcastCollection.update(
+      BSONDocument("_id" -> b.id),
+      BSONDocument("yeloId" -> BSONString(yeloId), "yeloUrl" -> BSONString(yeloUrl)))
+      .onComplete(le => mongoLogger(le, "updated yelo for " + b))
   }
-  
+
   def setBelgacom(b:Broadcast, belgacomId:String, belgacomUrl:String) {
-    logger.debug("Saving Belgacom link for " + b.name + " with id " + b.id)
-    db.updateById(b.id, DBUpdate.set("belgacomId", belgacomId).set("belgacomUrl", belgacomUrl))
+    broadcastCollection.update(
+      BSONDocument("_id" -> b.id),
+      BSONDocument("belgacomId" -> BSONString(belgacomId), "belgacomUrl" -> BSONString(belgacomUrl)))
+      .onComplete(le => mongoLogger(le, "updated belgacom for " + b))
   }
-  
+
   def setImdb(b:Broadcast, imdbId:String) {
-    logger.debug("Saving IMDB link for " + b.name + " with id " + b.id)
-    db.updateById(b.id, DBUpdate.set("imdbId", imdbId))
+    broadcastCollection.update(
+      BSONDocument("_id" -> b.id),
+      BSONDocument("imdbId" -> BSONString(imdbId)))
+      .onComplete(le => mongoLogger(le, "updated imdb for " + b))
   }
-  
+
   def setTomatoes(b:Broadcast, tomatoesId:String) {
-    logger.debug("Saving Tomatoes link for " + b.name + " with id " + b.id)
-    db.updateById(b.id, DBUpdate.set("tomatoesId", tomatoesId))
+    broadcastCollection.update(
+      BSONDocument("_id" -> b.id),
+      BSONDocument("tomatoesId" -> BSONString(tomatoesId)))
+      .onComplete(le => mongoLogger(le, "updated tomatoes for " + b))
   }
-  
+
   def setTmdb(b:Broadcast, tmdbId:String) {
-    logger.debug("Saving TMDb link for " + b.name + " with id " + b.id)
-    db.updateById(b.id, DBUpdate.set("tmdbId", tmdbId))
+    broadcastCollection.update(
+      BSONDocument("_id" -> b.id),
+      BSONDocument("tmdbId" -> BSONString(tmdbId)))
+      .onComplete(le => mongoLogger(le, "updated tmdb for " + b))
   }
-  
+
   def setTmdbImg(b:Broadcast, tmdbImg:String) {
-    logger.debug("Saving TMDb img for " + b.name + " with id " + b.id)
-    db.updateById(b.id, DBUpdate.set("tmdbImg", tmdbImg))
+    broadcastCollection.update(
+      BSONDocument("_id" -> b.id),
+      BSONDocument("tmdbImg" -> BSONString(tmdbImg)))
+      .onComplete(le => mongoLogger(le, "updated tmdb img for " + b))
   }
+
 }

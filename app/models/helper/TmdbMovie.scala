@@ -1,7 +1,6 @@
 package models.helper
 
-import org.codehaus.jackson.annotate.JsonProperty
-import org.codehaus.jackson.annotate.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
 import org.joda.time.format.DateTimeFormat
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -66,7 +65,7 @@ case class TmdbMovie(
 			-1
 		}else{
 		  try { rating.toDouble } catch { 
-		    case _ => -1 
+		    case e:NumberFormatException => -1
 		    // Logger.warn(e.getMessage())
 		  }
 		}

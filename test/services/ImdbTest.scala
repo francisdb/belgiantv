@@ -1,19 +1,23 @@
 package services
 
 import org.specs2.mutable._
+import org.specs2.runner.JUnitRunner
+import org.specs2.time.NoTimeConversions
+
 import play.api.test._
 import play.api.test.Helpers._
 import java.util.concurrent.TimeUnit
 import org.junit.runner.RunWith
-import org.specs2.runner.JUnitRunner
+
+import scala.concurrent._
+import scala.concurrent.duration._
 
 @RunWith(classOf[JUnitRunner])
-class ImdbTest extends Specification {
+class ImdbTest extends Specification with NoTimeConversions{
   "the search for Pulp Fiction" should {
     "return the correct movie" in {
         running(FakeApplication()) {
-	        val result = ImdbApiService.find("Pulp Fiction")
-	        val movie = result.await(30, TimeUnit.SECONDS).get.get
+	        val movie = Await.result(ImdbApiService.find("Pulp Fiction"), 30 seconds).get
 	        movie.title must startWith("Pulp Fiction")
 	        movie.released must contain("1994")
         }
@@ -23,8 +27,7 @@ class ImdbTest extends Specification {
   "the search for don 2006" should {
     "return the correct movie" in {
         running(FakeApplication()) {
-	        val result = ImdbApiService.find("don", Option.apply(2006))
-	        val movieOption = result.await(30, TimeUnit.SECONDS).get
+	        val movieOption = Await.result(ImdbApiService.find("don", Option.apply(2006)), 30 seconds)
 	        movieOption must beSome
 	        val movie = movieOption.get
 	        movie.title must_== ("Don")
@@ -36,9 +39,8 @@ class ImdbTest extends Specification {
   "the search for hafsjkdhfkdjshadslkfhaskf" should {
     "return nothing" in {
         running(FakeApplication()) {
-	        val result = ImdbApiService.find("hafsjkdhfkdjshadslkfhaskf")
-	        val movie = result.await(30, TimeUnit.SECONDS).get
-	        movie must beNone
+	        val movieOption = Await.result(ImdbApiService.find("hafsjkdhfkdjshadslkfhaskf"), 30 seconds)
+          movieOption must beNone
         }
     }
   }

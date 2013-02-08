@@ -1,17 +1,19 @@
 package models.helper
 
-import com.codahale.jerkson.Json._
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 case class TomatoesSearch(
     total:Int, 
     movies:List[TomatoesMovie]) {	
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 case class TomatoesMovie(
     id:Int, 
     title:String, 
     year:Option[Int], 
-    runtime:String, 
+    runtime:String,
     ratings:TomatoesRatings, 
     alternate_ids:Option[TomatoesAlternateIds],
     critics_consensus:Option[String]) {

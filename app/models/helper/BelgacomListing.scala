@@ -1,6 +1,6 @@
 package models.helper
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 case class BelgacomListing(

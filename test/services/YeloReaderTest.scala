@@ -1,21 +1,25 @@
 package services
 
 import org.specs2.mutable._
+import org.specs2.runner.JUnitRunner
+import org.specs2.time.NoTimeConversions
+
 import play.api.test._
 import play.api.test.Helpers._
-import java.util.concurrent.TimeUnit
 import org.junit.runner.RunWith
-import org.specs2.runner.JUnitRunner
 import org.joda.time.DateMidnight
 
-@RunWith(classOf[JUnitRunner])
-class YeloReaderTest extends Specification{
+import scala.concurrent._
+import scala.concurrent.duration._
+import models.Channel
+
+//@RunWith(classOf[JUnitRunner])
+class YeloReaderTest extends Specification with NoTimeConversions{
   "the yelo reader" should {
     "return data" in {
       running(FakeApplication()) {
-        val result = YeloReader.fetchDay(new DateMidnight)
-        val list = result.await(30, TimeUnit.SECONDS).get
-        //println(list)
+        val list = Await.result(YeloReader.fetchDay(new DateMidnight, Channel.channelFilter), 30 seconds)
+        //list.map(_.channel).distinct.foreach(println(_))
         list.size must be > 20
       }
     }

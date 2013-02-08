@@ -1,26 +1,25 @@
 package models
 
-import scala.collection.JavaConversions._
-import play.api.Play.current
-import play.modules.mongodb.jackson.MongoDB
-import net.vz.mongodb.jackson.{Id, ObjectId}
-import org.codehaus.jackson.annotate.JsonProperty
-import reflect.BeanProperty
-import com.mongodb.DBObject
+import reactivemongo.bson._
+import reactivemongo.bson.handlers.{BSONWriter, BSONReader}
+import reactivemongo.bson.handlers.DefaultBSONHandlers.DefaultBSONDocumentWriter
+import reactivemongo.bson.handlers.DefaultBSONHandlers.DefaultBSONReaderHandler
+
 import play.api.Logger
+import controllers.Application
+import concurrent.Future
 
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class Movie(
-    @ObjectId @Id val id: String, 
-    @BeanProperty @JsonProperty("name") val name: String,
-    @BeanProperty @JsonProperty("imdbId") val imdbId: String,
-    @BeanProperty @JsonProperty("imdbRating") val imdbRating: String,
-    @BeanProperty @JsonProperty("year") val year: Int,
-    @BeanProperty @JsonProperty("imgUrl") val imgUrl: String) {
-  @ObjectId
-  @Id
-  def getId = id;
-  
+case class Movie(
+  id: Option[BSONObjectID],
+  name: String,
+  imdbId: String,
+  imdbRating: String,
+  year: Int,
+  imgUrl: String
+){
+
   def imdbUrl() = "http://www.imdb.com/title/" + imdbId
   
   def rating() = {
@@ -28,41 +27,70 @@ class Movie(
   }
 }
 
-object Movie {
-  private val logger = Logger("application.db")
-  
-  private lazy val db = MongoDB.collection("movies", classOf[Movie], classOf[String])
+object Movie extends MongoSupport{
 
-  def create(movie: Movie) = {
-    val result = db.save(movie);
-    val id = result.getSavedId();
-    logger.debug("saved " + movie + " with id " + id)
-    db.findOneById(id)
+  protected override val logger = Logger("application.db")
+
+  private lazy val movieCollection = Application.db("movies")
+
+  implicit object MovieBSONReader extends BSONReader[Movie] {
+    def fromBSON(document: BSONDocument) :Movie = {
+      val doc = document.toTraversable
+      Movie(
+        doc.getAs[BSONObjectID]("_id"),
+        doc.getAs[BSONString]("name").get.value,
+        doc.getAs[BSONString]("imdbId").get.value,
+        doc.getAs[BSONString]("imdbRating").get.value,
+        doc.getAs[BSONInteger]("year").get.value,
+        doc.getAs[BSONString]("imgUrl").get.value
+      )
+    }
   }
-  
-  def createIfDoesNotExist(movie: Movie) = {
-    val fromDB = Movie.findByNameAndYear(movie.name, movie.year)
-    fromDB.getOrElse{
-      Movie.create(movie)
-      movie
+
+  implicit object MovieBSONWriter extends BSONWriter[Movie] {
+    def toBSON(movie: Movie) = {
+      BSONDocument(
+        "_id" -> movie.id.getOrElse(BSONObjectID.generate),
+        "name" -> BSONString(movie.name),
+        "imdbId" -> BSONString(movie.imdbId),
+        "imdbRating" -> BSONString(movie.imdbRating),
+        "year" -> BSONInteger(movie.year),
+        "imgUrl" -> BSONString(movie.imgUrl)
+      )
     }
   }
   
-  def findAll() = { db.find().toArray.toList }
+//  private lazy val db = MongoDB.collection("movies", classOf[Movie], classOf[String])
 
-  def findById(id: String) = Option(db.findOneById(id))
-  
-  def findByName(name: String) = db.find().is("name", name).headOption
-  
-  def findByImdbId(imdbId: String) = db.find().is("imdbId", imdbId).headOption
-  
-  def findByNameAndYear(name: String, year:Int) = {
-    val movie = db.find().is("name", name).is("year", year).headOption
-    val result = movie.orElse(findByName(name))
-    logger.debug("Search for %s %s gives %s".format(name, year, result))
-    result
+  def create(movie: Movie) = {
+    val id = BSONObjectID.generate
+    val withId = movie.copy(id = Some(id))
+    movieCollection.insert(withId)
+      .onComplete(le => mongoLogger(le, "saved movie " + withId + " with id " + id))
+    withId
   }
-  
+
+
+  def find(name:String, year:Option[Int] = None) = {
+    year match {
+      case None => findByName(name)
+      case Some(y) => findByNameAndYear(name, y)
+    }
+  }
+
+  def findByName(name: String): Future[Option[Movie]] = {
+    movieCollection.find(BSONDocument("name" -> BSONString(name))).headOption()
+  }
+
+  def findByImdbId(imdbId: String): Future[Option[Movie]] = {
+    movieCollection.find(BSONDocument("imdbId" -> BSONString(imdbId))).headOption()
+  }
+
+  def findByNameAndYear(name: String, year:Int): Future[Option[Movie]] = {
+    movieCollection.find(
+      BSONDocument("name" -> BSONString(name), "year" -> BSONInteger(year))).headOption()
+  }
+
   private def ratingToDouble(rating:String) = try{
     rating.toDouble
   } catch {

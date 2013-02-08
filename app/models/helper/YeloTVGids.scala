@@ -1,6 +1,6 @@
 package models.helper
 
-import org.codehaus.jackson.annotate.JsonProperty
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
 
 case class YeloTVGids(
   @JsonProperty("Succes") succes: String,
@@ -14,7 +14,7 @@ case class Result(
 
   @JsonProperty("ViewEnd") viewEnd: String,
 
-  @JsonProperty("Channels") channelsHtml: String,
+  @JsonProperty("Channel") channelsHtml: String,
 
   @JsonProperty("Events") eventsHtml: String,
 

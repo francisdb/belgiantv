@@ -1,8 +1,7 @@
 package models.helper
 
-import org.codehaus.jackson.annotate.JsonProperty
+import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
 import java.util.Date
-import org.codehaus.jackson.annotate.JsonIgnoreProperties
 import org.joda.time.DateTime
 
 @JsonIgnoreProperties(ignoreUnknown = true)

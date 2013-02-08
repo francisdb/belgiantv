@@ -15,3 +15,7 @@ test-result
 .project
 
 .cache
+
+#intellij idea
+.idea
+.idea_modules

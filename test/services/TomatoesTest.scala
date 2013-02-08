@@ -1,20 +1,23 @@
 package services
 
 import org.specs2.mutable._
+import org.specs2.runner.JUnitRunner
+import org.specs2.time.NoTimeConversions
+
 import play.api.test._
 import play.api.test.Helpers._
-import java.util.concurrent.TimeUnit
 import org.junit.runner.RunWith
-import org.specs2.runner.JUnitRunner
+
+import scala.concurrent._
+import scala.concurrent.duration._
 
 @RunWith(classOf[JUnitRunner])
-class TomatoesTest extends Specification {
+class TomatoesTest extends Specification with NoTimeConversions{
 
   "the search for Pulp Fiction" should {
     "return the correct movie" in {
       running(FakeApplication()) {
-        val result = TomatoesApiService.find("Pulp Fiction")
-        val movie = result.await(30, TimeUnit.SECONDS).get.get
+        val movie = Await.result(TomatoesApiService.find("Pulp Fiction"), 30 seconds).get
         movie.title must startWith("Pulp Fiction")
         movie.year.get must beEqualTo(1994)
       }
@@ -24,8 +27,7 @@ class TomatoesTest extends Specification {
   "the search for don 2006" should {
     "return the correct movie" in {
       running(FakeApplication()) {
-        val result = TomatoesApiService.find("don", Option(2006))
-        val movieOption = result.await(30, TimeUnit.SECONDS).get
+        val movieOption = Await.result(TomatoesApiService.find("don", Option(2006)), 30 seconds)
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("Don")
@@ -37,8 +39,7 @@ class TomatoesTest extends Specification {
 "the search for The Beach 2000" should {
     "return the correct movie" in {
       running(FakeApplication()) {
-        val result = TomatoesApiService.find("The Beach", Option(2000))
-        val movieOption = result.await(30, TimeUnit.SECONDS).get
+        val movieOption = Await.result(TomatoesApiService.find("The Beach", Option(2000)), 30 seconds)
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("The Beach")
@@ -50,8 +51,7 @@ class TomatoesTest extends Specification {
   "the search for Cape Fear 1962" should {
     "return the correct movie" in {
       running(FakeApplication()) {
-        val result = TomatoesApiService.find("Cape Fear", Option(1962))
-        val movieOption = result.await(30, TimeUnit.SECONDS).get
+        val movieOption = Await.result(TomatoesApiService.find("Cape Fear", Option(1962)), 30 seconds)
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("Cape Fear")
@@ -63,8 +63,7 @@ class TomatoesTest extends Specification {
   "the search for This Is England 2006" should {
     "return the correct movie" in {
       running(FakeApplication()) {
-        val result = TomatoesApiService.find("This Is England", Option(2006))
-        val movieOption = result.await(30, TimeUnit.SECONDS).get
+        val movieOption = Await.result(TomatoesApiService.find("This Is England", Option(2006)), 30 seconds)
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("This Is England")
@@ -76,8 +75,7 @@ class TomatoesTest extends Specification {
   "the search for a movie with the wrong year" should {
     "still return the correct movie" in {
       running(FakeApplication()) {
-        val result = TomatoesApiService.find("Spring Breakdown", Option(2009))
-        val movieOption = result.await(30, TimeUnit.SECONDS).get
+        val movieOption = Await.result(TomatoesApiService.find("Spring Breakdown", Option(2009)), 30 seconds)
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("Spring Breakdown")
@@ -89,9 +87,8 @@ class TomatoesTest extends Specification {
   "the search for hafsjkdhfkdjshadslkfhaskf" should {
     "return nothing" in {
       running(FakeApplication()) {
-        val result = TomatoesApiService.find("hafsjkdhfkdjshadslkfhaskf")
-        val movie = result.await(30, TimeUnit.SECONDS).get
-        movie must beNone
+        val movieOption = Await.result(TomatoesApiService.find("hafsjkdhfkdjshadslkfhaskf"), 30 seconds)
+        movieOption must beNone
       }
     }
   }

@@ -5,10 +5,15 @@ import play.api.Logger
 import models.helper.TomatoesSearch
 import scala.collection.JavaConversions._
 import models.helper.TomatoesSearch
-import com.codahale.jerkson.Json._
 import models.helper.TomatoesSearch
 
-object TomatoesApiService {
+import scala.concurrent.ExecutionContext.Implicits.global
+import org.codehaus.jackson.map.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import org.codehaus.jackson.`type`.TypeReference
+import java.lang.reflect.{Type, ParameterizedType}
+
+object TomatoesApiService extends JacksonMapper{
   
   private lazy val apikey = Play.current.configuration.getString("tomatoes.apikey")
     .getOrElse(Option(System.getenv("TOMATOES_API_KEY"))
@@ -26,7 +31,7 @@ object TomatoesApiService {
         println(response.body)
         None
       } else {
-        val search = parse[TomatoesSearch](response.body)
+        val search = deserialize[TomatoesSearch](response.body)
         val movies = search.movies
         // putting year in the query does not seem to return the correct movie as first item
         if (movies.isEmpty) {
@@ -52,7 +57,5 @@ object TomatoesApiService {
       movies.headOption
     }
   }
-  
-  
 
 }

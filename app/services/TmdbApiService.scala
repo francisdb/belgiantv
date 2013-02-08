@@ -18,8 +18,10 @@ import models.helper.TmdbMovieSearch
 import models.helper.TmdbMovieSearchPager
 import models.helper.TmdbMovie
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import concurrent.Future
 
-object TmdbApiService {
+object TmdbApiService extends JacksonMapper{
 	
 	val BASE = "http://api.themoviedb.org/3"
 	  
@@ -27,11 +29,8 @@ object TmdbApiService {
 
 	private lazy val apiKey = Play.current.configuration.getString("tmdb.apikey")
 	  .getOrElse(throw new RuntimeException("Missing tmdb api key"))
-	
-	private val mapper = new ObjectMapper()
-    mapper.registerModule(DefaultScalaModule)
 
-	def find(title:String, year:Option[Int] = None): Promise[Option[TmdbMovieSearch]] = {
+	def find(title:String, year:Option[Int] = None): Future[Option[TmdbMovieSearch]] = {
 		if(title==null){
 			throw new IllegalArgumentException("NULL title")
 		}
@@ -67,13 +66,4 @@ object TmdbApiService {
 	      
 		}
 	}
-	
-  private def deserialize[T: Manifest](value: String) : T =
-    mapper.readValue(value, new TypeReference[T]() {
-      override def getType = new ParameterizedType {
-        val getActualTypeArguments = manifest[T].typeArguments.map(_.erasure.asInstanceOf[Type]).toArray
-        val getRawType = manifest[T].erasure
-        val getOwnerType = null
-      }
-  })
 }
