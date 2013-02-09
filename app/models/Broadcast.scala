@@ -146,42 +146,42 @@ object Broadcast extends MongoSupport{
   def setYelo(b:Broadcast, yeloId:String, yeloUrl:String) {
     broadcastCollection.update(
       BSONDocument("_id" -> b.id),
-      BSONDocument("yeloId" -> BSONString(yeloId), "yeloUrl" -> BSONString(yeloUrl)))
+      BSONDocument("$set" -> BSONDocument("yeloId" -> BSONString(yeloId), "yeloUrl" -> BSONString(yeloUrl))))
       .onComplete(le => mongoLogger(le, "updated yelo for " + b))
   }
 
   def setBelgacom(b:Broadcast, belgacomId:String, belgacomUrl:String) {
     broadcastCollection.update(
       BSONDocument("_id" -> b.id),
-      BSONDocument("belgacomId" -> BSONString(belgacomId), "belgacomUrl" -> BSONString(belgacomUrl)))
+      BSONDocument("$set" -> BSONDocument("belgacomId" -> BSONString(belgacomId), "belgacomUrl" -> BSONString(belgacomUrl))))
       .onComplete(le => mongoLogger(le, "updated belgacom for " + b))
   }
 
   def setImdb(b:Broadcast, imdbId:String) {
     broadcastCollection.update(
       BSONDocument("_id" -> b.id),
-      BSONDocument("imdbId" -> BSONString(imdbId)))
+      BSONDocument("$set" -> BSONDocument("imdbId" -> BSONString(imdbId))))
       .onComplete(le => mongoLogger(le, "updated imdb for " + b))
   }
 
   def setTomatoes(b:Broadcast, tomatoesId:String) {
     broadcastCollection.update(
       BSONDocument("_id" -> b.id),
-      BSONDocument("tomatoesId" -> BSONString(tomatoesId)))
+      BSONDocument("$set" -> BSONDocument("tomatoesId" -> BSONString(tomatoesId))))
       .onComplete(le => mongoLogger(le, "updated tomatoes for " + b))
   }
 
   def setTmdb(b:Broadcast, tmdbId:String) {
     broadcastCollection.update(
       BSONDocument("_id" -> b.id),
-      BSONDocument("tmdbId" -> BSONString(tmdbId)))
+      BSONDocument("$set" -> BSONDocument("tmdbId" -> BSONString(tmdbId))))
       .onComplete(le => mongoLogger(le, "updated tmdb for " + b))
   }
 
   def setTmdbImg(b:Broadcast, tmdbImg:String) {
     broadcastCollection.update(
       BSONDocument("_id" -> b.id),
-      BSONDocument("tmdbImg" -> BSONString(tmdbImg)))
+      BSONDocument("$set" -> BSONDocument("tmdbImg" -> BSONString(tmdbImg))))
       .onComplete(le => mongoLogger(le, "updated tmdb img for " + b))
   }
 
