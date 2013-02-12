@@ -34,7 +34,6 @@ object ImdbApiService extends JacksonMapper {
 	      if(error.isDefined){
 	        val msg = "IMDB api internal error for %s %s: %s".format(title, year, error.get)
 	        logger.warn(msg)
-	        println(msg)
 	        None
 	      }else{
 	        val movie = deserialize[ImdbApiMovie](response.body)

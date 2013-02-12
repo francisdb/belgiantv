@@ -6,8 +6,10 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.core.JsonParseException
+import play.api.Logger
 
 trait JacksonMapper {
+  private val logger = Logger("application.imdb")
 
   private val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
@@ -23,7 +25,7 @@ trait JacksonMapper {
       })
     }catch{
       case ex:JsonParseException =>
-        System.err.println(value)
+        Logger.error(value)
         throw ex;
     }
   }

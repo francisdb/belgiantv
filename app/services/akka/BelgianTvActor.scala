@@ -171,9 +171,6 @@ class BelgianTvActor extends Actor {
             msg.events.foreach { broadcast =>
               if (broadcast.belgacomUrl.isEmpty) {
                 val found = movies.filter{belgacomMovie =>
-                  if(Channel.unify(belgacomMovie.channelName).toLowerCase == broadcast.channel.toLowerCase){
-                    println(msg.day + " > " + belgacomMovie + "\n = " + broadcast)
-                  }
                   Channel.unify(belgacomMovie.channelName).toLowerCase == broadcast.channel.toLowerCase && belgacomMovie.toDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC)
                 }.headOption
                 found.map { event =>

@@ -28,7 +28,7 @@ object TomatoesApiService extends JacksonMapper{
       val error = (json \ "error").asOpt[String]
       if (error.isDefined) {
         Logger.warn("Tomatoes api error: " + error.get)
-        println(response.body)
+        Logger.warn(response.body)
         None
       } else {
         val search = deserialize[TomatoesSearch](response.body)
