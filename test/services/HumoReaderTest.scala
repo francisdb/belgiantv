@@ -16,12 +16,12 @@ import scala.concurrent.duration._
 @RunWith(classOf[JUnitRunner])
 class HumoReaderTest extends Specification with NoTimeConversions {
   
-  "the huno reader" should {
+  "the humo reader" should {
     "return data" in {
       running(FakeApplication()) {
         val list = Await.result(HumoReader.fetchDay(new DateMidnight), 30 seconds)
         println(list)
-        list.size must be > 20
+        list.size must be > 10
       }
     }
   }

@@ -38,23 +38,50 @@ object HumoReader {
     val doc = Jsoup.parse(body)
 
     val section = doc.getElementsContainingOwnText("Hoofdzenders").get(0)
-    val zenders = doc.getElementsByAttributeValue("class", "broadcaster")
+    val zenders = doc.getElementsByAttributeValue("class", "articles")
+    if(zenders.size == 0){
+      throw new RuntimeException("No channels found")
+    }
 
     val buf = new ArrayBuffer[HumoEvent] 
 
     for (zender <- zenders) {
-      val channelName = zender.getElementsByTag("img").first().attr("title")
-      val programs = zender.getElementsByAttributeValue("class", "programme")
+      val channelName = zender.getElementsByTag("h3").first().ownText()
+      val programs = zender.getElementsByAttributeValue("class", "content")
+      if(zenders.size == 0){
+        throw new RuntimeException("No programs for " + channelName)
+      }
       for (program <- programs) {
-        val movieName = program.getElementsByAttributeValue("class", "title").first().text()
-        val time = LocalTime.parse(program.getElementsByAttributeValue("class", "starttime").first().text(), timeFormat)
-        val yearSpan = Option(program.getElementsByAttributeValue("class", "year"))
-        // this check for empty is actually strage because the list should be empty if none found
-        // and seems to contain an empty element here
-        val year = if(yearSpan.size > 0 && !yearSpan.head.text().isEmpty()) Option(yearSpan.head.text().toInt) else None        
-        val id = program.attr("id").replaceAll("event_", "")
-        val url = program.getElementsByTag("a").first().attr("href")
-        val movie = HumoEvent(id, url, day, channelName, time, movieName, year)
+        val movieName = program.getElementsByTag("a").first().text()
+        val meta = program.getElementsByAttributeValue("class", "meta").first().ownText()
+        val timeString = meta.substring(meta.indexOf('|') + 2)
+        val time = LocalTime.parse(timeString, timeFormat)
+
+        val bd = program.getElementsByAttributeValue("class", "bd").first()
+        val info = bd.getElementsByTag("p").first().ownText()
+
+        // TODO sould be possible to simplify this part using a more functional way
+        val yearInBracketsPattern = """\((\d+)\)""".r
+        val yearFound = yearInBracketsPattern.findAllIn(info).matchData
+        val yearOption = if (yearFound.hasNext){
+          Some(yearFound.next().group(1).toInt)
+        }else{
+          None
+        }
+
+        val url = bd.getElementsByTag("a").attr("href")
+
+        // TODO sould be possible to simplify this part using a more functional way
+        val idBetweenSlashesPattern = """/(\d+)/""".r
+        val idFound = idBetweenSlashesPattern.findAllIn(url).matchData
+        val idOption = if (idFound.hasNext){
+          Some(idFound.next().group(1))
+        }else{
+          None
+        }
+        val id = idOption.getOrElse(throw new RuntimeException("Could not extract the id"))
+
+        val movie = HumoEvent(id, url, day, channelName, time, movieName, yearOption)
         buf += movie
       }
     }
