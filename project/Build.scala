@@ -24,7 +24,8 @@ object ApplicationBuild extends Build {
     // copying jvm parameters for testing:
     // http://play.lighthouseapp.com/projects/82401/tickets/981-overriding-configuration-for-tests
     javaOptions in test += "-DTMDB_API_KEY=" + System.getProperty("TMDB_API_KEY"),
-    javaOptions in test += "-DTOMATOES_API_KEY=" + System.getProperty("TOMATOES_API_KEY")
+    javaOptions in test += "-DTOMATOES_API_KEY=" + System.getProperty("TOMATOES_API_KEY"),
+    javaOptions in test += "-DMONGOLAB_URI=" + System.getProperty("MONGOLAB_URI")
   ).settings(
     net.virtualvoid.sbt.graph.Plugin.graphSettings: _*
   )
