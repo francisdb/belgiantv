@@ -20,7 +20,7 @@ class HumoReaderTest extends Specification with NoTimeConversions {
     "return data" in {
       running(FakeApplication()) {
         val list = Await.result(HumoReader.fetchDay(new DateMidnight), 30 seconds)
-        println(list)
+        //println(list)
         list.size must be > 10
       }
     }

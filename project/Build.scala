@@ -19,16 +19,19 @@ object ApplicationBuild extends Build {
     "org.reactivemongo" %% "play2-reactivemongo" % "0.8"  // cross CrossVersion.full
   )
 
+  // copying jvm parameters for testing:
+  // http://play.lighthouseapp.com/projects/82401/tickets/981-overriding-configuration-for-tests
+  val jvmParameterSettings = List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI").map( property =>
+    Option(System.getProperty(property)).map(value => javaOptions in test += "-D" + property + "=\"" + value + "\"")
+  ).flatten
+
   val main = play.Project(appName, appVersion, appDependencies).settings(
     //resolvers += "sgodbillon" at "https://bitbucket.org/sgodbillon/repository/raw/master/snapshots/"
+    jvmParameterSettings: _*
   ).settings(
     net.virtualvoid.sbt.graph.Plugin.graphSettings: _*
   )
 
-  // copying jvm parameters for testing:
-  // http://play.lighthouseapp.com/projects/82401/tickets/981-overriding-configuration-for-tests
-  List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI").foreach( property =>
-    Option(System.getProperty(property)).foreach(value => main.settings(javaOptions in test += "-D" + property + "=\"" + value + "\""))
-  )
+
 
 }
