@@ -21,13 +21,15 @@ object ApplicationBuild extends Build {
 
   // copying jvm parameters for testing:
   // http://play.lighthouseapp.com/projects/82401/tickets/981-overriding-configuration-for-tests
-  val jvmParameterSettings = List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI").map( property =>
-    Option(System.getProperty(property)).map(value => javaOptions in test += "-D" + property + "=\"" + value + "\"")
-  ).flatten
+  val extraJavaOptions = List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI").map( property =>
+    Option(System.getProperty(property)).map{value =>
+       "-D" + property + "=\"" + value + "\""
+    }).flatten
+  extraJavaOptions.foreach(o => println("Adding test scope jvm option: " + o))
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
     //resolvers += "sgodbillon" at "https://bitbucket.org/sgodbillon/repository/raw/master/snapshots/"
-    jvmParameterSettings: _*
+    javaOptions in test ++= extraJavaOptions
   ).settings(
     net.virtualvoid.sbt.graph.Plugin.graphSettings: _*
   )
