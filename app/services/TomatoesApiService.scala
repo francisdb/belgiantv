@@ -15,9 +15,7 @@ import java.lang.reflect.{Type, ParameterizedType}
 
 object TomatoesApiService extends JacksonMapper{
   
-  private lazy val apikey = Play.current.configuration.getString("tomatoes.apikey")
-    .getOrElse(Option(System.getenv("TOMATOES_API_KEY"))
-      .getOrElse(throw new IllegalStateException("No tomatoes api key defined")))
+  private lazy val apikey = PlayUtil.config("tomatoes.apikey")
   
   def find(title:String, year:Option[Int] = None) = {
     val url = "http://api.rottentomatoes.com/api/public/v1.0/movies.json"

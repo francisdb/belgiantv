@@ -27,8 +27,7 @@ object TmdbApiService extends JacksonMapper{
 	  
 	private val logger = Logger("application.tmdb")
 
-	private lazy val apiKey = Play.current.configuration.getString("tmdb.apikey")
-	  .getOrElse(throw new RuntimeException("Missing tmdb api key"))
+	private lazy val apiKey = PlayUtil.config("tmdb.apikey")
 
 	def find(title:String, year:Option[Int] = None): Future[Option[TmdbMovieSearch]] = {
 		if(title==null){
@@ -42,7 +41,7 @@ object TmdbApiService extends JacksonMapper{
 	
 	
 	def search(title:String, year:Option[Int] = None) = {
-	  
+	  println(apiKey)
 		val url = BASE + "/search/movie";
 		
 		val qs = List(("api_key"-> apiKey), ("query" -> title))
@@ -59,6 +58,9 @@ object TmdbApiService extends JacksonMapper{
 		    case 503 => 
 		      logger.error(r.status + " " + r.ahcResponse.getStatusText() + " " + r.body)
 		      List()
+        case 401 =>
+          logger.error(r.status + " " + r.ahcResponse.getStatusText() + " " + r.body)
+          List()
 		    case _ => 
 		      val pager = deserialize[TmdbMovieSearchPager](r.body)
 		      pager.results
