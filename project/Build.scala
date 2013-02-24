@@ -23,7 +23,7 @@ object ApplicationBuild extends Build {
   // http://play.lighthouseapp.com/projects/82401/tickets/981-overriding-configuration-for-tests
   val extraJavaOptions = List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI").map( property =>
     Option(System.getProperty(property)).map{value =>
-       "-D" + property + "=\"" + value + "\""
+       "-D" + property + "=" + value
     }).flatten
   extraJavaOptions.foreach(o => println("Adding test scope jvm option: " + o))
 
