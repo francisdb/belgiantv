@@ -27,8 +27,8 @@ object ApplicationBuild extends Build {
 
   // copying jvm parameters for testing:
   // http://play.lighthouseapp.com/projects/82401/tickets/981-overriding-configuration-for-tests
-  Option(System.getProperty("TMDB_API_KEY")).map(value => main.settings(javaOptions in test += "-DTMDB_API_KEY=" + value))
-  Option(System.getProperty("TOMATOES_API_KEY")).map(value => main.settings(javaOptions in test += "-DTOMATOES_API_KEY=" + value))
-  Option(System.getProperty("MONGOLAB_URI")).map(value => main.settings(javaOptions in test += "-DMONGOLAB_URI=" + value))
+  List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI").foreach( property =>
+    Option(System.getProperty(property)).map(value => main.settings(javaOptions in test += "-D" + property + "=\"" + value + "\""))
+  )
 
 }
