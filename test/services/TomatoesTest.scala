@@ -11,7 +11,8 @@ import org.junit.runner.RunWith
 import scala.concurrent._
 import scala.concurrent.duration._
 
-@RunWith(classOf[JUnitRunner])
+//@RunWith(classOf[JUnitRunner])
+// WARN the line above causes testing issues where, multiple akka instances are launched!
 class TomatoesTest extends Specification with NoTimeConversions{
 
   "the search for Pulp Fiction" should {

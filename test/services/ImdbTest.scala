@@ -12,7 +12,7 @@ import org.junit.runner.RunWith
 import scala.concurrent._
 import scala.concurrent.duration._
 
-@RunWith(classOf[JUnitRunner])
+//@RunWith(classOf[JUnitRunner])
 class ImdbTest extends Specification with NoTimeConversions{
   "the search for Pulp Fiction" should {
     "return the correct movie" in {
