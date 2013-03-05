@@ -37,7 +37,7 @@ object HumoReader {
 	
     val doc = Jsoup.parse(body)
 
-    val section = doc.getElementsContainingOwnText("Hoofdzenders").get(0)
+    //val section = doc.getElementsContainingOwnText("Hoofdzenders").get(0)
     val zenders = doc.getElementsByAttributeValue("class", "articles")
     if(zenders.size == 0){
       throw new RuntimeException("No channels found")

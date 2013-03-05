@@ -15,39 +15,49 @@ import org.joda.time.DateTime
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import models.Channel
+import com.sun.xml.internal.fastinfoset.tools.FI_SAX_Or_XML_SAX_SAXEvent
+import concurrent.{Future, Await}
+import org.codehaus.jackson.JsonParseException
 
 
 object YeloReader {
   
   private val logger = Logger("application.yelo")
-  
-  private val dateFormat = DateTimeFormat.forPattern("dd-MM-YYYY")
-  
+
   def fetchDay(day: DateMidnight, channelFilter: List[String] = List()) = {
-    val urls = urlsForDay(day)
-    logger.info("Fetching " + urls)
-    val first = WS.url(urls(0)).get().map { response =>
-      parseDay(day, response.json).filter(result => channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(Channel.unify(result.channel).toLowerCase))
-    }
-    val second = WS.url(urls(1)).get().map { response =>
-      parseDay(day, response.json).filter(result => channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(Channel.unify(result.channel).toLowerCase))
-    }
-    for( f <- first; s <- second ) yield ( f ++ s )
+    val vlaams = fetchDayData(day)
+    val anderstalig = fetchDayData(day, Some("anderstalig"))
+    val filter = createFilter(channelFilter)
+    for(
+      v <- vlaams;
+      a <- anderstalig
+    ) yield ( v.filter(filter) ++ a.filter(filter) )
   }
-  
-  private def urlsForDay(day: DateMidnight) = {
-    List(
-      "http://yelo.be/detail/tvgids?date="+dateFormat.print(day),
-      "http://yelo.be/detail/tvgids?date="+dateFormat.print(day) + "&group=anderstalig"
-    )
+
+
+  private def fetchDayData(day: DateMidnight, group: Option[String] = None): Future[Seq[YeloReader.YeloEvent]] = {
+    val dateFormat = DateTimeFormat.forPattern("dd-MM-YYYY")
+    val baseUrl = "http://yelotv.be/tvgids/detail?date=" + dateFormat.print(day)
+    val url = baseUrl + group.map("&group=" + _).getOrElse("")
+    logger.info("Fetching " + url)
+    WS.url(url)
+      .withHeaders("Referer" -> "http://yelotv.be/tvgids", "X-Requested-With" -> "XMLHttpRequest")
+      .get().map { response =>
+      try{
+        parseDay(day, response.json)
+      }catch{
+        case ex:JsonParseException => throw new RuntimeException("Failed to parse reponse for " + url + " to json: " + response.body.take(100) + "...", ex)
+      }
+    }
   }
-  
+
+  def createFilter(channelFilter: List[String]): (YeloReader.YeloEvent) => Boolean = { result =>
+    channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(Channel.unify(result.channel).toLowerCase)
+  }
+
   private def parseDay(day: DateMidnight, body: JsValue): Seq[YeloEvent] = {
-
     val channelMap = parseChannels(body)
-
     parseEvents(body, channelMap)
-
   }
 
 
@@ -70,7 +80,7 @@ object YeloReader {
         val eventDiv = Option(doc.getElementsByAttributeValue("id", "js-event-" + eventId).first())
         eventDiv.map {
           div =>
-            val url = "http://yelo.be" + div.getElementsByTag("a").attr("href")
+            val url = "http://yelotv.be" + div.getElementsByTag("a").attr("href")
             val channel = channelMap.get(channelWebpvrIid).getOrElse("UNKNOWN")
             YeloEvent(eventId, title, url, channel, new Interval(startTime, endTime))
         }.getOrElse {

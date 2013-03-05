@@ -34,6 +34,4 @@ object ApplicationBuild extends Build {
     net.virtualvoid.sbt.graph.Plugin.graphSettings: _*
   )
 
-
-
 }
