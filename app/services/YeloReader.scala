@@ -4,8 +4,7 @@ import org.joda.time.DateMidnight
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.Interval
 import org.joda.time.LocalTime
-import play.api.libs.json.JsValue
-import play.api.libs.json.JsObject
+import play.api.libs.json.{JsArray, JsValue, JsObject}
 import play.api.Logger
 import org.jsoup.Jsoup
 import scala.collection.JavaConversions._
@@ -44,7 +43,7 @@ object YeloReader {
       .withHeaders("Referer" -> "http://yelotv.be/tvgids", "X-Requested-With" -> "XMLHttpRequest")
       .get().map { response =>
       try{
-        parseDay(day, response.json)
+        parseDay(url, response.json)
       }catch{
         case ex:JsonParseException => throw new RuntimeException("Failed to parse reponse for " + url + " to json: " + response.body.take(100) + "...", ex)
       }
@@ -55,39 +54,38 @@ object YeloReader {
     channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(Channel.unify(result.channel).toLowerCase)
   }
 
-  private def parseDay(day: DateMidnight, body: JsValue): Seq[YeloEvent] = {
+  private def parseDay(url: String, body: JsValue): Seq[YeloEvent] = {
     val channelMap = parseChannels(body)
-    parseEvents(body, channelMap)
-  }
 
-
-  def parseEvents(body: JsValue, channelMap: Map[String, String]): Seq[YeloReader.YeloEvent] = {
     val events = (body \ "Result" \ "Events").as[String]
     val doc = Jsoup.parse(events)
 
-    val pvrbroadcasts = (body \ "Result" \ "Meta" \ "pvrbroadcasts").as[JsObject]
+    val jsonNode = body \ "Result" \ "Meta" \ "pvrbroadcasts"
 
-    //println("bc = " + pvrbroadcasts)
+    if(jsonNode.isInstanceOf[JsObject]){
+      val pvrbroadcasts = jsonNode.as[JsObject]
+      pvrbroadcasts.fields.map {
+        case (eventIdentification, eventObject) =>
+          val eventId = eventIdentification.toInt
+          val title = (eventObject \ "title").as[String]
+          val channelWebpvrId = (eventObject \ "channel_webpvr_id").as[String]
+          val startTime = (eventObject \ "start_time").as[String].toLong * 1000
+          val endTime = (eventObject \ "end_time").as[String].toLong * 1000
 
-    pvrbroadcasts.fields.map {
-      case (eventIdentification, eventObject) =>
-        val eventId = eventIdentification.toInt
-        val title = (eventObject \ "title").as[String]
-        val channelWebpvrIid = (eventObject \ "channel_webpvr_id").as[String]
-        val startTime = (eventObject \ "start_time").as[String].toLong * 1000
-        val endTime = (eventObject \ "end_time").as[String].toLong * 1000
-
-        val eventDiv = Option(doc.getElementsByAttributeValue("id", "js-event-" + eventId).first())
-        eventDiv.map {
-          div =>
-            val url = "http://yelotv.be" + div.getElementsByTag("a").attr("href")
-            val channel = channelMap.get(channelWebpvrIid).getOrElse("UNKNOWN")
-            YeloEvent(eventId, title, url, channel, new Interval(startTime, endTime))
-        }.getOrElse {
-          logger.warn("No div found for %s %s at %s".format(eventId, title, new DateTime(startTime)))
-          YeloEvent(eventId, title, null, "UNKNOWN", new Interval(startTime, endTime))
-        }
-
+          val eventDiv = Option(doc.getElementsByAttributeValue("id", "js-event-" + eventId).first())
+          eventDiv.map {
+            div =>
+              val url = "http://yelotv.be" + div.getElementsByTag("a").attr("href")
+              val channel = channelMap.get(channelWebpvrId).getOrElse("UNKNOWN")
+              YeloEvent(eventId, title, url, channel, new Interval(startTime, endTime))
+          }.getOrElse {
+            logger.warn("No div found for %s %s at %s".format(eventId, title, new DateTime(startTime)))
+            YeloEvent(eventId, title, null, "UNKNOWN", new Interval(startTime, endTime))
+          }
+      }
+    }else{
+      logger.warn(s"No yelo movies found for $url")
+      Seq.empty
     }
   }
 
