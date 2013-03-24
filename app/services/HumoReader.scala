@@ -19,6 +19,11 @@ object HumoReader {
   private val logger = Logger("application.humo")
   
   private val dateFormat = DateTimeFormat.forPattern("YYYY-MM-dd")
+
+  private val idBetweenSlashesPattern = """/(\d+)/""".r
+  private val yearInBracketsPattern = """\(([0-9][0-9][0-9][0-9])\)""".r
+
+  private val timePattern = """([0-2][0-9]u[0-5][0-9])""".r
   private val timeFormat = DateTimeFormat.forPattern("HH'u'mm")
   
   def fetchDay(day: DateMidnight, channelFilter: List[String] = List()) = {
@@ -54,35 +59,22 @@ object HumoReader {
       for (program <- programs) {
         val movieName = program.getElementsByTag("a").first().text()
         val meta = program.getElementsByAttributeValue("class", "meta").first().ownText()
-        val timeString = meta.substring(meta.indexOf('|') + 2)
-        val time = LocalTime.parse(timeString, timeFormat)
+        timePattern findFirstIn meta  match {
+          case Some(timeString) =>
+            val time = LocalTime.parse(timeString, timeFormat)
 
-        val bd = program.getElementsByAttributeValue("class", "bd").first()
-        val info = bd.getElementsByTag("p").first().ownText()
+            val bd = program.getElementsByAttributeValue("class", "bd").first()
+            val info = bd.getElementsByTag("p").first().ownText()
+            val url = bd.getElementsByTag("a").attr("href")
 
-        // TODO sould be possible to simplify this part using a more functional way
-        val yearInBracketsPattern = """\((\d+)\)""".r
-        val yearFound = yearInBracketsPattern.findAllIn(info).matchData
-        val yearOption = if (yearFound.hasNext){
-          Some(yearFound.next().group(1).toInt)
-        }else{
-          None
+            val yearOption = yearInBracketsPattern findFirstMatchIn info map(_.group(1).toInt)
+            val idOption = idBetweenSlashesPattern findFirstMatchIn url map(_.group(1))
+            val id = idOption.getOrElse(throw new RuntimeException("Could not extract the id"))
+            val movie = HumoEvent(id, url, day, channelName, time, movieName, yearOption)
+            buf += movie
+          case None =>
+            logger.warn(s"Could not extract the time from [$meta], skipping [$movieName]")
         }
-
-        val url = bd.getElementsByTag("a").attr("href")
-
-        // TODO sould be possible to simplify this part using a more functional way
-        val idBetweenSlashesPattern = """/(\d+)/""".r
-        val idFound = idBetweenSlashesPattern.findAllIn(url).matchData
-        val idOption = if (idFound.hasNext){
-          Some(idFound.next().group(1))
-        }else{
-          None
-        }
-        val id = idOption.getOrElse(throw new RuntimeException("Could not extract the id"))
-
-        val movie = HumoEvent(id, url, day, channelName, time, movieName, yearOption)
-        buf += movie
       }
     }
     buf.distinct.result.toList
