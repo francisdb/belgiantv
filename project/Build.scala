@@ -17,6 +17,11 @@ object ApplicationBuild extends Build {
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
     "org.reactivemongo" %% "reactivemongo" % "0.8",
     "org.reactivemongo" %% "play2-reactivemongo" % "0.8"  // cross CrossVersion.full
+
+    //"com.foursquare" % "fongo" % "1.0.6" % "test",
+    //"org.mongodb" % "mongo-java-driver" % "2.11.0" % "test"
+
+
   )
 
   // copying jvm parameters for testing:
@@ -29,7 +34,8 @@ object ApplicationBuild extends Build {
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
     //resolvers += "sgodbillon" at "https://bitbucket.org/sgodbillon/repository/raw/master/snapshots/"
-    javaOptions in test ++= extraJavaOptions
+    javaOptions in test ++= extraJavaOptions,
+    scalacOptions ++= Seq("-feature")
   ).settings(
     net.virtualvoid.sbt.graph.Plugin.graphSettings: _*
   )
