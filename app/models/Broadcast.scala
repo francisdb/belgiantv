@@ -17,6 +17,11 @@ import reactivemongo.api.QueryBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import util.{Try, Failure, Success}
 import reactivemongo.core.commands.LastError
+import reactivemongo.bson.BSONString
+import scala.Some
+import reactivemongo.api.QueryBuilder
+import reactivemongo.bson.BSONLong
+import reactivemongo.bson.BSONInteger
 
 case class Broadcast(
   id: Option[BSONObjectID],
@@ -136,6 +141,17 @@ object Broadcast extends MongoSupport{
     broadcastCollection.find(broadcastsInInterval).toList
   }
 
+  def findMissingTomatoes(): Future[List[Broadcast]] = {
+    val broadcastsInInterval = QueryBuilder()
+    .query(BSONDocument(
+      "datetime" -> BSONDocument("$gt" -> BSONLong(System.currentTimeMillis())),
+      "tomatoesId" -> BSONDocument("$exists" -> BSONBoolean(false)))
+    )
+    .sort(BSONDocument("datetime" -> BSONInteger(1)))
+
+    broadcastCollection.find(broadcastsInInterval).toList
+  }
+
   def findByDateTimeAndChannel(datetime: DateTime, channel: String): Future[Option[Broadcast]] = {
     broadcastCollection.find(BSONDocument(
       "datetime" -> BSONLong(datetime.getMillis),
@@ -164,11 +180,11 @@ object Broadcast extends MongoSupport{
       .onComplete(le => mongoLogger(le, "updated imdb for " + b))
   }
 
-  def setTomatoes(b:Broadcast, tomatoesId:String) {
+  def setTomatoes(broadcastId:BSONObjectID, tomatoesId:String) {
     broadcastCollection.update(
-      BSONDocument("_id" -> b.id),
+      BSONDocument("_id" -> broadcastId),
       BSONDocument("$set" -> BSONDocument("tomatoesId" -> BSONString(tomatoesId))))
-      .onComplete(le => mongoLogger(le, "updated tomatoes for " + b))
+      .onComplete(le => mongoLogger(le, "updated tomatoes for " + broadcastId))
   }
 
   def setTmdb(b:Broadcast, tmdbId:String) {

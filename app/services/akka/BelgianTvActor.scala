@@ -2,32 +2,30 @@ package services.akka
 
 import play.api.Logger
 import akka.actor.{Props, Actor}
-import akka.routing.RoundRobinRouter
-import collection.mutable.ListBuffer
 import services.HumoReader
 import services.ImdbApiService
-import controllers.Application
-import services.TomatoesApiService
 import models.{Channel, Movie, Broadcast}
 import services.YeloReader
-import java.util.TimeZone
 import org.joda.time.DateTimeZone
 import services.TmdbApiService
 import services.BelgacomReader
-
-
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration._
 
-
 import scala.util.{Success, Failure}
+import akka.contrib.throttle.TimerBasedThrottler
+import akka.contrib.throttle.Throttler._
 
 
 class BelgianTvActor extends Actor {
   
   val logger = Logger("application.actor")
+
+  val tomatoesRef = context.actorOf(Props[TomatoesActor], name = "Tomatoes")
+  val tomatoesThrottler = context.actorOf(Props(new TimerBasedThrottler(2 msgsPer (1.second))), name = "Throttler")
+  tomatoesThrottler ! SetTarget(Some(tomatoesRef))
   
   override def preRestart(reason: Throwable, message: Option[Any]) {
     logger.error("Restarting due to [{}] when processing [{}]".format(reason.getMessage, message.getOrElse("")), reason)
@@ -36,7 +34,7 @@ class BelgianTvActor extends Actor {
   def receive: Receive = {
 
     case msg: LinkTmdb => {
-      logger.info("[" + this + "] - Received [" + msg + "] from " + sender)
+      logger.info(s"[$this] - Received [$msg] from $sender")
 
       val tmdbmovie = TmdbApiService.find(msg.broadcast.name, msg.broadcast.year)
 
@@ -48,11 +46,14 @@ class BelgianTvActor extends Actor {
         	logger.warn("No TMDb movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
         	None
         }      
+      }.onFailure{
+        case e: Exception =>
+          logger.error(e.getMessage, e)
       }
     }
 
     case msg: LinkImdb => {
-      logger.info("[" + this + "] - Received [" + msg + "] from " + sender)
+      logger.info(s"[$this] - Received [$msg] from $sender")
 
       Movie.find(msg.broadcast.name, msg.broadcast.year).onComplete{
         case Failure(e) => logger.error("Failed to find imdb: " + e.getMessage, e)
@@ -76,19 +77,16 @@ class BelgianTvActor extends Actor {
 
     case msg: LinkTomatoes => {
       logger.info(s"[$this] - Received [$msg] from $sender")
-      val movie = TomatoesApiService.find(msg.broadcast.name, msg.broadcast.year)
-      movie.map { mOption =>
-        mOption.map{ m =>
-           Broadcast.setTomatoes(msg.broadcast, m.id.toString)
-        }.getOrElse{
-        	logger.warn("No Tomatoes movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
-        	None
-        }      
-      }
+      tomatoesThrottler ! FetchTomatoes(msg.broadcast.name, msg.broadcast.year, msg.broadcast.id.get)
+    }
+
+    case msg: FetchTomatoesResult => {
+      logger.info(s"[$this] - Received [$msg] from $sender")
+      Broadcast.setTomatoes(msg.broadcastId, msg.tomatoesMovie.id.toString)
     }
 
     case msg: FetchHumo => {
-      logger.info("[" + this + "] - Received [" + msg + "] from " + sender)
+      logger.info(s"[$this] - Received [$msg] from $sender")
 
       HumoReader.fetchDay(msg.day, Channel.channelFilter).onComplete { maybeHumoEvents =>
         maybeHumoEvents match {
@@ -135,7 +133,7 @@ class BelgianTvActor extends Actor {
     }
 
     case msg: FetchYelo => {
-      logger.info("[" + this + "] - Received [" + msg + "] from " + sender)
+      logger.info(s"[$this] - Received [$msg] from $sender")
 
       YeloReader.fetchDay(msg.day, Channel.channelFilter).onComplete { maybeMovies =>
 
@@ -161,7 +159,7 @@ class BelgianTvActor extends Actor {
     }
     
     case msg: FetchBelgacom => {
-      logger.info("[" + this + "] - Received [" + msg + "] from " + sender)
+      logger.info(s"[$this] - Received [$msg] from $sender")
       
       BelgacomReader.readMovies(msg.day).onComplete{ maybeMovies =>
 

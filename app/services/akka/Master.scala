@@ -5,22 +5,32 @@ import _root_.akka.routing.RoundRobinRouter
 import play.api.Logger
 import org.joda.time.DateMidnight
 import akka.actor.ActorLogging
+import models.Broadcast
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class Master extends Actor{
 
-  val workerRouter = context.actorOf(Props[BelgianTvActor].withRouter(RoundRobinRouter(2)), name = "BelgianTV")
+  val belgianTvRef = context.actorOf(Props[BelgianTvActor].withRouter(RoundRobinRouter(2)), name = "BelgianTV")
 
   def receive: Receive = {
     case Start => {
       Logger.info("[" + this + "] - Received [start] from " + sender)
       val today = new DateMidnight()
-      workerRouter ! FetchHumo(today)
-      workerRouter ! FetchHumo(today.plusDays(1))
-      workerRouter ! FetchHumo(today.plusDays(2))
-      workerRouter ! FetchHumo(today.plusDays(3))
-      workerRouter ! FetchHumo(today.plusDays(4))
-      workerRouter ! FetchHumo(today.plusDays(5))
-      workerRouter ! FetchHumo(today.plusDays(6))
+      belgianTvRef ! FetchHumo(today)
+      belgianTvRef ! FetchHumo(today.plusDays(1))
+      belgianTvRef ! FetchHumo(today.plusDays(2))
+      belgianTvRef ! FetchHumo(today.plusDays(3))
+      belgianTvRef ! FetchHumo(today.plusDays(4))
+      belgianTvRef ! FetchHumo(today.plusDays(5))
+      belgianTvRef ! FetchHumo(today.plusDays(6))
+    }
+    case StartTomatoes => {
+        for{
+          broadcasts <- Broadcast.findMissingTomatoes()
+        }yield{
+          broadcasts.foreach(belgianTvRef ! LinkTomatoes(_))
+        }
     }
     
     case x => {

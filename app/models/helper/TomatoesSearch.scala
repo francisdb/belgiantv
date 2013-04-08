@@ -11,12 +11,17 @@ case class TomatoesSearch(
 @JsonIgnoreProperties(ignoreUnknown = true)
 case class TomatoesMovie(
     id:Int, 
-    title:String, 
-    year:Option[Int], 
+    title:String,
+    // annoying, this field can be 1999 or ""
+    year:Option[String],
     runtime:String,
     ratings:TomatoesRatings, 
     alternate_ids:Option[TomatoesAlternateIds],
     critics_consensus:Option[String]) {
+
+  def yearAsInt = year.flatMap(parseInt(_))
+
+  private def parseInt(s: String) = try { Some(s.toInt) } catch { case _ => None }
 }
 
 case class TomatoesRatings (

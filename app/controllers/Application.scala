@@ -13,7 +13,7 @@ import java.io.ByteArrayOutputStream
 import services.YeloReader
 
 
-import services.akka.Start
+import services.akka.{StartTomatoes, Start}
 //import akka.actor.Props
 import akka.actor.ActorRef
 
@@ -77,6 +77,11 @@ object Application extends Controller with MongoController {
   def scan = Action {
     masterActorRef ! Start
     Redirect(routes.Application.index).flashing("message" -> "Started database update...")
+  }
+
+  def tomatoes = Action {
+    masterActorRef ! StartTomatoes
+    Redirect(routes.Application.index).flashing("message" -> "Started tomatoes update...")
   }
   
 

@@ -50,7 +50,7 @@ object TomatoesApiService extends JacksonMapper{
 
   private def yearMatchIfExists(year: Option[Int], movies: List[models.helper.TomatoesMovie]) = {
     year.map { y =>
-      movies.filter(m => (m.year.getOrElse(Int.MinValue) == y)).headOption.orElse(movies.headOption)
+      movies.filter(m => (m.yearAsInt.getOrElse(Int.MinValue) == y)).headOption.orElse(movies.headOption)
     } getOrElse {
       movies.headOption
     }
