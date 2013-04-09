@@ -20,7 +20,7 @@ class TomatoesTest extends Specification with NoTimeConversions{
       running(FakeApplication()) {
         val movie = Await.result(TomatoesApiService.find("Pulp Fiction"), 30 seconds).get
         movie.title must startWith("Pulp Fiction")
-        movie.year.get must beEqualTo(1994)
+        movie.yearAsInt.get must beEqualTo(1994)
       }
     }
   }
@@ -32,7 +32,7 @@ class TomatoesTest extends Specification with NoTimeConversions{
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("Don")
-        movie.year.get must beEqualTo(2006)
+        movie.yearAsInt.get must beEqualTo(2006)
       }
     }
   }
@@ -44,7 +44,7 @@ class TomatoesTest extends Specification with NoTimeConversions{
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("The Beach")
-        movie.year.get must beEqualTo(2000)
+        movie.yearAsInt.get must beEqualTo(2000)
       }
     }
   }
@@ -56,7 +56,7 @@ class TomatoesTest extends Specification with NoTimeConversions{
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("Cape Fear")
-        movie.year.get must beEqualTo(1962)
+        movie.yearAsInt.get must beEqualTo(1962)
       }
     }
   }
@@ -68,7 +68,7 @@ class TomatoesTest extends Specification with NoTimeConversions{
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("This Is England")
-        movie.year.get must beEqualTo(2006)
+        movie.yearAsInt.get must beEqualTo(2006)
       }
     }
   }
@@ -80,7 +80,7 @@ class TomatoesTest extends Specification with NoTimeConversions{
         movieOption must beSome
         val movie = movieOption.get
         movie.title must_== ("Spring Breakdown")
-        movie.year.get must beEqualTo(2008)
+        movie.yearAsInt.get must beEqualTo(2008)
       }
     }
   }
