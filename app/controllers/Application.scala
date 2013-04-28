@@ -35,9 +35,6 @@ import play.api.libs.json._
 
 object Application extends Controller with MongoController {
 
-  // TODO put this somewhere else or copy to each place where used?
-  val db = ReactiveMongoPlugin.db
-
   val timezone = DateTimeZone.forID("Europe/Brussels")
   
   var masterActorRef: ActorRef = null
@@ -63,7 +60,7 @@ object Application extends Controller with MongoController {
 
 
   def linkWithMovie(broadcast: Broadcast): Future[BroadcastInfo] = {
-    implicit val reader = Movie.MovieBSONReader
+    implicit val reader = Movie.movieFormat//MovieBSONReader
 
     // TODO find a better place to do this?
     val broadcastHd = broadcast.copy(yeloUrl = broadcast.yeloUrl.map(YeloReader.toHDUrl(_)))

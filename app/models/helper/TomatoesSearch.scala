@@ -21,7 +21,7 @@ case class TomatoesMovie(
 
   def yearAsInt = year.flatMap(parseInt(_))
 
-  private def parseInt(s: String) = try { Some(s.toInt) } catch { case _ => None }
+  private def parseInt(s: String) = try { Some(s.toInt) } catch { case _:NumberFormatException => None }
 }
 
 case class TomatoesRatings (

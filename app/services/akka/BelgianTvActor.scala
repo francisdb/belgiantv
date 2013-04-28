@@ -59,7 +59,7 @@ class BelgianTvActor extends Actor {
         case Failure(e) => logger.error("Failed to find imdb: " + e.getMessage, e)
         case Success(movie) =>
           val movie2 = movie.orElse {
-            val movie = Await.result(ImdbApiService.find(msg.broadcast.name, msg.broadcast.year), 30 seconds)
+            val movie = Await.result(ImdbApiService.find(msg.broadcast.name, msg.broadcast.year), 30.seconds)
 
             movie.map { m =>
               val dbMovie = new Movie(null, m.title, m.id, m.rating, m.year, m.poster)
@@ -69,7 +69,7 @@ class BelgianTvActor extends Actor {
           }
 
           movie2 match{
-            case Some(m) => Broadcast.setImdb(msg.broadcast, m.imdbId)
+            case Some(m:Movie) => Broadcast.setImdb(msg.broadcast, m.imdbId)
             case None => logger.warn("No IMDB movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
           }
       }

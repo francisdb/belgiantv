@@ -1,15 +1,20 @@
 package models
 
+// Reactive Mongo imports
+import reactivemongo.api._
 import reactivemongo.bson._
-import reactivemongo.bson.handlers.{BSONWriter, BSONReader}
-import reactivemongo.bson.handlers.DefaultBSONHandlers.DefaultBSONDocumentWriter
-import reactivemongo.bson.handlers.DefaultBSONHandlers.DefaultBSONReaderHandler
+
+// Reactive Mongo plugin
+import play.modules.reactivemongo._
+import play.modules.reactivemongo.json.BSONFormats._
 
 import play.api.Logger
 import controllers.Application
 import concurrent.Future
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import play.modules.reactivemongo.json.collection.JSONCollection
+import play.api.libs.json._
 
 case class Movie(
   id: Option[BSONObjectID],
@@ -31,36 +36,9 @@ object Movie extends MongoSupport{
 
   protected override val logger = Logger("application.db")
 
-  private lazy val movieCollection = Application.db("movies")
+  private lazy val movieCollection = Application.db.collection[JSONCollection]("movies")
 
-  implicit object MovieBSONReader extends BSONReader[Movie] {
-    def fromBSON(document: BSONDocument) :Movie = {
-      val doc = document.toTraversable
-      Movie(
-        doc.getAs[BSONObjectID]("_id"),
-        doc.getAs[BSONString]("name").get.value,
-        doc.getAs[BSONString]("imdbId").get.value,
-        doc.getAs[BSONString]("imdbRating").get.value,
-        doc.getAs[BSONInteger]("year").get.value,
-        doc.getAs[BSONString]("imgUrl").get.value
-      )
-    }
-  }
-
-  implicit object MovieBSONWriter extends BSONWriter[Movie] {
-    def toBSON(movie: Movie) = {
-      BSONDocument(
-        "_id" -> movie.id.getOrElse(BSONObjectID.generate),
-        "name" -> BSONString(movie.name),
-        "imdbId" -> BSONString(movie.imdbId),
-        "imdbRating" -> BSONString(movie.imdbRating),
-        "year" -> BSONInteger(movie.year),
-        "imgUrl" -> BSONString(movie.imgUrl)
-      )
-    }
-  }
-  
-//  private lazy val db = MongoDB.collection("movies", classOf[Movie], classOf[String])
+  implicit val movieFormat = Json.format[Movie]
 
   def create(movie: Movie) = {
     val id = BSONObjectID.generate
@@ -79,16 +57,21 @@ object Movie extends MongoSupport{
   }
 
   def findByName(name: String): Future[Option[Movie]] = {
-    movieCollection.find(BSONDocument("name" -> BSONString(name))).headOption()
+    movieCollection.find(
+      Json.obj("name" -> name)
+    ).cursor[Movie].headOption
   }
 
   def findByImdbId(imdbId: String): Future[Option[Movie]] = {
-    movieCollection.find(BSONDocument("imdbId" -> BSONString(imdbId))).headOption()
+    movieCollection.find(
+      Json.obj("imdbId" -> imdbId)
+    ).cursor[Movie].headOption
   }
 
   def findByNameAndYear(name: String, year:Int): Future[Option[Movie]] = {
     movieCollection.find(
-      BSONDocument("name" -> BSONString(name), "year" -> BSONInteger(year))).headOption()
+      Json.obj("name" -> name, "year" -> year)
+    ).cursor[Movie].headOption
   }
 
   private def ratingToDouble(rating:String) = try{

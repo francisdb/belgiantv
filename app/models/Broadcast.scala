@@ -8,26 +8,24 @@ import controllers.Application
 import concurrent.Future
 
 import reactivemongo.bson._
-import reactivemongo.bson.handlers.{BSONWriter, BSONReader}
-import reactivemongo.bson.handlers.DefaultBSONHandlers.DefaultBSONDocumentWriter
-import reactivemongo.bson.handlers.DefaultBSONHandlers.DefaultBSONReaderHandler
-
-import reactivemongo.api.QueryBuilder
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import util.{Try, Failure, Success}
+
+import reactivemongo.api.collections.default.BSONCollection
 import reactivemongo.core.commands.LastError
-import reactivemongo.bson.BSONString
 import scala.Some
-import reactivemongo.api.QueryBuilder
-import reactivemongo.bson.BSONLong
-import reactivemongo.bson.BSONInteger
+import play.modules.reactivemongo.json.collection.JSONCollection
+
+import play.api.libs.json._
+import play.api.libs.json.Reads._
+import play.api.libs.functional.syntax._
+
 
 case class Broadcast(
   id: Option[BSONObjectID],
   name: String,
   channel: String,
-// TODO remove option for datetime
   datetime: DateTime,
   year: Option[Int] = None,
   humoId: Option[String] = None,
@@ -59,33 +57,37 @@ object Broadcast extends MongoSupport{
   
   protected override val logger = Logger("application.db")
 
-  private lazy val broadcastCollection = Application.db("broadcasts")
+  private lazy val broadcastCollection = Application.db.collection[BSONCollection]("broadcasts")
+  private lazy val broadcastCollectionJson = Application.db.collection[JSONCollection]("broadcasts")
 
-  implicit object BroadcastBSONReader extends BSONReader[Broadcast] {
-    def fromBSON(document: BSONDocument) :Broadcast = {
-      val doc = document.toTraversable
+
+// TODO use this
+  //implicit val broadcastFormat = Json.format[Broadcast]
+
+  implicit object BroadcastBSONReader extends BSONDocumentReader[Broadcast] {
+    def read(doc: BSONDocument) :Broadcast = {
       Broadcast(
         doc.getAs[BSONObjectID]("_id"),
-        doc.getAs[BSONString]("name").get.value,
-        doc.getAs[BSONString]("channel").get.value,
+        doc.getAs[String]("name").get,
+        doc.getAs[String]("channel").get,
         doc.getAs[BSONLong]("datetime").map(dt => new DateTime(dt.value)).get,
         doc.getAs[BSONInteger]("year").map(y => y.value),
-        doc.getAs[BSONString]("humoId").map(i => i.value),
-        doc.getAs[BSONString]("humoUrl").map(i => i.value),
-        doc.getAs[BSONString]("yeloId").map(i => i.value),
-        doc.getAs[BSONString]("yeloUrl").map(i => i.value),
-        doc.getAs[BSONString]("belgacomId").map(i => i.value),
-        doc.getAs[BSONString]("belgacomUrl").map(i => i.value),
-        doc.getAs[BSONString]("imdbId").map(i => i.value),
-        doc.getAs[BSONString]("tomatoesId").map(i => i.value),
-        doc.getAs[BSONString]("tmdbId").map(i => i.value),
-        doc.getAs[BSONString]("tmdbImg").map(i => i.value)
+        doc.getAs[String]("humoId"),
+        doc.getAs[String]("humoUrl"),
+        doc.getAs[String]("yeloId"),
+        doc.getAs[String]("yeloUrl"),
+        doc.getAs[String]("belgacomId"),
+        doc.getAs[String]("belgacomUrl"),
+        doc.getAs[String]("imdbId"),
+        doc.getAs[String]("tomatoesId"),
+        doc.getAs[String]("tmdbId"),
+        doc.getAs[String]("tmdbImg")
       )
     }
   }
 
-  implicit object BroadcastBSONWriter extends BSONWriter[Broadcast] {
-    def toBSON(broadcast: Broadcast) = {
+  implicit object BroadcastBSONWriter extends BSONDocumentWriter[Broadcast] {
+    def write(broadcast: Broadcast) = {
       BSONDocument(
         "_id" -> broadcast.id.getOrElse(BSONObjectID.generate),
         "name" -> BSONString(broadcast.name),
@@ -113,18 +115,13 @@ object Broadcast extends MongoSupport{
   def create(broadcast: Broadcast) = {
     val id = BSONObjectID.generate
     val withId = broadcast.copy(id = Some(id))
-    broadcastCollection.insert(withId)
+    implicit val writer = Broadcast.BroadcastBSONWriter
+    broadcastCollection.insert(withId)(writer, scala.concurrent.ExecutionContext.Implicits.global)
       .onComplete(le => mongoLogger(le, "saved broadcast " + withId + " with id " + id))
     withId
   }
 
   def findByInterval(interval:Interval): Future[List[Broadcast]] = {
-
-    val broadcastsInInterval = QueryBuilder()
-      .query(BSONDocument(
-      "datetime" -> BSONDocument("$gt" -> BSONLong(interval.getStart.getMillis)),
-      "datetime" -> BSONDocument("$lt" ->  BSONLong(interval.getEnd.getMillis))))
-      .sort(BSONDocument("datetime" -> BSONInteger(1)))
 
     //    val broadcastsInInterval = BSONDocument(
     //      "$orderby" -> BSONDocument("datetime" -> BSONInteger(1)),
@@ -138,25 +135,42 @@ object Broadcast extends MongoSupport{
     //            "datetime" -> Json.obj("$gt" -> interval.getStart.getMillis),
     //            "datetime" -> Json.obj("$lt" -> interval.getEnd.getMillis)))//.sort( "created" -> SortOrder.Descending)
 
-    broadcastCollection.find(broadcastsInInterval).toList
+    broadcastCollection.find(BSONDocument(
+      "datetime" -> BSONDocument("$gt" -> BSONLong(interval.getStart.getMillis)),
+      "datetime" -> BSONDocument("$lt" ->  BSONLong(interval.getEnd.getMillis))))
+          .sort(BSONDocument("datetime" -> BSONInteger(1))).cursor[Broadcast].toList
+
+//    broadcastCollectionJson.find(Json.obj(
+//        "datetime" -> Json.obj("$gt" -> interval.getStart.getMillis),
+//        "datetime" -> Json.obj("$lt" ->  interval.getEnd.getMillis)))
+//      .sort(Json.obj("datetime" -> 1)).cursor[Broadcast].toList
   }
 
   def findMissingTomatoes(): Future[List[Broadcast]] = {
-    val broadcastsInInterval = QueryBuilder()
-    .query(BSONDocument(
-      "datetime" -> BSONDocument("$gt" -> BSONLong(System.currentTimeMillis())),
-      "tomatoesId" -> BSONDocument("$exists" -> BSONBoolean(false)))
-    )
-    .sort(BSONDocument("datetime" -> BSONInteger(1)))
 
-    broadcastCollection.find(broadcastsInInterval).toList
+    broadcastCollection
+      .find(BSONDocument(
+      "datetime" -> BSONDocument("$gt" -> BSONLong(System.currentTimeMillis())),
+      "tomatoesId" -> BSONDocument("$exists" -> BSONBoolean(false))))
+      .sort(BSONDocument("datetime" -> BSONInteger(1))).cursor[Broadcast].toList
+
+//    broadcastCollectionJson
+//      .find(Json.obj(
+//        "datetime" -> Json.obj("$gt" -> System.currentTimeMillis()),
+//        "tomatoesId" -> Json.obj("$exists" -> false)))
+//      .sort(Json.obj("datetime" -> 1)).cursor[Broadcast].toList
   }
 
   def findByDateTimeAndChannel(datetime: DateTime, channel: String): Future[Option[Broadcast]] = {
+//    broadcastCollectionJson.find(Json.obj(
+//      "datetime" -> datetime.getMillis,
+//      "channel" -> channel
+//    )).cursor[Broadcast].headOption
+
     broadcastCollection.find(BSONDocument(
       "datetime" -> BSONLong(datetime.getMillis),
       "channel" -> BSONString(channel)
-    )).headOption()
+    )).cursor[Broadcast].headOption
   }
 
   def setYelo(b:Broadcast, yeloId:String, yeloUrl:String) {

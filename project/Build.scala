@@ -11,12 +11,12 @@ object ApplicationBuild extends Build {
     // Add your project dependencies here,
     jdbc,
     anorm,
-    "org.jsoup" % "jsoup" % "1.7.1",
+    "org.jsoup" % "jsoup" % "1.7.2",
     "commons-lang" % "commons-lang" % "2.6",
     //"net.vz.mongodb.jackson" %% "play-mongo-jackson-mapper" % "1.0.0"
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3",
-    "org.reactivemongo" %% "reactivemongo" % "0.8",
-    "org.reactivemongo" %% "play2-reactivemongo" % "0.8",  // cross CrossVersion.full
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.0",
+    "org.reactivemongo" %% "reactivemongo" % "0.9",
+    "org.reactivemongo" %% "play2-reactivemongo" % "0.9",  // cross CrossVersion.full
 
     //"com.foursquare" % "fongo" % "1.0.6" % "test",
     //"org.mongodb" % "mongo-java-driver" % "2.11.0" % "test"
