@@ -17,6 +17,7 @@ import models.Channel
 import com.sun.xml.internal.fastinfoset.tools.FI_SAX_Or_XML_SAX_SAXEvent
 import concurrent.{Future, Await}
 import org.codehaus.jackson.JsonParseException
+import play.api.http.Status
 
 
 object YeloReader {
@@ -34,14 +35,21 @@ object YeloReader {
   }
 
 
-  private def fetchDayData(day: DateMidnight, group: Option[String] = None): Future[Seq[YeloReader.YeloEvent]] = {
+  private def fetchDayData(day: DateMidnight, groupOption: Option[String] = None): Future[Seq[YeloReader.YeloEvent]] = {
     val dateFormat = DateTimeFormat.forPattern("dd-MM-YYYY")
     val baseUrl = "http://yelotv.be/tvgids/detail?date=" + dateFormat.print(day)
-    val url = baseUrl + group.map("&group=" + _).getOrElse("")
+    //val group = groupOption.getOrElse("alles")
+    val group = groupOption.getOrElse("vlaams")
+    val url = baseUrl + "&group=" + group
     logger.info("Fetching " + url)
     WS.url(url)
-      .withHeaders("Referer" -> "http://yelotv.be/tvgids", "X-Requested-With" -> "XMLHttpRequest")
-      .get().map { response =>
+      .withHeaders(
+        "Referer" -> "http://yelotv.be/tvgids",
+        "X-Requested-With" -> "XMLHttpRequest"
+      ).get().map { response =>
+      if(response.status != Status.OK){
+        throw new RuntimeException(s"Got ${response.status} while fetching $url -> ${response.body}")
+      }
       try{
         parseDay(url, response.json)
       }catch{
@@ -55,6 +63,11 @@ object YeloReader {
   }
 
   private def parseDay(url: String, body: JsValue): Seq[YeloEvent] = {
+    val success = (body \ "Success").as[Boolean]
+    if(!success){
+      throw new RuntimeException(s"Response unsuccessful while fetching $url -> $body")
+    }
+
     val channelMap = parseChannels(body)
 
     val events = (body \ "Result" \ "Events").as[String]
