@@ -36,6 +36,7 @@ case class Broadcast(
   belgacomUrl: Option[String] = None,
   imdbId: Option[String] = None,
   tomatoesId: Option[String] = None,
+  tomatoesRating: Option[String] = None,
   tmdbId: Option[String] = None,
   tmdbImg: Option[String] = None
 ){
@@ -80,6 +81,7 @@ object Broadcast extends MongoSupport{
         doc.getAs[String]("belgacomUrl"),
         doc.getAs[String]("imdbId"),
         doc.getAs[String]("tomatoesId"),
+        doc.getAs[String]("tomatoesRating"),
         doc.getAs[String]("tmdbId"),
         doc.getAs[String]("tmdbImg")
       )
@@ -103,6 +105,7 @@ object Broadcast extends MongoSupport{
         "belgacomUrl" -> broadcast.belgacomUrl.map(BSONString(_)),
         "imdbId" -> broadcast.imdbId.map(BSONString(_)),
         "tomatoesId" -> broadcast.tomatoesId.map(BSONString(_)),
+        "tomatoesRating" -> broadcast.tomatoesRating.map(BSONString(_)),
         "tmdbId" -> broadcast.tmdbId.map(BSONString(_)),
         "tmdbImg" -> broadcast.tmdbImg.map(BSONString(_))
       )
@@ -194,10 +197,12 @@ object Broadcast extends MongoSupport{
       .onComplete(le => mongoLogger(le, "updated imdb for " + b))
   }
 
-  def setTomatoes(broadcastId:BSONObjectID, tomatoesId:String) {
+  def setTomatoes(broadcastId:BSONObjectID, tomatoesId:String, tomatoesRating:String) {
     broadcastCollection.update(
       BSONDocument("_id" -> broadcastId),
-      BSONDocument("$set" -> BSONDocument("tomatoesId" -> BSONString(tomatoesId))))
+      BSONDocument("$set" -> BSONDocument(
+        "tomatoesId" -> BSONString(tomatoesId),
+        "tomatoesRating" -> tomatoesRating)))
       .onComplete(le => mongoLogger(le, "updated tomatoes for " + broadcastId))
   }
 

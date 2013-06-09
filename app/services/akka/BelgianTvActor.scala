@@ -59,6 +59,7 @@ class BelgianTvActor extends Actor {
         case Failure(e) => logger.error("Failed to find imdb: " + e.getMessage, e)
         case Success(movie) =>
           val movie2 = movie.orElse {
+            // FIXME this is blocking
             val movie = Await.result(ImdbApiService.find(msg.broadcast.name, msg.broadcast.year), 30.seconds)
 
             movie.map { m =>
@@ -82,7 +83,8 @@ class BelgianTvActor extends Actor {
 
     case msg: FetchTomatoesResult => {
       logger.info(s"[$this] - Received [$msg] from $sender")
-      Broadcast.setTomatoes(msg.broadcastId, msg.tomatoesMovie.id.toString)
+      val mergedScore = (msg.tomatoesMovie.ratings.audience_score + msg.tomatoesMovie.ratings.critics_score) / 2
+      Broadcast.setTomatoes(msg.broadcastId, msg.tomatoesMovie.id.toString, mergedScore.toString)
     }
 
     case msg: FetchHumo => {

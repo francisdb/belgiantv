@@ -3,9 +3,9 @@
 @main("BelgianTV") {
   
   
-<h1>Movies on Belgian TV for the coming 7 days ordered by IMDB score</h1>
+<h1>Movies on Belgian TV for the coming 7 days ordered by ratings</h1>
 
-<p>Click on the Telenet Yelo & Belgacom TV links to program your digicorder</p>
+<p>Click on the Telenet Yelo &amp; Belgacom TV links to program your digicorder</p>
     
   @if(!flash.isEmpty){
     <div class="info">@flash.get("message")</div>
@@ -23,18 +23,19 @@
 		    	}
 	    	</div>
 	    	@info.broadcast.name <span class="year">(@info.broadcast.year)</span> 
-    		@info.movie.map{ m => 
-    		  <a href="@m.imdbUrl">@m.imdbRating</a>
-    		}
+            @info.rating.map(_ + "%")
 
     		<br/>
     		<small>@info.broadcast.channel @info.broadcast.humanDate
     		<a href="@info.broadcast.humoUrl">Humo</a>
+            @info.movie.map{ m =>
+            <a href="@m.imdbUrl()">IMDb @m.imdbRating</a>
+            }
     		@info.broadcast.tmdbUrl.map{ u => 
     		<a href="@u">TMDb</a>
     		}
     		@info.broadcast.tomatoesUrl.map{ u => 
-    		<a href="@u">Tomatoes</a>
+    		<a href="@u">Tomatoes @{info.broadcast.tomatoesRating.get}%</a>
     		}
     		</small>
     		<br/>
