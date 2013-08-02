@@ -12,8 +12,13 @@ import controllers.Application
 
 import reactivemongo.api._
 import reactivemongo.core.commands._
+import services.PlayUtil
 
 class MovieTest extends Specification with NoTimeConversions {
+
+  skipAllUnless(PlayUtil.configExists("mongodb.uri"))
+
+
   "trying to read a movie" should {
     "return data" in {
 
