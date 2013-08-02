@@ -4,6 +4,6 @@ Playframework 2.1
 ReactiveMongo
 MongoDB
 
-http://belgiantv.herokuapp.com
+<http://belgiantv.herokuapp.com>
 
 [![Build Status](https://travis-ci.org/francisdb/belgiantv.png?branch=master)](https://travis-ci.org/francisdb/belgiantv)
