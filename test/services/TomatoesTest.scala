@@ -15,6 +15,8 @@ import scala.concurrent.duration._
 // WARN the line above causes testing issues where, multiple akka instances are launched!
 class TomatoesTest extends Specification with NoTimeConversions{
 
+  skipAllUnless(PlayUtil.configExists("tomatoes.apikey"))
+
   "the search for Pulp Fiction" should {
     "return the correct movie" in {
       running(FakeApplication()) {

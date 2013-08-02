@@ -10,4 +10,6 @@ object PlayUtil {
       .getOrElse(throw new RuntimeException("Missing configuration: " + property))
   }
 
+  def configExists(property: String) = Play.current.configuration.getString(property).isDefined
+
 }

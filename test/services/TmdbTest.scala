@@ -14,11 +14,13 @@ import scala.concurrent.duration._
 //@RunWith(classOf[JUnitRunner])
 class TmdbTest extends Specification with NoTimeConversions {
 
+  skipAllUnless(PlayUtil.configExists("tmdb.apikey"))
+
   "the search for don 2006" should {
     "return the correct movie" in {
         running(FakeApplication()) {
 	        val movie = Await.result(TmdbApiService.find("don", Option.apply(2006)), 30 seconds).get
-	        movie.title must_== ("Don")
+	        movie.title must_== "Don"
 	        movie.release_date must startWith("2006")
         }
     }
@@ -28,7 +30,7 @@ class TmdbTest extends Specification with NoTimeConversions {
     "return the correct movie" in {
         running(FakeApplication()) {
 	        val movie = Await.result(TmdbApiService.find("I, Robot", Option.apply(2004)), 30 seconds).get
-	        movie.title must_== ("I, Robot")
+	        movie.title must_== "I, Robot"
 	        movie.release_date must startWith("2004")
         }
     }
@@ -38,7 +40,7 @@ class TmdbTest extends Specification with NoTimeConversions {
     "return the correct movie" in {
         running(FakeApplication()) {
           val movie = Await.result(TmdbApiService.find("I, Robot", Option.apply(2004)), 30 seconds).get
-	        movie.title must_== ("I, Robot")
+	        movie.title must_== "I, Robot"
 	        movie.release_date must startWith("2004")
         }
     }
