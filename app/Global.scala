@@ -1,12 +1,11 @@
-import akka.actor.ActorRef
 import akka.actor.Props
-//import akka.util.duration.intToDurationInt
+import play.api.mvc.RequestHeader
+import services.Mailer
+
 import play.api.GlobalSettings
 import play.api.Logger
 import play.libs.Akka
-import scala.annotation.implicitNotFound
 import services.akka.Master
-import services.akka.Start
 import controllers.Application
 
 object Global extends GlobalSettings{
@@ -15,6 +14,15 @@ object Global extends GlobalSettings{
     Logger.info("Scheduling actor trigger")
     Application.masterActorRef = Akka.system.actorOf(Props[Master], name = "masterActor")
     //Akka.system.scheduler.schedule(0 seconds, 12 hours, Application.masterActorRef, Start)
+  }
+
+  override def onError(request: RequestHeader, throwable: Throwable) = {
+    if(play.Play.isProd){
+      Logger.error("Server error: " + request.path, throwable)
+      val message = s"Internal server error: ${throwable.getMessage}"
+      Mailer.sendMail(message, throwable)
+    }
+    super.onError(request, throwable)
   }
 
 }

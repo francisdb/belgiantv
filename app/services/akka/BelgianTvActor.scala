@@ -19,7 +19,7 @@ import akka.contrib.throttle.TimerBasedThrottler
 import akka.contrib.throttle.Throttler._
 
 
-class BelgianTvActor extends Actor {
+class BelgianTvActor extends MailingActor {
   
   val logger = Logger("application.actor")
 
