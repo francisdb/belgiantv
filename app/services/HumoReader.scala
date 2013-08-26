@@ -45,7 +45,7 @@ object HumoReader {
     //val section = doc.getElementsContainingOwnText("Hoofdzenders").get(0)
     val zenders = doc.getElementsByAttributeValue("class", "articles")
     if(zenders.size == 0){
-      throw new RuntimeException("No channels found")
+      throw new RuntimeException(s"No channels found for $day\n${body.take(100)}...")
     }
 
     val buf = new ArrayBuffer[HumoEvent] 
