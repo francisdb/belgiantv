@@ -7,3 +7,5 @@ MongoDB
 <http://belgiantv.herokuapp.com>
 
 [![Build Status](https://travis-ci.org/francisdb/belgiantv.png?branch=master)](https://travis-ci.org/francisdb/belgiantv)
+
+https://www.codeship.io/projects/f0663d10-f562-0130-8cb4-3a7857e44df3/status
