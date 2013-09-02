@@ -4,7 +4,7 @@ import akka.actor.Actor
 import play.api.Logger
 import org.joda.time.DateMidnight
 import models.Broadcast
-import services.TomatoesApiService
+import services.{ErrorReportingSupport, Mailer, TomatoesApiService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
@@ -12,7 +12,7 @@ import scala.util.{Success, Failure}
 /**
  * Makes sure we only have 10	Calls per second
  */
-class TomatoesActor extends Actor{
+class TomatoesActor extends Actor with ErrorReportingSupport{
 
   val logger = Logger("application.actor.tomatoes")
 
@@ -25,7 +25,8 @@ class TomatoesActor extends Actor{
 
       // TODO how do we combine this future-based code with actors?
       val movie = TomatoesApiService.find(msg.title, msg.year).onComplete{
-        case Failure(e) => logger.error("Failed to find tomatoes: " + e.getMessage, e)
+        case Failure(e) =>
+          reportFailure("Failed to find tomatoes: " + e.getMessage, e)
         case Success(tomatoesMovie) =>
           tomatoesMovie.map(
             m => {

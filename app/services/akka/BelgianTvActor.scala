@@ -1,25 +1,33 @@
 package services.akka
 
+import _root_.akka.contrib.throttle.Throttler.SetTarget
 import play.api.Logger
-import akka.actor.{Props, Actor}
-import services.HumoReader
-import services.ImdbApiService
+import _root_.akka.actor.{Props, Actor}
+import services._
 import models.{Channel, Movie, Broadcast}
-import services.YeloReader
 import org.joda.time.DateTimeZone
-import services.TmdbApiService
-import services.BelgacomReader
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration._
 
 import scala.util.{Success, Failure}
-import akka.contrib.throttle.TimerBasedThrottler
-import akka.contrib.throttle.Throttler._
+import _root_.akka.contrib.throttle.TimerBasedThrottler
+import _root_.akka.contrib.throttle.Throttler._
+import services.akka.LinkImdb
+import services.akka.FetchHumo
+import services.akka.FetchTomatoes
+import scala.util.Failure
+import scala.Some
+import services.akka.FetchBelgacom
+import services.akka.LinkTmdb
+import scala.util.Success
+import services.akka.FetchTomatoesResult
+import services.akka.FetchYelo
+import services.akka.LinkTomatoes
 
 
-class BelgianTvActor extends MailingActor {
+class BelgianTvActor extends MailingActor with ErrorReportingSupport{
   
   val logger = Logger("application.actor")
 
@@ -56,7 +64,8 @@ class BelgianTvActor extends MailingActor {
       logger.info(s"[$this] - Received [$msg] from $sender")
 
       Movie.find(msg.broadcast.name, msg.broadcast.year).onComplete{
-        case Failure(e) => logger.error("Failed to find imdb: " + e.getMessage, e)
+        case Failure(e) =>
+          reportFailure("Failed to find imdb: " + e.getMessage, e)
         case Success(movie) =>
           val movie2 = movie.orElse {
             // FIXME this is blocking
@@ -92,9 +101,9 @@ class BelgianTvActor extends MailingActor {
 
       HumoReader.fetchDay(msg.day, Channel.channelFilter).onComplete { maybeHumoEvents =>
         maybeHumoEvents match {
-          case Failure(e) => logger.error("Failed to read humo day: " + e.getMessage, e)
+          case Failure(e) =>
+            reportFailure("Failed to read humo day: " + e.getMessage, e)
           case Success(humoEvents) =>
-
             val broadcasts:Future[List[Broadcast]] = Future.traverse(humoEvents){ event =>
               val broadcast = new Broadcast(
                 None,
@@ -123,7 +132,8 @@ class BelgianTvActor extends MailingActor {
 
             broadcasts.onComplete{ maybeBroadcasts =>
               maybeBroadcasts match{
-                case Failure(e) => logger.error("Failed to find broadcasts for humo events: " + e.getMessage, e)
+                case Failure(e) =>
+                  reportFailure("Failed to find broadcasts for humo events: " + e.getMessage, e)
                 case Success(broadcasts) =>
                   self ! FetchYelo(msg.day, broadcasts)
                   self ! FetchBelgacom(msg.day, broadcasts)
@@ -140,9 +150,9 @@ class BelgianTvActor extends MailingActor {
       YeloReader.fetchDay(msg.day, Channel.channelFilter).onComplete { maybeMovies =>
 
         maybeMovies match {
-          case Failure(e) => logger.error(s"Failed to read yelo day " + msg.day + " - " + e.getMessage, e)
+          case Failure(e) =>
+            reportFailure("Failed to read yelo day: " + msg.day + " - " + e.getMessage, e)
           case Success(movies) =>
-
             // all unique channels
             // println(movies.groupBy{_.channel}.map{_._1})
 
@@ -166,7 +176,8 @@ class BelgianTvActor extends MailingActor {
       BelgacomReader.readMovies(msg.day).onComplete{ maybeMovies =>
 
         maybeMovies match {
-          case Failure(e) => logger.error("Failed to read belgacom day: " + e.getMessage, e)
+          case Failure(e) =>
+            reportFailure("Failed to read belgacom day: " + e.getMessage, e)
           case Success(movies) =>
             msg.events.foreach { broadcast =>
               if (broadcast.belgacomUrl.isEmpty) {

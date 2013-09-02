@@ -3,8 +3,9 @@ package models
 import util.{Failure, Success, Try}
 import reactivemongo.core.commands.LastError
 import play.api.Logger
+import services.{ErrorReportingSupport, Mailer}
 
-trait MongoSupport {
+trait MongoSupport extends ErrorReportingSupport{
 
   protected val logger:Logger
 
@@ -16,7 +17,8 @@ trait MongoSupport {
         } else {
           logger.debug(successMessage)
         }
-      case Failure(ex) => logger.error(ex.getMessage, ex)
+      case Failure(ex) =>
+        reportFailure(ex)
     }
   }
 }
