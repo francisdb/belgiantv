@@ -13,6 +13,7 @@ import controllers.Application
 import play.api.libs.ws.WS
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.http.Status
 
 object HumoReader {
   
@@ -26,11 +27,22 @@ object HumoReader {
   private val timePattern = """([0-2][0-9]u[0-5][0-9])""".r
   private val timeFormat = DateTimeFormat.forPattern("HH'u'mm")
   
+  def fetchDayRetry(day: DateMidnight, channelFilter: List[String] = List()) = {
+    // TODO better would be to actually use a delay between the retries, we could also use a throttled WS
+    fetchDay(day, channelFilter).fallbackTo{
+      logger.warn("First humo day fetch failed for $day, trying a second time...")
+      fetchDay(day, channelFilter)
+    }
+  }
+
   def fetchDay(day: DateMidnight, channelFilter: List[String] = List()) = {
     val url = urlForDay(day)
     logger.info("Fetching " + url)
     WS.url(url).get().map { response =>
-      parseDay(day, response.body).filter(result => channelFilter.isEmpty || channelFilter.contains(result.channel))
+      response.status match {
+        case Status.OK => parseDay(day, response.body).filter(result => channelFilter.isEmpty || channelFilter.contains(result.channel))
+        case other => throw new RuntimeException(s"Got status $other when trying to get $url : ${response.body.take(100)}...")
+      }
     }
   }
   
