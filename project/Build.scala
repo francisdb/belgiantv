@@ -7,6 +7,8 @@ object ApplicationBuild extends Build {
   val appName         = "belgiantv"
   val appVersion      = "1.0-SNAPSHOT"
 
+  // see https://github.com/ReactiveMongo/ReactiveMongo/issues/109
+  // see https://github.com/ReactiveMongo/ReactiveMongo/issues/107
   val reactiveMongoVersion = "0.10.0-SNAPSHOT"// "0.9"
 
   val appDependencies = Seq(
