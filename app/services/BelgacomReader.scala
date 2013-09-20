@@ -4,9 +4,10 @@ import java.util.Date
 import java.util.ArrayList
 import models.helper.BelgacomChannel
 import play.api.Logger
-import org.codehaus.jackson.map.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import org.codehaus.jackson.`type`.TypeReference
+import com.fasterxml.jackson.core.`type`.TypeReference
+import com.fasterxml.jackson.core.JsonParseException
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import models.helper.BelgacomResult
@@ -21,7 +22,6 @@ import models.helper.BelgacomProgram
 import play.api.libs.concurrent.Promise
 import models.helper.BelgacomListing
 import models.helper.BelgacomListing
-import org.codehaus.jackson.JsonParseException
 import concurrent.Future
 
 import scala.concurrent.ExecutionContext.Implicits.global

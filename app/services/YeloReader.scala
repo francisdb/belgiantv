@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import models.Channel
 import com.sun.xml.internal.fastinfoset.tools.FI_SAX_Or_XML_SAX_SAXEvent
 import concurrent.{Future, Await}
-import org.codehaus.jackson.JsonParseException
+import com.fasterxml.jackson.core.JsonParseException
 import play.api.http.Status
 
 

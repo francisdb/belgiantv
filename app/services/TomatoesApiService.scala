@@ -8,9 +8,9 @@ import models.helper.TomatoesSearch
 import models.helper.TomatoesSearch
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import org.codehaus.jackson.map.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import org.codehaus.jackson.`type`.TypeReference
+import com.fasterxml.jackson.core.`type`.TypeReference
 import java.lang.reflect.{Type, ParameterizedType}
 
 object TomatoesApiService extends JacksonMapper{

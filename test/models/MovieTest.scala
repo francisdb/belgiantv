@@ -27,7 +27,8 @@ class MovieTest extends Specification with NoTimeConversions with ConfigSpec {
         skipIfMissingConfig(configProperty)
         //Application.db = fongo.getDB("testdb")
         val result = Await.result(Movie.find("ddd", Some(1980)), 30 seconds)
-        println(result.isDefined)
+        //println(result.isDefined)
+        result.isDefined must beFalse
       }
 
     }

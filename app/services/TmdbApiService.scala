@@ -9,9 +9,9 @@ import play.api.libs.concurrent.Promise
 import play.api.Logger
 import play.api.Play
 
-import org.codehaus.jackson.map.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import org.codehaus.jackson.`type`.TypeReference
+import com.fasterxml.jackson.core.`type`.TypeReference
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import models.helper.TmdbMovieSearch
