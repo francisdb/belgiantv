@@ -24,7 +24,6 @@ object ApplicationBuild extends Build {
     "org.reactivemongo" %% "play2-reactivemongo" % reactiveMongoVersion,  // cross CrossVersion.full
 
     //"com.foursquare" % "fongo" % "1.0.6" % "test",
-    //"org.mongodb" % "mongo-java-driver" % "2.11.0" % "test"
 
     "com.typesafe.akka" %% "akka-contrib" % "2.2.0" // TODO update when migrating to newer play
 

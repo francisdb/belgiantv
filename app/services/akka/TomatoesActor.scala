@@ -16,14 +16,13 @@ class TomatoesActor extends Actor with ErrorReportingSupport{
 
   val logger = Logger("application.actor.tomatoes")
 
-  def receive: Receive = {
+  override def receive: Receive = {
     case msg:FetchTomatoes => {
       logger.info(s"[$this] - Received [$msg] from $sender")
 
       // copy the sender as we will reference it in a different thread
       val mySender = sender
 
-      // TODO how do we combine this future-based code with actors?
       val movie = TomatoesApiService.find(msg.title, msg.year).onComplete{
         case Failure(e) =>
           reportFailure("Failed to find tomatoes: " + e.getMessage, e)

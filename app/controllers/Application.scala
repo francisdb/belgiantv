@@ -39,22 +39,20 @@ object Application extends Controller with MongoController {
   
   var masterActorRef: ActorRef = null
 
-  def index = Action { implicit request =>
-    
+  def index = Action.async{ implicit request =>
+
     // anything that has started more than an hour ago is not interesting
     val start = new DateTime().minusHours(1)
     // for seven days in the future (midnight)
     val end = new DateMidnight().plusDays(7)
     val interval = new Interval(start, end)
 
-    Async {
-      for{
-        broadcasts <- Broadcast.findByInterval(interval)
-        infos <- Future.traverse(broadcasts)(broadcast => linkWithMovie(broadcast))
-      }yield{
-        val sorted = infos.sortWith(BroadcastInfo.scoreSorter)
-        Ok(views.html.index(sorted))
-      }
+    for{
+      broadcasts <- Broadcast.findByInterval(interval)
+      infos <- Future.traverse(broadcasts)(broadcast => linkWithMovie(broadcast))
+    }yield{
+      val sorted = infos.sortWith(BroadcastInfo.scoreSorter)
+      Ok(views.html.index(sorted))
     }
   }
 
@@ -63,7 +61,7 @@ object Application extends Controller with MongoController {
     implicit val reader = Movie.movieFormat//MovieBSONReader
 
     // TODO find a better place to do this?
-    val broadcastHd = broadcast.copy(yeloUrl = broadcast.yeloUrl.map(YeloReader.toHDUrl(_)))
+    val broadcastHd = broadcast.copy(yeloUrl = broadcast.yeloUrl.map(YeloReader.toHDUrl))
 
     broadcastHd.imdbId match {
       case Some(imdbId) => Movie.findByImdbId(imdbId).map(BroadcastInfo(broadcastHd, _))

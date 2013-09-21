@@ -13,7 +13,6 @@ import org.joda.time.DateMidnight
 import scala.concurrent._
 import scala.concurrent.duration._
 
-//@RunWith(classOf[JUnitRunner])
 class HumoReaderTest extends Specification with NoTimeConversions {
   
   "the humo reader" should {

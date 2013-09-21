@@ -24,8 +24,12 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport{
   val logger = Logger("application.actor")
 
   val tomatoesRef = context.actorOf(Props[TomatoesActor], name = "Tomatoes")
-  val tomatoesThrottler = context.actorOf(Props(new TimerBasedThrottler(2 msgsPer 1.second)), name = "Throttler")
+  val tomatoesThrottler = context.actorOf(Props(new TimerBasedThrottler(2 msgsPer 1.second)), name = "TomatoesThrottler")
   tomatoesThrottler ! SetTarget(Some(tomatoesRef))
+
+  val humoRef = context.actorOf(Props[HumoActor], name = "Humo")
+  val humoThrottler = context.actorOf(Props(new TimerBasedThrottler(1 msgsPer 5.second)), name = "HumoThrottler")
+  humoThrottler ! SetTarget(Some(humoRef))
   
   override def preRestart(reason: Throwable, message: Option[Any]) {
     logger.error(s"Restarting due to [${reason.getMessage}}] when processing [${message.getOrElse("")}]", reason)
@@ -90,18 +94,20 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport{
 
     case msg: FetchHumo => {
       logger.info(s"[$this] - Received [$msg] from $sender")
+      humoThrottler ! msg
+    }
 
-      HumoReader.fetchDayRetry(msg.day, Channel.channelFilter).onComplete { maybeHumoEvents =>
-        maybeHumoEvents match {
+    case msg: FetchHumoResult => {
+        msg.events match {
           case Failure(e) =>
             reportFailure("Failed to read humo day: " + e.getMessage, e)
           case Success(humoEvents) =>
-            val broadcasts:Future[List[Broadcast]] = Future.traverse(humoEvents){ event =>
+            val broadcasts:Future[Seq[Broadcast]] = Future.traverse(humoEvents){ event =>
               val broadcast = new Broadcast(
                 None,
                 event.title,
                 event.channel.toLowerCase,
-                event.toDateTime(),
+                event.toDateTime,
                 event.year,
                 humoId = Some(event.id),
                 humoUrl = Some(event.url))
@@ -134,7 +140,6 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport{
         }
 
       }
-    }
 
     case msg: FetchYelo => {
       logger.info(s"[$this] - Received [$msg] from $sender")

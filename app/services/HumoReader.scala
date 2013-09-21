@@ -14,6 +14,7 @@ import play.api.libs.ws.WS
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.http.Status
+import scala.concurrent.Future
 
 object HumoReader {
   
@@ -29,19 +30,22 @@ object HumoReader {
   
   def fetchDayRetry(day: DateMidnight, channelFilter: List[String] = List()) = {
     // TODO better would be to actually use a delay between the retries, we could also use a throttled WS
-    fetchDay(day, channelFilter).fallbackTo{
-      logger.warn("First humo day fetch failed for $day, trying a second time...")
-      fetchDay(day, channelFilter)
+    val dayData = fetchDay(day, channelFilter)
+    dayData.onFailure{
+      case t => logger.warn(s"First humo day fetch failed for $day: ${t.getMessage}, trying a second time...")
     }
+    // FIXME this is called immediately as it' not a function that is provided
+    dayData.fallbackTo(fetchDay(day, channelFilter))
   }
 
-  def fetchDay(day: DateMidnight, channelFilter: List[String] = List()) = {
+  def fetchDay(day: DateMidnight, channelFilter: List[String] = List()):Future[List[HumoEvent]] = {
     val url = urlForDay(day)
     logger.info("Fetching " + url)
     WS.url(url).get().map { response =>
       response.status match {
         case Status.OK => parseDay(day, response.body).filter(result => channelFilter.isEmpty || channelFilter.contains(result.channel))
-        case other => throw new RuntimeException(s"Got status $other when trying to get $url : ${response.body.take(100)}...")
+        case other =>
+          throw new RuntimeException(s"Got status $other when trying to get $url : ${response.body.take(100)}...")
       }
     }
   }
@@ -103,7 +107,7 @@ case class HumoEvent(
     title: String,
     year: Option[Int]){
   
-  def toDateTime() = {
+  def toDateTime = {
     try{
       // artificial check, we say 6:00 starts the day
       if(time.isBefore(LocalTime.parse("6:00"))){
