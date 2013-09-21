@@ -28,17 +28,17 @@ object HumoReader {
   private val timePattern = """([0-2][0-9]u[0-5][0-9])""".r
   private val timeFormat = DateTimeFormat.forPattern("HH'u'mm")
   
-  def fetchDayRetry(day: DateMidnight, channelFilter: List[String] = List()) = {
+  def fetchDayRetry(day: DateMidnight, channelFilter: List[String] = List()):Future[Seq[HumoEvent]] = {
     // TODO better would be to actually use a delay between the retries, we could also use a throttled WS
     val dayData = fetchDay(day, channelFilter)
-    dayData.onFailure{
-      case t => logger.warn(s"First humo day fetch failed for $day: ${t.getMessage}, trying a second time...")
+    dayData.recoverWith{
+      case throwable =>
+        logger.warn(s"First humo day fetch failed for $day: ${throwable.getMessage}, trying a second time...")
+        fetchDay(day, channelFilter)
     }
-    // FIXME this is called immediately as it' not a function that is provided
-    dayData.fallbackTo(fetchDay(day, channelFilter))
   }
 
-  def fetchDay(day: DateMidnight, channelFilter: List[String] = List()):Future[List[HumoEvent]] = {
+  def fetchDay(day: DateMidnight, channelFilter: List[String] = List()):Future[Seq[HumoEvent]] = {
     val url = urlForDay(day)
     logger.info("Fetching " + url)
     WS.url(url).get().map { response =>
