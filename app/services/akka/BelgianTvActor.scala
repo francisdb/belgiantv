@@ -179,7 +179,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport{
             msg.events.foreach { broadcast =>
               if (broadcast.belgacomUrl.isEmpty) {
                 val found = movies.find{belgacomMovie =>
-                  Channel.unify(belgacomMovie.channelName).toLowerCase == broadcast.channel.toLowerCase && belgacomMovie.toDateTime().withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC)
+                  Channel.unify(belgacomMovie.channelName).toLowerCase == broadcast.channel.toLowerCase && belgacomMovie.toDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC)
                 }
                 found.map { event =>
                   Broadcast.setBelgacom(broadcast, event.programId.toString, event.getProgramUrl())

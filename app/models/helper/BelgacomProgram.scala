@@ -74,8 +74,8 @@ case class BelgacomProgram(
     new Date(endTimeSeconds * 1000)
   }
   
-  def toDateTime() = new DateTime(startTimeSeconds * 1000)
+  def toDateTime = new DateTime(startTimeSeconds * 1000)
 
-  override def toString() = title + " " + channelName + "@" + toDateTime
+  override def toString = title + " " + channelName + "@" + toDateTime
   
 }

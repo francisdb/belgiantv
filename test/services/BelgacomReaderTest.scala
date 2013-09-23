@@ -30,8 +30,8 @@ class BelgacomReaderTest extends Specification with NoTimeConversions {
 //	          println(movie)
 //	      }
           val movie = result.head
-          movie.toDateTime.toDateMidnight() must be eq(today)
-          movie.getProgramUrl must not contain("null")
+          movie.toDateTime.toDateMidnight must be equalTo today
+          movie.getProgramUrl must not contain "null"
           movie.title must not beNull
 	      //result must not be empty
         }
@@ -47,8 +47,8 @@ class BelgacomReaderTest extends Specification with NoTimeConversions {
 //	          println(movie)
 //	      }
           val movie = result.head
-          movie.toDateTime.toDateMidnight() must be eq(tomorow)
-          movie.getProgramUrl must not contain("null")
+          movie.toDateTime.toDateMidnight must be equalTo tomorow
+          movie.getProgramUrl must not contain "null"
           movie.title must not beNull
 	      //result must not be empty
         }
