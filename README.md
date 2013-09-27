@@ -1,6 +1,6 @@
 A playframework 2 application for listing movies on belgian tv channels. Movie rating info should give you a clue on what to record.
 
-Playframework 2.2
+Playframework 2.2.x
 ReactiveMongo
 MongoDB
 
