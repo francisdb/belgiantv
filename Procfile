@@ -1,1 +1,1 @@
-web: target/start -Dhttp.port=${PORT} -Dconfig.resource=prod.conf ${JAVA_OPTS}
+web: target/universal/stage/bin/belgiantv -Dhttp.port=${PORT} -Dconfig.resource=prod.conf
