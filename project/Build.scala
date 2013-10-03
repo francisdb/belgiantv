@@ -1,11 +1,14 @@
 import sbt._
 import Keys._
 import play.Project._
+import sbt.Opts.resolver
 
 object ApplicationBuild extends Build {
 
   val appName         = "belgiantv"
   val appVersion      = "1.0-SNAPSHOT"
+
+  resolvers := Seq.empty
 
   // see https://github.com/ReactiveMongo/ReactiveMongo/issues/109
   // see https://github.com/ReactiveMongo/ReactiveMongo/issues/107
@@ -42,7 +45,9 @@ object ApplicationBuild extends Build {
     //resolvers += "sgodbillon" at "https://bitbucket.org/sgodbillon/repository/raw/master/snapshots/"
     javaOptions in test ++= extraJavaOptions,
     scalacOptions ++= Seq("-feature"),
-    resolvers += "Sonatype Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
+    // TODO remove when not using snapshot any more, see https://github.com/ReactiveMongo/ReactiveMongo/issues/124
+    //resolvers += Resolver.sonatypeRepo("snapshots")
+    resolvers += Resolver.url("kbilling-snapshots", url("http://kbilling.github.io/libs/ivy/snapshots"))(Resolver.ivyStylePatterns)
   )/*.settings(
     net.virtualvoid.sbt.graph.Plugin.graphSettings: _*
   )*/
