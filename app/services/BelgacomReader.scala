@@ -1,30 +1,18 @@
 package services
 
-import java.util.Date
-import java.util.ArrayList
-import models.helper.BelgacomChannel
 import play.api.Logger
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import com.fasterxml.jackson.core.`type`.TypeReference
+
 import com.fasterxml.jackson.core.JsonParseException
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
-import models.helper.BelgacomResult
 import play.api.libs.ws.WS
 import org.apache.commons.lang.StringEscapeUtils
-import java.util.concurrent.TimeUnit
-import scala.collection.mutable.ListBuffer
 import org.joda.time.DateMidnight
 import org.joda.time.Interval
-import models.helper.BelgacomListing
 import models.helper.BelgacomProgram
-import play.api.libs.concurrent.Promise
-import models.helper.BelgacomListing
 import models.helper.BelgacomListing
 import concurrent.Future
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.http.Status
 
 
 object BelgacomReader extends JacksonMapper{
@@ -34,7 +22,7 @@ object BelgacomReader extends JacksonMapper{
 
   def readMovies(date: DateMidnight) = {
     val now = new DateMidnight
-    val dayOffset = new Interval(now, date).toPeriod().toStandardDays().getDays()
+    val dayOffset = new Interval(now, date).toPeriod.toStandardDays.getDays
     searchMovies(date)
   }
   
@@ -47,19 +35,27 @@ object BelgacomReader extends JacksonMapper{
   
   private def searchMovies(date: DateMidnight, page:Int): Future[BelgacomListing] = {
     val now = new DateMidnight
-    val dayOffset = new Interval(now, date).toPeriod().toStandardDays().getDays()
+    val dayOffset = new Interval(now, date).toPeriod.toStandardDays.getDays
     
     val url = BASE + "/listing"
 
     //tvmovies[day]:2
-	//tvmovies[genres][]:Oorlog
-	//tvmovies[languages][]:nl
-	//tvmovies[page]:1
+	  //tvmovies[genres][]:Oorlog
+	  //tvmovies[languages][]:nl
+	  //tvmovies[page]:1
     
-    val qs = List(("tvmovies[day]"-> dayOffset.toString), ("tvmovies[page]" -> page.toString))
+    val qs = List("tvmovies[day]"-> dayOffset.toString, "tvmovies[page]" -> page.toString)
     WS.url(url).withQueryString(qs:_*).get().map{ response =>
-      //println(response.body)
-      deserialize[BelgacomListing](response.body)
+      if(response.status == Status.OK){
+        try{
+          deserialize[BelgacomListing](response.body)
+        }catch{
+          case jpe:JsonParseException =>
+            throw new RuntimeException("Failed to parse response to JSON: " + response.body, jpe)
+        }
+      }else{
+        throw new RuntimeException(s"Got ${response.status} for $url - ${response.body}")
+      }
     }
     
   }

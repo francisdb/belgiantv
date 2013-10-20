@@ -25,7 +25,7 @@ class BelgacomReaderTest extends Specification with NoTimeConversions {
     "return data" in {
         running(FakeApplication()) {
           val today = new DateMidnight
-	        val result = Await.result(BelgacomReader.readMovies(today), 30 seconds)
+	        val result = Await.result(BelgacomReader.readMovies(today), 60 seconds)
 //	      result.map{ movie =>
 //	          println(movie)
 //	      }
@@ -42,7 +42,7 @@ class BelgacomReaderTest extends Specification with NoTimeConversions {
     "return data" in {
         running(FakeApplication()) {
           val tomorow = new DateMidnight().plusDays(1)
-	      val result = Await.result(BelgacomReader.readMovies(tomorow), 30 seconds)
+	        val result = Await.result(BelgacomReader.readMovies(tomorow), 60 seconds)
 //	      result.map{ movie =>
 //	          println(movie)
 //	      }

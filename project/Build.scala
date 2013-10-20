@@ -29,8 +29,6 @@ object ApplicationBuild extends Build {
     //"com.foursquare" % "fongo" % "1.0.6" % "test",
 
     "com.typesafe.akka" %% "akka-contrib" % "2.2.0" // TODO update when migrating to newer play
-
-
   )
 
   // copying jvm parameters for testing:
