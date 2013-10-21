@@ -46,18 +46,18 @@ object BelgacomReader extends JacksonMapper{
     
     val qs = List("tvmovies[day]"-> dayOffset.toString, "tvmovies[page]" -> page.toString)
     WS.url(url).withQueryString(qs:_*).get().map{ response =>
-      if(response.status == Status.OK){
-        try{
-          deserialize[BelgacomListing](response.body)
-        }catch{
-          case jpe:JsonParseException =>
-            throw new RuntimeException("Failed to parse response to JSON: " + response.body, jpe)
-        }
-      }else{
-        throw new RuntimeException(s"Got ${response.status} for $url - ${response.body}")
+      response.status match {
+        case Status.OK =>
+          try{
+            deserialize[BelgacomListing](response.body)
+          }catch{
+            case jpe:JsonParseException =>
+              throw new RuntimeException(s"Failed to parse $url response to JSON: ${response.body}", jpe)
+          }
+        case other =>
+          throw new RuntimeException(s"Got $other for $url - ${response.body}")
       }
     }
-    
   }
 
 }

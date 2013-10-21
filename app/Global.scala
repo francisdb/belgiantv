@@ -5,7 +5,7 @@ import services.Mailer
 import play.api.GlobalSettings
 import play.api.Logger
 import play.libs.Akka
-import services.akka.Master
+import services.actors.Master
 import controllers.Application
 
 object Global extends GlobalSettings{

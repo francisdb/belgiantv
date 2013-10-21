@@ -1,4 +1,4 @@
-package services.akka
+package services.actors
 
 import akka.actor.Actor
 import play.api.Logger

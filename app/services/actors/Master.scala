@@ -1,4 +1,4 @@
-package services.akka
+package services.actors
 
 import _root_.akka.actor.{Actor, Props}
 import _root_.akka.routing.RoundRobinRouter
@@ -9,7 +9,7 @@ import models.Broadcast
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class Master extends Actor{
+class Master extends MailingActor with LoggingActor{
 
   val belgianTvRef = context.actorOf(Props[BelgianTvActor].withRouter(RoundRobinRouter(2)), name = "BelgianTV")
 
@@ -31,10 +31,6 @@ class Master extends Actor{
         }yield{
           broadcasts.foreach(belgianTvRef ! LinkTomatoes(_))
         }
-    }
-    
-    case x => {
-      Logger.warn("[" + this + "] - Received unknown message [" + x + "] from " + sender)
     }
   }
 }

@@ -1,4 +1,4 @@
-package services.akka
+package services.actors
 import org.joda.time.DateMidnight
 import models.Broadcast
 import models.helper.TomatoesMovie

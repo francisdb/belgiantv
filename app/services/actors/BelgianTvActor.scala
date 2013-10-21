@@ -1,4 +1,4 @@
-package services.akka
+package services.actors
 
 import play.api.Logger
 import _root_.akka.actor.Props
@@ -19,7 +19,7 @@ import models.{Channel, Movie, Broadcast}
 import services._
 
 
-class BelgianTvActor extends MailingActor with ErrorReportingSupport{
+class BelgianTvActor extends MailingActor with ErrorReportingSupport with LoggingActor{
   
   val logger = Logger("application.actor")
 
@@ -111,31 +111,28 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport{
                 event.year,
                 humoId = Some(event.id),
                 humoUrl = Some(event.url))
-              Broadcast.findByDateTimeAndChannel(broadcast.datetime, broadcast.channel).map{ broadcastOption =>
-                broadcastOption match {
-                  case Some(existingBroadcast) =>
-                    if (existingBroadcast.imdbId.isEmpty) {
-                      self ! LinkImdb(existingBroadcast)
-                    }
-                    existingBroadcast
-                  case None =>
-                    val saved = Broadcast.create(broadcast)
-                    self ! LinkImdb(saved)
-                    self ! LinkTmdb(saved)
-                    self ! LinkTomatoes(saved)
-                    saved
-                }
+              Broadcast.findByDateTimeAndChannel(broadcast.datetime, broadcast.channel).map{
+                case Some(existingBroadcast) =>
+                  if (existingBroadcast.imdbId.isEmpty) {
+                    self ! LinkImdb(existingBroadcast)
+                  }
+                  existingBroadcast
+                case None =>
+                  val saved = Broadcast.create(broadcast)
+                  self ! LinkImdb(saved)
+                  self ! LinkTmdb(saved)
+                  self ! LinkTomatoes(saved)
+                  saved
+
               }
             }
 
-            broadcasts.onComplete{ maybeBroadcasts =>
-              maybeBroadcasts match{
-                case Failure(e) =>
-                  reportFailure("Failed to find broadcasts for humo events: " + e.getMessage, e)
-                case Success(foundBroadcast) =>
-                  self ! FetchYelo(msg.day, foundBroadcast)
-                  self ! FetchBelgacom(msg.day, foundBroadcast)
-              }
+            broadcasts.onComplete{
+              case Failure(e) =>
+                reportFailure("Failed to find broadcasts for humo events: " + e.getMessage, e)
+              case Success(foundBroadcast) =>
+                self ! FetchYelo(msg.day, foundBroadcast)
+                self ! FetchBelgacom(msg.day, foundBroadcast)
             }
         }
 
@@ -144,56 +141,45 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport{
     case msg: FetchYelo => {
       logger.info(s"[$this] - Received [$msg] from $sender")
 
-      YeloReader.fetchDay(msg.day, Channel.channelFilter).onComplete { maybeMovies =>
-
-        maybeMovies match {
-          case Failure(e) =>
-            reportFailure("Failed to read yelo day: " + msg.day + " - " + e.getMessage, e)
-          case Success(movies) =>
-            // all unique channels
-            // println(movies.groupBy{_.channel}.map{_._1})
-
-            msg.events.foreach { broadcast =>
-              if (broadcast.yeloUrl.isEmpty) {
-                val found = movies.find(yeloMovie =>  Channel.unify(yeloMovie.channel).toLowerCase == broadcast.channel.toLowerCase && yeloMovie.toDateTime().withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC))
-                found.map { event =>
-                  Broadcast.setYelo(broadcast, event.id.toString, event.url)
-                }.getOrElse {
-                  logger.warn("No yelo match for " + broadcast.channel + " " + broadcast.humanDate + " " + broadcast.name)
-                }
+      YeloReader.fetchDay(msg.day, Channel.channelFilter).onComplete {
+        case Failure(e) =>
+          reportFailure("Failed to read yelo day: " + msg.day + " - " + e.getMessage, e)
+        case Success(movies) =>
+          // all unique channels
+          // println(movies.groupBy{_.channel}.map{_._1})
+          msg.events.foreach { broadcast =>
+            if (broadcast.yeloUrl.isEmpty) {
+              val found = movies.find(yeloMovie =>  Channel.unify(yeloMovie.channel).toLowerCase == broadcast.channel.toLowerCase && yeloMovie.toDateTime().withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC))
+              found.map { event =>
+                Broadcast.setYelo(broadcast, event.id.toString, event.url)
+              }.getOrElse {
+                logger.warn("No yelo match for " + broadcast.channel + " " + broadcast.humanDate + " " + broadcast.name)
               }
             }
-        }
+          }
       }
     }
     
     case msg: FetchBelgacom => {
       logger.info(s"[$this] - Received [$msg] from $sender")
       
-      BelgacomReader.readMovies(msg.day).onComplete{ maybeMovies =>
-
-        maybeMovies match {
-          case Failure(e) =>
-            reportFailure("Failed to read belgacom day: " + e.getMessage, e)
-          case Success(movies) =>
-            msg.events.foreach { broadcast =>
-              if (broadcast.belgacomUrl.isEmpty) {
-                val found = movies.find{belgacomMovie =>
-                  Channel.unify(belgacomMovie.channelName).toLowerCase == broadcast.channel.toLowerCase && belgacomMovie.toDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC)
-                }
-                found.map { event =>
-                  Broadcast.setBelgacom(broadcast, event.programId.toString, event.getProgramUrl())
-                }.getOrElse {
-                  logger.warn("No belgacom match for " + broadcast.channel + " " + broadcast.humanDate + " " + broadcast.name)
-                }
+      BelgacomReader.readMovies(msg.day).onComplete{
+        case Failure(e) =>
+          reportFailure("Failed to read belgacom day: " + e.getMessage, e)
+        case Success(movies) =>
+          msg.events.foreach { broadcast =>
+            if (broadcast.belgacomUrl.isEmpty) {
+              val found = movies.find{belgacomMovie =>
+                Channel.unify(belgacomMovie.channelName).toLowerCase == broadcast.channel.toLowerCase && belgacomMovie.toDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC)
+              }
+              found.map { event =>
+                Broadcast.setBelgacom(broadcast, event.programId.toString, event.getProgramUrl())
+              }.getOrElse {
+                logger.warn("No belgacom match for " + broadcast.channel + " " + broadcast.humanDate + " " + broadcast.name)
               }
             }
-        }
+          }
       }
-    }
-
-    case x => {
-      logger.warn(s"[$this] - Received unknown message [$x] from $sender")
     }
   }
 }
