@@ -16,7 +16,7 @@ import play.api.http.Status
 
 
 object BelgacomReader extends JacksonMapper{
-  private val BASE = "http://sphinx.skynet.be/tv-overal/ajax"
+  private val BASE = "http://sphinx.skynet.be/tv-overal/zcommon/tv-everywhere"
     
   private val logger = Logger("application.belgacom")
 

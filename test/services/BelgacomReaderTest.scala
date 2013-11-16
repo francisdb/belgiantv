@@ -1,15 +1,12 @@
 package services
 
 
-import play.api.test._
 import play.api.test.Helpers._
 
 import org.joda.time.DateMidnight
 
-import org.junit.runner.RunWith
 
 import org.specs2.mutable._
-import org.specs2.runner.JUnitRunner
 import org.specs2.time.NoTimeConversions
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -17,10 +14,8 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import play.api.test.FakeApplication
 
-//@RunWith(classOf[JUnitRunner])
 class BelgacomReaderTest extends Specification with NoTimeConversions {
 
- 
  "the movie search for today" should {
     "return data" in {
         running(FakeApplication()) {
