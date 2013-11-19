@@ -4,7 +4,7 @@ import org.joda.time.DateMidnight
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.Interval
 import org.joda.time.LocalTime
-import play.api.libs.json.{JsArray, JsValue, JsObject}
+import play.api.libs.json.{Json, JsArray, JsValue, JsObject}
 import play.api.Logger
 import org.jsoup.Jsoup
 import scala.collection.JavaConversions._
@@ -77,24 +77,26 @@ object YeloReader {
 
     if(jsonNode.isInstanceOf[JsObject]){
       val pvrbroadcasts = jsonNode.as[JsObject]
-      pvrbroadcasts.fields.map {
-        case (eventIdentification, eventObject) =>
-          val eventId = eventIdentification.toInt
-          val title = (eventObject \ "title").as[String]
-          val channelWebpvrId = (eventObject \ "channel_webpvr_id").as[String]
-          val startTime = (eventObject \ "start_time").as[String].toLong * 1000
-          val endTime = (eventObject \ "end_time").as[String].toLong * 1000
+      //println(Json.prettyPrint(pvrbroadcasts))
+      pvrbroadcasts.fields.map { case (eventIdentification, eventObject) =>
+        val eventId = eventIdentification.toInt
+        val title = (eventObject \ "title").as[String]
+        val startTimeMillis = (eventObject \ "start_time").as[Long] * 1000
+        val endTimeMillis = (eventObject \ "end_time").as[Long] * 1000
 
-          val eventDiv = Option(doc.getElementsByAttributeValue("id", "js-event-" + eventId).first())
-          eventDiv.map {
-            div =>
-              val url = "http://yelotv.be" + div.getElementsByTag("a").attr("href")
-              val channel = channelMap.get(channelWebpvrId).getOrElse("UNKNOWN")
-              YeloEvent(eventId, title, url, channel, new Interval(startTime, endTime))
-          }.getOrElse {
-            logger.warn("No div found for %s %s at %s".format(eventId, title, new DateTime(startTime)))
-            YeloEvent(eventId, title, null, "UNKNOWN", new Interval(startTime, endTime))
-          }
+        val divId = "js-event-" + eventId
+        val eventDiv = Option(doc.getElementsByAttributeValue("id", divId).first())
+        eventDiv.map { div =>
+          val li = div.parent()
+          val epgchanneleventsindex = li.attr("epgchanneleventsindex").toLong
+          val url = "http://yelotv.be" + div.getElementsByTag("a").attr("href")
+
+          val channel = channelMap.get(epgchanneleventsindex).getOrElse("UNKNOWN")
+          YeloEvent(eventId, title, url, channel, new Interval(startTimeMillis, endTimeMillis))
+        }.getOrElse {
+          logger.warn("No div found for %s %s at %s".format(divId, title, new DateTime(startTimeMillis)))
+          YeloEvent(eventId, title, null, "UNKNOWN", new Interval(startTimeMillis, endTimeMillis))
+        }
       }
     }else{
       logger.warn(s"No yelo movies found for $url")
@@ -102,19 +104,20 @@ object YeloReader {
     }
   }
 
-  private def parseChannels(body: JsValue) = {
+  private def parseChannels(body: JsValue):Map[Long, String] = {
     val channels = (body \ "Result" \ "Channels").as[String]
     val channelsDoc = Jsoup.parse(channels)
+    val lis = channelsDoc.getElementsByTag("li")
+    val liList = lis.subList(0, lis.size).toList
+    val channelMap = liList.map { li =>
+      val epgchannelindex = li.attr("epgchannelindex").toLong
+      val img = li.getElementsByTag("img").first()
 
-    val imgs = channelsDoc.getElementsByTag("img")
-    val imglist = imgs.subList(0, imgs.size).toList
-    val channelMap = imglist.map {
-      img =>
-        val alt = img.attr("alt")
-        val src = img.attr("src")
-        val file = src.substring(src.lastIndexOf("/") + 1)
-        val code = file.substring(0, 5)
-        (code, alt)
+      val alt = img.attr("alt")
+      val src = img.attr("src")
+      val file = src.substring(src.lastIndexOf("/") + 1)
+      val code = file.substring(0, 5)
+      (epgchannelindex, alt)
     }.toMap
     channelMap
   }
