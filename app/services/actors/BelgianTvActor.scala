@@ -149,7 +149,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
           // println(movies.groupBy{_.channel}.map{_._1})
           msg.events.foreach { broadcast =>
             if (broadcast.yeloUrl.isEmpty) {
-              val found = movies.find(yeloMovie =>  Channel.unify(yeloMovie.channel).toLowerCase == broadcast.channel.toLowerCase && yeloMovie.toDateTime().withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC))
+              val found = movies.find(yeloMovie =>  Channel.unify(yeloMovie.channel).toLowerCase == broadcast.channel.toLowerCase && yeloMovie.startDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC))
               found.map { event =>
                 Broadcast.setYelo(broadcast, event.id.toString, event.url)
               }.getOrElse {

@@ -111,12 +111,14 @@ object YeloReader {
     val liList = lis.subList(0, lis.size).toList
     val channelMap = liList.map { li =>
       val epgchannelindex = li.attr("epgchannelindex").toLong
-      val img = li.getElementsByTag("img").first()
+      val imgOption = Option(li.getElementsByTag("img").first())
+      val alt = imgOption.map{ img =>
+        img.attr("alt")
+      }.getOrElse("UNKNOWN")
 
-      val alt = img.attr("alt")
-      val src = img.attr("src")
-      val file = src.substring(src.lastIndexOf("/") + 1)
-      val code = file.substring(0, 5)
+      //val src = img.attr("src")
+      //val file = src.substring(src.lastIndexOf("/") + 1)
+      //val code = file.substring(0, 5)
       (epgchannelindex, alt)
     }.toMap
     channelMap
@@ -138,6 +140,6 @@ object YeloReader {
       channel: String,
       interval: Interval){
     
-    def toDateTime() = interval.getStart
+    lazy val startDateTime = interval.getStart
   }
 }
