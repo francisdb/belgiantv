@@ -50,7 +50,7 @@ case class Broadcast(
   def tmdbUrl = tmdbId.map("http://www.themoviedb.org/movie/%s".format(_))
   def tomatoesUrl = tomatoesId.map("http://www.rottentomatoes.com/m/%s".format(_))
 
-  override def toString() = name + " " + channel + "@" + datetime
+  override def toString = name + " " + channel + "@" + datetime
 }
 
 
@@ -96,18 +96,18 @@ object Broadcast extends MongoSupport{
         "channel" -> BSONString(broadcast.channel),
         //"datetime" -> movie.datetime.map(dt => BSONDateTime(dt.getMillis)),
         "datetime" -> BSONLong(broadcast.datetime.getMillis),
-        "year" -> broadcast.year.map(BSONInteger(_)),
-        "humoId" -> broadcast.humoId.map(BSONString(_)),
-        "humoUrl" -> broadcast.humoUrl.map(BSONString(_)),
-        "yeloId" -> broadcast.yeloId.map(BSONString(_)),
-        "yeloUrl" -> broadcast.yeloUrl.map(BSONString(_)),
-        "belgacomId" -> broadcast.belgacomId.map(BSONString(_)),
-        "belgacomUrl" -> broadcast.belgacomUrl.map(BSONString(_)),
-        "imdbId" -> broadcast.imdbId.map(BSONString(_)),
-        "tomatoesId" -> broadcast.tomatoesId.map(BSONString(_)),
-        "tomatoesRating" -> broadcast.tomatoesRating.map(BSONString(_)),
-        "tmdbId" -> broadcast.tmdbId.map(BSONString(_)),
-        "tmdbImg" -> broadcast.tmdbImg.map(BSONString(_))
+        "year" -> broadcast.year.map(BSONInteger),
+        "humoId" -> broadcast.humoId.map(BSONString),
+        "humoUrl" -> broadcast.humoUrl.map(BSONString),
+        "yeloId" -> broadcast.yeloId.map(BSONString),
+        "yeloUrl" -> broadcast.yeloUrl.map(BSONString),
+        "belgacomId" -> broadcast.belgacomId.map(BSONString),
+        "belgacomUrl" -> broadcast.belgacomUrl.map(BSONString),
+        "imdbId" -> broadcast.imdbId.map(BSONString),
+        "tomatoesId" -> broadcast.tomatoesId.map(BSONString),
+        "tomatoesRating" -> broadcast.tomatoesRating.map(BSONString),
+        "tmdbId" -> broadcast.tmdbId.map(BSONString),
+        "tmdbImg" -> broadcast.tmdbImg.map(BSONString)
       )
     }
   }
@@ -141,7 +141,7 @@ object Broadcast extends MongoSupport{
     broadcastCollection.find(BSONDocument(
       "datetime" -> BSONDocument("$gt" -> BSONLong(interval.getStart.getMillis)),
       "datetime" -> BSONDocument("$lt" ->  BSONLong(interval.getEnd.getMillis))))
-          .sort(BSONDocument("datetime" -> BSONInteger(1))).cursor[Broadcast].toList
+          .sort(BSONDocument("datetime" -> BSONInteger(1))).cursor[Broadcast].collect[List]()
 
 //    broadcastCollectionJson.find(Json.obj(
 //        "datetime" -> Json.obj("$gt" -> interval.getStart.getMillis),
@@ -154,8 +154,8 @@ object Broadcast extends MongoSupport{
     broadcastCollection
       .find(BSONDocument(
       "datetime" -> BSONDocument("$gt" -> BSONLong(System.currentTimeMillis())),
-      "tomatoesId" -> BSONDocument("$exists" -> BSONBoolean(false))))
-      .sort(BSONDocument("datetime" -> BSONInteger(1))).cursor[Broadcast].toList
+      "tomatoesId" -> BSONDocument("$exists" -> BSONBoolean(value=false))))
+      .sort(BSONDocument("datetime" -> BSONInteger(1))).cursor[Broadcast].collect[List]()
 
 //    broadcastCollectionJson
 //      .find(Json.obj(

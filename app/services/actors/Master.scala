@@ -8,22 +8,20 @@ import akka.actor.ActorLogging
 import models.Broadcast
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import akka.event.LoggingReceive
 
-class Master extends MailingActor with LoggingActor{
+class Master extends MailingActor with LoggingActor with ActorLogging{
 
   val belgianTvRef = context.actorOf(Props[BelgianTvActor].withRouter(RoundRobinRouter(2)), name = "BelgianTV")
 
-  def receive: Receive = {
+  // TODO check the LoggingReceive docs and see if we can enable it on heroku
+  def receive: Receive = LoggingReceive {
     case Start => {
       Logger.info("[" + this + "] - Received [start] from " + sender)
       val today = new DateMidnight()
-      belgianTvRef ! FetchHumo(today)
-      belgianTvRef ! FetchHumo(today.plusDays(1))
-      belgianTvRef ! FetchHumo(today.plusDays(2))
-      belgianTvRef ! FetchHumo(today.plusDays(3))
-      belgianTvRef ! FetchHumo(today.plusDays(4))
-      belgianTvRef ! FetchHumo(today.plusDays(5))
-      belgianTvRef ! FetchHumo(today.plusDays(6))
+      for(day <- 0 until 7){
+        belgianTvRef ! FetchHumo(today.plusDays(day))
+      }
     }
     case StartTomatoes => {
         for{

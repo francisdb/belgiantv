@@ -19,3 +19,4 @@ test-result
 #intellij idea
 .idea
 .idea_modules
+*.iml

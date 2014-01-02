@@ -5,8 +5,7 @@ import _root_.models.{Channel, Movie, Broadcast}
 
 import play.api._
 import play.api.mvc._
-import play.api.Play.current
-import play.api.libs.concurrent._
+import play.api.libs.concurrent.Execution.Implicits._
 
 import java.io.StringReader
 import java.io.ByteArrayOutputStream

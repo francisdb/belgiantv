@@ -10,9 +10,7 @@ object ApplicationBuild extends Build {
 
   resolvers := Seq.empty
 
-  // see https://github.com/ReactiveMongo/ReactiveMongo/issues/109
-  // see https://github.com/ReactiveMongo/ReactiveMongo/issues/107
-  val reactiveMongoVersion = "0.10.0-SNAPSHOT"// "0.9"
+  val reactiveMongoVersion = "0.10.0"
 
   val appDependencies = Seq(
     // Add your project dependencies here,
