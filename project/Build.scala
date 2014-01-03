@@ -11,6 +11,7 @@ object ApplicationBuild extends Build {
   resolvers := Seq.empty
 
   val reactiveMongoVersion = "0.10.0"
+  val reactiveMongoPluginVersion = "0.10.2"
 
   val appDependencies = Seq(
     // Add your project dependencies here,
@@ -22,7 +23,7 @@ object ApplicationBuild extends Build {
     //"net.vz.mongodb.jackson" %% "play-mongo-jackson-mapper" % "1.0.0"
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.0", // TODO get rid of this dependency
     "org.reactivemongo" %% "reactivemongo" % reactiveMongoVersion,
-    "org.reactivemongo" %% "play2-reactivemongo" % reactiveMongoVersion,  // cross CrossVersion.full
+    "org.reactivemongo" %% "play2-reactivemongo" % reactiveMongoPluginVersion,  // cross CrossVersion.full
 
     //"com.foursquare" % "fongo" % "1.0.6" % "test",
 
