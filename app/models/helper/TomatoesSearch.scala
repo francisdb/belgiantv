@@ -1,27 +1,41 @@
 package models.helper
 
-import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
+import play.api.libs.json._
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+object TomatoesReaders{
+  implicit val idsReads = Json.reads[TomatoesAlternateIds]
+  implicit val ratingsReads = Json.reads[TomatoesRatings]
+  //implicit val movieReads = Json.reads[TomatoesMovie]
+  implicit val movieReads = new Reads[TomatoesMovie] {
+    override def reads(json: JsValue): JsResult[TomatoesMovie] = {
+      import _root_.util.JsExt._
+      val id = (json \ "id").as[String]
+      val title = (json \ "title").as[String]
+      val year = (json \ "year").asOptSafe[Int]
+      val runtime = (json \ "runtime").asOptSafe[Int]
+      val ratings = (json \ "ratings").as[TomatoesRatings]
+      val alternate_ids = (json \ "alternate_ids").asOpt[TomatoesAlternateIds]
+      val critics_consensus = (json \ "critics_consensus").asOpt[String]
+      JsSuccess(TomatoesMovie(id, title, year, runtime, ratings, alternate_ids, critics_consensus))
+    }
+  }
+  implicit val searchReads = Json.reads[TomatoesSearch]
+}
+
 case class TomatoesSearch(
     total:Int, 
     movies:List[TomatoesMovie]) {	
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 case class TomatoesMovie(
-    id:Int, 
+    id:String,
     title:String,
     // annoying, this field can be 1999 or ""
-    year:Option[String],
-    runtime:String,
+    year:Option[Int],
+    runtime:Option[Int],
     ratings:TomatoesRatings, 
     alternate_ids:Option[TomatoesAlternateIds],
     critics_consensus:Option[String]) {
-
-  def yearAsInt = year.flatMap(parseInt(_))
-
-  private def parseInt(s: String) = try { Some(s.toInt) } catch { case _:NumberFormatException => None }
 }
 
 case class TomatoesRatings (
@@ -33,6 +47,9 @@ case class TomatoesRatings (
 	
 case class TomatoesAlternateIds(imdb: String){
 }
+
+
+
 
 //case class Foo(bar: String, baz: Int)
 //val serialized: String = generate(Foo("bar", 42))

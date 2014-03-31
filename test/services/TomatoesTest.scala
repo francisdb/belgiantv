@@ -27,7 +27,7 @@ class TomatoesTest extends Specification with NoTimeConversions with ConfigSpec{
         skipIfMissingConfig(configProperty)
         val movie = Await.result(TomatoesApiService.find("Pulp Fiction"), 30 seconds).get
         movie.title must startWith("Pulp Fiction")
-        movie.yearAsInt.get must beEqualTo(1994)
+        movie.year.get must beEqualTo(1994)
       }
     }
   }
@@ -39,8 +39,8 @@ class TomatoesTest extends Specification with NoTimeConversions with ConfigSpec{
         val movieOption = Await.result(TomatoesApiService.find("don", Option(2006)), 30 seconds)
         movieOption must beSome
         val movie = movieOption.get
-        movie.title must_== ("Don")
-        movie.yearAsInt.get must beEqualTo(2006)
+        movie.title must be equalTo "Don"
+        movie.year.get must be equalTo 2006
       }
     }
   }
@@ -52,8 +52,8 @@ class TomatoesTest extends Specification with NoTimeConversions with ConfigSpec{
         val movieOption = Await.result(TomatoesApiService.find("The Beach", Option(2000)), 30 seconds)
         movieOption must beSome
         val movie = movieOption.get
-        movie.title must_== ("The Beach")
-        movie.yearAsInt.get must beEqualTo(2000)
+        movie.title must be equalTo "The Beach"
+        movie.year.get must be equalTo 2000
       }
     }
   }
@@ -65,8 +65,8 @@ class TomatoesTest extends Specification with NoTimeConversions with ConfigSpec{
         val movieOption = Await.result(TomatoesApiService.find("Cape Fear", Option(1962)), 30 seconds)
         movieOption must beSome
         val movie = movieOption.get
-        movie.title must_== ("Cape Fear")
-        movie.yearAsInt.get must beEqualTo(1962)
+        movie.title must be equalTo "Cape Fear"
+        movie.year.get must be equalTo 1962
       }
     }
   }
@@ -78,8 +78,8 @@ class TomatoesTest extends Specification with NoTimeConversions with ConfigSpec{
         val movieOption = Await.result(TomatoesApiService.find("This Is England", Option(2006)), 30 seconds)
         movieOption must beSome
         val movie = movieOption.get
-        movie.title must_== ("This Is England")
-        movie.yearAsInt.get must beEqualTo(2006)
+        movie.title must be equalTo "This Is England"
+        movie.year.get must be equalTo 2006
       }
     }
   }
@@ -91,8 +91,8 @@ class TomatoesTest extends Specification with NoTimeConversions with ConfigSpec{
         val movieOption = Await.result(TomatoesApiService.find("Spring Breakdown", Option(2009)), 30 seconds)
         movieOption must beSome
         val movie = movieOption.get
-        movie.title must_== ("Spring Breakdown")
-        movie.yearAsInt.get must beEqualTo(2008)
+        movie.title must be equalTo "Spring Breakdown"
+        movie.year.get must be equalTo 2008
       }
     }
   }

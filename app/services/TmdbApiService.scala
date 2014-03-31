@@ -42,7 +42,7 @@ object TmdbApiService extends JacksonMapper{
 	
 	def search(title:String, year:Option[Int] = None) = {
 	  println(apiKey)
-		val url = BASE + "/search/movie";
+		val url = BASE + "/search/movie"
 		
 		val qs = List(("api_key"-> apiKey), ("query" -> title))
 		val qs2 = year.map(y => qs.+:("year" -> y.toString)).getOrElse(qs)

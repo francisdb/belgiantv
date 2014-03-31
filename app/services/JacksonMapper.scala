@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.core.JsonParseException
 import play.api.Logger
 
+@deprecated("switch to play json parsing", "20140331")
 trait JacksonMapper {
   private val logger = Logger("application.imdb")
 
