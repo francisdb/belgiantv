@@ -10,7 +10,6 @@ import concurrent.Future
 import reactivemongo.bson._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import util.{Try, Failure, Success}
 
 import reactivemongo.api.collections.default.BSONCollection
 import reactivemongo.core.commands.LastError

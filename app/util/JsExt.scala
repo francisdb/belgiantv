@@ -8,6 +8,7 @@ object JsExt {
     def asOptSafe[T](implicit fjs: Reads[T]): Option[T] = value match {
       case n: JsNumber => fjs.reads(value).asOpt
       case s: JsString => None // do we want to try to parse the string?
+      case o: JsValue => None // fail here?
     }
   }
 

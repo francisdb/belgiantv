@@ -1,6 +1,6 @@
 package models
 
-import util.{Failure, Success, Try}
+import scala.util.{Try, Success, Failure}
 import reactivemongo.core.commands.LastError
 import play.api.Logger
 import services.{ErrorReportingSupport, Mailer}
