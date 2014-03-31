@@ -14,8 +14,8 @@ object Mailer {
   def sendMail(subject: String, reason:Throwable) {
     val mail = use[MailerPlugin].email
 
-    mail.addRecipient("Francis De Brabandere <francisdb@gmail.com>")
-    mail.addFrom("BelgianTV <belgiantv@somatik.be>")
+    mail.setRecipient("Francis De Brabandere <francisdb@gmail.com>")
+    mail.setFrom("BelgianTV <belgiantv@somatik.be>")
 
     val stacktrace = stacktraceToString(reason)
     val content = "Unhandled serverside exception, please check this ASAP.\n\n" + stacktrace

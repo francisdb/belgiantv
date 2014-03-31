@@ -17,8 +17,8 @@ object ApplicationBuild extends Build {
     // Add your project dependencies here,
     jdbc,
     anorm,
-    "com.typesafe" %% "play-plugins-mailer" % "2.1.0",
-    "org.jsoup" % "jsoup" % "1.7.2",
+    "com.typesafe" %% "play-plugins-mailer" % "2.2.0",
+    "org.jsoup" % "jsoup" % "1.7.3",
     "commons-lang" % "commons-lang" % "2.6",
     //"net.vz.mongodb.jackson" %% "play-mongo-jackson-mapper" % "1.0.0"
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.0", // TODO get rid of this dependency
@@ -41,10 +41,10 @@ object ApplicationBuild extends Build {
   val main = play.Project(appName, appVersion, appDependencies).settings(
     //resolvers += "sgodbillon" at "https://bitbucket.org/sgodbillon/repository/raw/master/snapshots/"
     javaOptions in test ++= extraJavaOptions,
-    scalacOptions ++= Seq("-feature"),
-    // TODO remove when not using snapshot any more, see https://github.com/ReactiveMongo/ReactiveMongo/issues/124
-    //resolvers += Resolver.sonatypeRepo("snapshots")
-    resolvers += Resolver.url("kbilling-snapshots", url("http://kbilling.github.io/libs/ivy/snapshots"))(Resolver.ivyStylePatterns)
+    scalacOptions ++= Seq("-feature")
+    // remove when not using snapshot any more, see https://github.com/ReactiveMongo/ReactiveMongo/issues/124
+    // resolvers += Resolver.sonatypeRepo("snapshots")
+    // resolvers += Resolver.url("kbilling-snapshots", url("http://kbilling.github.io/libs/ivy/snapshots"))(Resolver.ivyStylePatterns)
   )/*.settings(
     net.virtualvoid.sbt.graph.Plugin.graphSettings: _*
   )*/
