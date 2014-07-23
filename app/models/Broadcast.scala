@@ -107,7 +107,7 @@ object Broadcast extends MongoSupport{
         "tomatoesRating" -> broadcast.tomatoesRating.map(BSONString),
         "tmdbId" -> broadcast.tmdbId.map(BSONString),
         "tmdbImg" -> broadcast.tmdbImg.map(BSONString),
-        "tmdbRating" -> broadcast.tmdbImg.map(BSONString)
+        "tmdbRating" -> broadcast.tmdbRating.map(BSONString)
       )
     }
   }
