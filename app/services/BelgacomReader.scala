@@ -13,6 +13,7 @@ import concurrent.Future
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.http.Status
+import play.api.Play.current
 
 
 object BelgacomReader extends JacksonMapper{

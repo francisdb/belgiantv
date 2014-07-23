@@ -6,6 +6,7 @@ import org.joda.time.Interval
 import org.joda.time.LocalTime
 import play.api.libs.json.{Json, JsArray, JsValue, JsObject}
 import play.api.Logger
+import play.api.Play.current
 import org.jsoup.Jsoup
 import scala.collection.JavaConversions._
 import play.api.libs.ws.WS

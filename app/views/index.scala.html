@@ -26,13 +26,13 @@
             @info.rating.map(_ + "%")
 
     		<br/>
-    		<small>@info.broadcast.channel @info.broadcast.humanDate
+    		<small>@info.broadcast.channel @info.broadcast.humanDate()
     		<a href="@info.broadcast.humoUrl">Humo</a>
             @info.movie.map{ m =>
             <a href="@m.imdbUrl()">IMDb @m.imdbRating</a>
             }
     		@info.broadcast.tmdbUrl.map{ u => 
-    		<a href="@u">TMDb</a>
+    		<a href="@u">TMDb @{info.broadcast.tmdbRating.getOrElse("")}</a>
     		}
     		@info.broadcast.tomatoesUrl.map{ u => 
     		<a href="@u">Tomatoes @{info.broadcast.tomatoesRating.get}%</a>

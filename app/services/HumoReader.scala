@@ -17,6 +17,7 @@ import org.jsoup.Jsoup
 import play.api.Logger
 import play.api.libs.ws.WS
 import play.api.http.Status
+import play.api.Play.current
 
 import controllers.Application
 

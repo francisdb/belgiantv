@@ -1,6 +1,7 @@
 package services
 import play.api.libs.ws.WS
 import play.api.Logger
+import play.api.Play.current
 import models.helper.{TomatoesMovie, TomatoesSearch}
 
 import scala.concurrent.ExecutionContext.Implicits.global

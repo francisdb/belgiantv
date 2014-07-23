@@ -12,8 +12,6 @@ import reactivemongo.bson._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import reactivemongo.api.collections.default.BSONCollection
-import reactivemongo.core.commands.LastError
-import scala.Some
 import play.modules.reactivemongo.json.collection.JSONCollection
 
 import play.api.libs.json._
@@ -37,7 +35,8 @@ case class Broadcast(
   tomatoesId: Option[String] = None,
   tomatoesRating: Option[String] = None,
   tmdbId: Option[String] = None,
-  tmdbImg: Option[String] = None
+  tmdbImg: Option[String] = None,
+  tmdbRating: Option[String] = None
 ){
 
   def humanDate() = {
@@ -82,7 +81,8 @@ object Broadcast extends MongoSupport{
         doc.getAs[String]("tomatoesId"),
         doc.getAs[String]("tomatoesRating"),
         doc.getAs[String]("tmdbId"),
-        doc.getAs[String]("tmdbImg")
+        doc.getAs[String]("tmdbImg"),
+        doc.getAs[String]("tmdbRating")
       )
     }
   }
@@ -106,7 +106,8 @@ object Broadcast extends MongoSupport{
         "tomatoesId" -> broadcast.tomatoesId.map(BSONString),
         "tomatoesRating" -> broadcast.tomatoesRating.map(BSONString),
         "tmdbId" -> broadcast.tmdbId.map(BSONString),
-        "tmdbImg" -> broadcast.tmdbImg.map(BSONString)
+        "tmdbImg" -> broadcast.tmdbImg.map(BSONString),
+        "tmdbRating" -> broadcast.tmdbImg.map(BSONString)
       )
     }
   }
@@ -178,14 +179,14 @@ object Broadcast extends MongoSupport{
   def setYelo(b:Broadcast, yeloId:String, yeloUrl:String) {
     broadcastCollection.update(
       BSONDocument("_id" -> b.id),
-      BSONDocument("$set" -> BSONDocument("yeloId" -> BSONString(yeloId), "yeloUrl" -> BSONString(yeloUrl))))
+      BSONDocument("$set" -> BSONDocument("yeloId" -> yeloId, "yeloUrl" -> yeloUrl)))
       .onComplete(le => mongoLogger(le, "updated yelo for " + b))
   }
 
   def setBelgacom(b:Broadcast, belgacomId:String, belgacomUrl:String) {
     broadcastCollection.update(
       BSONDocument("_id" -> b.id),
-      BSONDocument("$set" -> BSONDocument("belgacomId" -> BSONString(belgacomId), "belgacomUrl" -> BSONString(belgacomUrl))))
+      BSONDocument("$set" -> BSONDocument("belgacomId" -> belgacomId, "belgacomUrl" -> belgacomUrl)))
       .onComplete(le => mongoLogger(le, "updated belgacom for " + b))
   }
 
@@ -200,22 +201,24 @@ object Broadcast extends MongoSupport{
     broadcastCollection.update(
       BSONDocument("_id" -> broadcastId),
       BSONDocument("$set" -> BSONDocument(
-        "tomatoesId" -> BSONString(tomatoesId),
+        "tomatoesId" -> tomatoesId,
         "tomatoesRating" -> tomatoesRating)))
       .onComplete(le => mongoLogger(le, "updated tomatoes for " + broadcastId))
   }
 
-  def setTmdb(b:Broadcast, tmdbId:String) {
+  def setTmdb(b:Broadcast, tmdbId:String, tmdbRating:String) {
     broadcastCollection.update(
       BSONDocument("_id" -> b.id),
-      BSONDocument("$set" -> BSONDocument("tmdbId" -> BSONString(tmdbId))))
+      BSONDocument("$set" -> BSONDocument(
+        "tmdbId" -> tmdbId,
+        "tmdbRating" -> tmdbRating)))
       .onComplete(le => mongoLogger(le, "updated tmdb for " + b))
   }
 
   def setTmdbImg(b:Broadcast, tmdbImg:String) {
     broadcastCollection.update(
       BSONDocument("_id" -> b.id),
-      BSONDocument("$set" -> BSONDocument("tmdbImg" -> BSONString(tmdbImg))))
+      BSONDocument("$set" -> BSONDocument("tmdbImg" -> tmdbImg)))
       .onComplete(le => mongoLogger(le, "updated tmdb img for " + b))
   }
 

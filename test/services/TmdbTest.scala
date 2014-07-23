@@ -27,6 +27,8 @@ class TmdbTest extends Specification with NoTimeConversions with ConfigSpec {
 	        val movie = Await.result(TmdbApiService.find("don", Option.apply(2006)), 30 seconds).get
 	        movie.title must_== "Don"
 	        movie.release_date must startWith("2006")
+          //print(movie.vote_average)
+          (movie.vote_average must not).beNull
         }
     }
   }

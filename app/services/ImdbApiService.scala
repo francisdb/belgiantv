@@ -1,6 +1,7 @@
 package services
 import play.api.libs.ws.WS
 import play.api.Logger
+import play.api.Play.current
 import models.helper.ImdbApiMovie
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule

@@ -44,7 +44,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
 
       tmdbmovie.map { mOption =>
         mOption.map{ m =>
-           Broadcast.setTmdb(msg.broadcast, m.id.toString)
+           Broadcast.setTmdb(msg.broadcast, m.id.toString, m.vote_average)
            m.posterUrl.map(Broadcast.setTmdbImg(msg.broadcast, _))
         }.getOrElse{
         	logger.warn("No TMDb movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
