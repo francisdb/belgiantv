@@ -3,20 +3,17 @@ package services
 import org.joda.time.DateMidnight
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.Interval
-import org.joda.time.LocalTime
-import play.api.libs.json.{Json, JsArray, JsValue, JsObject}
+import play.api.libs.json.{JsValue, JsObject}
 import play.api.Logger
 import play.api.Play.current
 import org.jsoup.Jsoup
 import scala.collection.JavaConversions._
 import play.api.libs.ws.WS
-import java.text.ParseException
 import org.joda.time.DateTime
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import models.Channel
-import com.sun.xml.internal.fastinfoset.tools.FI_SAX_Or_XML_SAX_SAXEvent
-import concurrent.{Future, Await}
+import concurrent.Future
 import com.fasterxml.jackson.core.JsonParseException
 import play.api.http.Status
 
@@ -32,7 +29,7 @@ object YeloReader {
     for(
       v <- vlaams;
       a <- anderstalig
-    ) yield ( v.filter(filter) ++ a.filter(filter) )
+    ) yield  v.filter(filter) ++ a.filter(filter)
   }
 
 
@@ -60,7 +57,8 @@ object YeloReader {
   }
 
   def createFilter(channelFilter: List[String]): (YeloReader.YeloEvent) => Boolean = { result =>
-    channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(Channel.unify(result.channel).toLowerCase)
+    val unifiedChannel = Channel.unify(removeHd(result.channel)).toLowerCase
+    channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(unifiedChannel)
   }
 
   private def parseDay(url: String, body: JsValue): Seq[YeloEvent] = {
@@ -124,6 +122,8 @@ object YeloReader {
     }.toMap
     channelMap
   }
+
+  private def removeHd(channel: String) = channel.replace(" hd", "").replace(" HD", "")
 
   def toHDUrl(url: String): String = {
     url.replace("vtm", "vtm-hd")
