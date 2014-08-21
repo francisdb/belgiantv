@@ -59,12 +59,9 @@ object Application extends Controller with MongoController {
   def linkWithMovie(broadcast: Broadcast): Future[BroadcastInfo] = {
     implicit val reader = Movie.movieFormat//MovieBSONReader
 
-    // TODO find a better place to do this?
-    val broadcastHd = broadcast.copy(yeloUrl = broadcast.yeloUrl.map(YeloReader.toHDUrl))
-
-    broadcastHd.imdbId match {
-      case Some(imdbId) => Movie.findByImdbId(imdbId).map(BroadcastInfo(broadcastHd, _))
-      case None => Future.successful(BroadcastInfo(broadcastHd, None))
+    broadcast.imdbId match {
+      case Some(imdbId) => Movie.findByImdbId(imdbId).map(BroadcastInfo(broadcast, _))
+      case None => Future.successful(BroadcastInfo(broadcast, None))
     }
   }
 

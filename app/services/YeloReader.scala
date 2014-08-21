@@ -123,15 +123,6 @@ object YeloReader {
     channelMap
   }
 
-  def toHDUrl(url: String): String = {
-    url.replace("vtm", "vtm-hd")
-      .replace("canvas", "canvas-hd")
-      .replace("een", "een-hd")
-      .replace("vier", "vier-hd")
-      .replace("vijf", "vijf-hd")
-      .replace("2be", "2be-hd")
-  }
-
   case class YeloEvent (
       id:Int, 
       name:String, 
