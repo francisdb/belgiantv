@@ -40,7 +40,9 @@ libraryDependencies ++= Seq(
   "org.reactivemongo" %% "play2-reactivemongo" % reactiveMongoPluginVersion,
   //"com.foursquare" % "fongo" % "1.0.6" % "test",
   "com.typesafe.akka" %% "akka-contrib" % "2.3.4", // TODO update when migrating to newer play
-  "org.webjars" % "bootstrap" % "3.2.0"
+  "org.webjars" %% "webjars-play" % "2.3.0",
+  "org.webjars" % "bootstrap" % "3.2.0",
+  "org.webjars" % "jquery" % "2.1.1"
 )
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)

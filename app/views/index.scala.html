@@ -1,61 +1,70 @@
 @(infos:List[models.helper.BroadcastInfo])(implicit flash:Flash)
 
+@import util.Css._
+
 @main("BelgianTV") {
-  
-  
-<h1>Movies on Belgian TV for the coming 7 days ordered by ratings</h1>
 
-<p>Click on the Telenet Yelo &amp; Belgacom TV links to program your digicorder</p>
-    
-  @if(!flash.isEmpty){
-    <div class="info">@flash.get("message")</div>
-  }
+    <div class="jumbotron">
+        <h1>Movies on Belgian TV</h1>
+        <p class="lead">For the coming 7 days ordered by ratings. Click on the Telenet Yelo &amp; Belgacom TV links to program your digicorder.</p>
+    </div>
 
-    <ul>
-    @for(info <- infos){
-    	<li><div class="poster">
-	    		@info.broadcast.tmdbImg.map{ img => 
-	    		    <img src="@img" alt="poster for @info.broadcast.name"/>
-		    	}.getOrElse{
-		    	  @info.movie.map{ m => 
-		    		<img src="@m.imgUrl" alt="poster for @m.name"/>
-		    	  }
-		    	}
-	    	</div>
-	    	@info.broadcast.name <span class="year">(@info.broadcast.year)</span> 
-            @info.rating.map(_ + "%")
-
-    		<br/>
-    		<small>@info.broadcast.channel @info.broadcast.humanDate()
-    		<a href="@info.broadcast.humoUrl">Humo</a>
-            @info.movie.map{ m =>
-            <a href="@m.imdbUrl()">IMDb @m.imdbRating</a>
-            }
-    		@info.broadcast.tmdbUrl.map{ u => 
-    		<a href="@u">TMDb @{info.broadcast.tmdbRating.getOrElse("")}</a>
-    		}
-    		@info.broadcast.tomatoesUrl.map{ u => 
-    		<a href="@u">Tomatoes @{info.broadcast.tomatoesRating.get}%</a>
-    		}
-    		</small>
-    		<br/>
-    		@info.broadcast.yeloUrl.map{ y => 
-    		<a href="@y"><img src="@routes.Assets.at("images/telenet-logo.png")" alt="Movie on Telenet Yelo"/></a>
-    		}
-    		@info.broadcast.belgacomUrl.map{ b => 
-    		<a href="@b"><img src="@routes.Assets.at("images/belgacom_tv-logo.png")" alt="Movie on Belgacom TV"/></a>
-    		}
-    		
-    	</li>
+    @if(!flash.isEmpty){
+        <div class="info">@flash.get("message")</div>
     }
-    </ul>
+
+    @for(info <- infos){
+        <div class="row">
+            <div class="col-xs-3">
+                <div class="thumbnail">
+                    @info.broadcast.tmdbImg.map{ img =>
+                        <img src="@img" alt="poster for @info.broadcast.name"/>
+                    }.getOrElse{
+                        @info.movie.map{ m =>
+                            <img src="@m.imgUrl" alt="poster for @m.name"/>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="col-xs-9 info">
+                <h2>
+                    @info.broadcast.name
+                    <small>
+                        @info.broadcast.year
+                        @info.broadcast.yeloUrl.map{ y =>
+                            <a href="@y"><img src="@routes.Assets.at("images/telenet-logo-large.png")" class="logo"  alt="Movie on Telenet Yelo"/></a>
+                        }
+                        @info.broadcast.belgacomUrl.map{ b =>
+                            <a href="@b"><img src="@routes.Assets.at("images/belgacom_tv-logo-large.png")" class="logo" alt="Movie on Belgacom TV"/></a>
+                        }
+                    </small>
+                </h2>
+
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped @info.progressBarStyle" role="progressbar" aria-valuenow="@info.rating" aria-valuemin="0" aria-valuemax="100" style="width: @info.rating.map(_ + "%");">
+                        @info.rating.map(_ + "%")
+                    </div>
+                </div>
+
+
+                <p>@info.broadcast.channel @info.broadcast.humanDate()</p>
+                <ul>
+                    <li><a href="@info.broadcast.humoUrl">Humo</a></li>
+                @info.movie.map{ m =>
+                    <li><a href="@m.imdbUrl()">IMDb @m.imdbRating</a></li>
+                }
+                @info.broadcast.tmdbUrl.map{ u =>
+                    <li><a href="@u">TMDb @{info.broadcast.tmdbRating.getOrElse("")}</a></li>
+                }
+                @info.broadcast.tomatoesUrl.map{ u =>
+                    <li><a href="@u">Tomatoes @{info.broadcast.tomatoesRating.get}%</a></li>
+                }
+                </ul>
+                <p>
+
+                </p>
+            </div>
+        </div>
+    }
     
-    
-  <footer>
-			Developed by <a href="http://www.twitter.com/somatik">@@somatik</a>
-			using <a href="http://www.playframework.com">play!</a>, 
-			source hosted at <a href="https://github.com/francisdb/belgiantv">github</a>,
-			data mostly from <a href="http://www.themoviedb.org/">themoviedb</a>
-    		and  <a href="http://www.omdbapi.com/">The OMDb API</a> &#149; <a href="@routes.Application.scan">force rescan</a>
-  </footer>
 }
