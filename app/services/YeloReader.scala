@@ -57,7 +57,7 @@ object YeloReader {
   }
 
   def createFilter(channelFilter: List[String]): (YeloReader.YeloEvent) => Boolean = { result =>
-    val unifiedChannel = Channel.unify(removeHd(result.channel)).toLowerCase
+    val unifiedChannel = Channel.unify(result.channel).toLowerCase
     channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(unifiedChannel)
   }
 
@@ -122,8 +122,6 @@ object YeloReader {
     }.toMap
     channelMap
   }
-
-  private def removeHd(channel: String) = channel.replace(" hd", "").replace(" HD", "")
 
   def toHDUrl(url: String): String = {
     url.replace("vtm", "vtm-hd")
