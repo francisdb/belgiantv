@@ -21,7 +21,7 @@ class YeloReaderTest extends Specification with NoTimeConversions{
       running(FakeApplication()) {
         val list = Await.result(YeloReader.fetchDay(new DateMidnight, Channel.channelFilter), 30 seconds)
         //list.map(_.channel).distinct.foreach(println)
-        l//ist.groupBy(_.channel).foreach(g => println(g._1, g._2.mkString("\n\t")))
+        //ist.groupBy(_.channel).foreach(g => println(g._1, g._2.mkString("\n\t")))
         list.size must be > 20
       }
     }
