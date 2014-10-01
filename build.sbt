@@ -32,7 +32,7 @@ libraryDependencies ++= Seq(
   //anorm,
   ws,
   "com.typesafe.play.plugins" %% "play-plugins-mailer" % "2.3.0",
-  "org.jsoup" % "jsoup" % "1.7.3",
+  "org.jsoup" % "jsoup" % "1.8.1",
   "commons-lang" % "commons-lang" % "2.6",
   //"net.vz.mongodb.jackson" %% "play-mongo-jackson-mapper" % "1.0.0"
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.0", // TODO get rid of this dependency
