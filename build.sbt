@@ -17,7 +17,7 @@ includeFilter in (Assets, LessKeys.less) := "*.less"
 
 excludeFilter in (Assets, LessKeys.less) := "_*.less"
 
-val reactiveMongoVersion = "0.10.5.0.AKKA23"
+val reactiveMongoVersion = "0.10.5.0.akka23"
 
 val reactiveMongoPluginVersion = "0.10.5.0.akka23"
 
