@@ -13,18 +13,15 @@ javaOptions in test ++= List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI")
     "-D" + property + "=" + value
   }).flatten
 
-// copying jvm parameters for testing:
-// http://play.lighthouseapp.com/projects/82401/tickets/981-overriding-configuration-for-tests
-
 includeFilter in (Assets, LessKeys.less) := "*.less"
 
 excludeFilter in (Assets, LessKeys.less) := "_*.less"
 
-val reactiveMongoVersion = "0.10.0"
+val reactiveMongoVersion = "0.10.5.0.AKKA23"
 
-val reactiveMongoPluginVersion = "0.10.5.akka23-SNAPSHOT" // "0.10.2"
+val reactiveMongoPluginVersion = "0.10.5.0.akka23"
 
-resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
+//resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 libraryDependencies ++= Seq(
   // Add your project dependencies here,
