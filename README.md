@@ -9,3 +9,5 @@ MongoDB
 [![Build Status](https://travis-ci.org/francisdb/belgiantv.png?branch=master)](https://travis-ci.org/francisdb/belgiantv)
 
 ![Build Status](https://www.codeship.io/projects/f0663d10-f562-0130-8cb4-3a7857e44df3/status)
+
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/francisdb/belgiantv?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
