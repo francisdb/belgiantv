@@ -37,7 +37,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
 
   def receive: Receive = {
 
-    case msg: LinkTmdb => {
+    case msg: LinkTmdb =>
       logger.info(s"[$this] - Received [$msg] from $sender")
 
       val tmdbmovie = TmdbApiService.find(msg.broadcast.name, msg.broadcast.year)
@@ -49,14 +49,13 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
         }.getOrElse{
         	logger.warn("No TMDb movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
         	None
-        }      
+        }
       }.onFailure{
         case e: Exception =>
           logger.error(e.getMessage, e)
       }
-    }
 
-    case msg: LinkImdb => {
+    case msg: LinkImdb =>
       logger.info(s"[$this] - Received [$msg] from $sender")
 
       Movie.find(msg.broadcast.name, msg.broadcast.year).onComplete{
@@ -79,66 +78,60 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
             case None => logger.warn("No IMDB movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
           }
       }
-    }
 
-    case msg: LinkTomatoes => {
+    case msg: LinkTomatoes =>
       logger.info(s"[$this] - Received [$msg] from $sender")
       tomatoesThrottler ! FetchTomatoes(msg.broadcast.name, msg.broadcast.year, msg.broadcast.id.get)
-    }
 
-    case msg: FetchTomatoesResult => {
+    case msg: FetchTomatoesResult =>
       logger.info(s"[$this] - Received [$msg] from $sender")
       val mergedScore = (msg.tomatoesMovie.ratings.audience_score + msg.tomatoesMovie.ratings.critics_score) / 2
       Broadcast.setTomatoes(msg.broadcastId, msg.tomatoesMovie.id.toString, mergedScore.toString)
-    }
 
-    case msg: FetchHumo => {
+    case msg: FetchHumo =>
       logger.info(s"[$this] - Received [$msg] from $sender")
       humoThrottler ! msg
-    }
 
-    case msg: FetchHumoResult => {
-        msg.events match {
-          case Failure(e) =>
-            reportFailure("Failed to read humo day: " + e.getMessage, e)
-          case Success(humoEvents) =>
-            val broadcasts:Future[Seq[Broadcast]] = Future.traverse(humoEvents){ event =>
-              val broadcast = new Broadcast(
-                None,
-                event.title,
-                event.channel.toLowerCase,
-                event.toDateTime,
-                event.year,
-                humoId = Some(event.id),
-                humoUrl = Some(event.url))
-              Broadcast.findByDateTimeAndChannel(broadcast.datetime, broadcast.channel).map{
-                case Some(existingBroadcast) =>
-                  if (existingBroadcast.imdbId.isEmpty) {
-                    self ! LinkImdb(existingBroadcast)
-                  }
-                  existingBroadcast
-                case None =>
-                  val saved = Broadcast.create(broadcast)
-                  self ! LinkImdb(saved)
-                  self ! LinkTmdb(saved)
-                  self ! LinkTomatoes(saved)
-                  saved
+    case msg: FetchHumoResult =>
+      msg.events match {
+        case Failure(e) =>
+          reportFailure("Failed to read humo day: " + e.getMessage, e)
+        case Success(humoEvents) =>
+          val broadcasts:Future[Seq[Broadcast]] = Future.traverse(humoEvents){ event =>
+            val broadcast = new Broadcast(
+              None,
+              event.title,
+              event.channel.toLowerCase,
+              event.toDateTime,
+              event.year,
+              humoId = Some(event.id),
+              humoUrl = Some(event.url))
+            Broadcast.findByDateTimeAndChannel(broadcast.datetime, broadcast.channel).map{
+              case Some(existingBroadcast) =>
+                if (existingBroadcast.imdbId.isEmpty) {
+                  self ! LinkImdb(existingBroadcast)
+                }
+                existingBroadcast
+              case None =>
+                val saved = Broadcast.create(broadcast)
+                self ! LinkImdb(saved)
+                self ! LinkTmdb(saved)
+                self ! LinkTomatoes(saved)
+                saved
 
-              }
             }
+          }
 
-            broadcasts.onComplete{
-              case Failure(e) =>
-                reportFailure("Failed to find broadcasts for humo events: " + e.getMessage, e)
-              case Success(foundBroadcast) =>
-                self ! FetchYelo(msg.day, foundBroadcast)
-                self ! FetchBelgacom(msg.day, foundBroadcast)
-            }
-        }
-
+          broadcasts.onComplete{
+            case Failure(e) =>
+              reportFailure("Failed to find broadcasts for humo events: " + e.getMessage, e)
+            case Success(foundBroadcast) =>
+              self ! FetchYelo(msg.day, foundBroadcast)
+              self ! FetchBelgacom(msg.day, foundBroadcast)
+          }
       }
 
-    case msg: FetchYelo => {
+    case msg: FetchYelo =>
       logger.info(s"[$this] - Received [$msg] from $sender")
 
       YeloReader.fetchDay(msg.day, Channel.channelFilter).onComplete {
@@ -158,11 +151,10 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
             }
           }
       }
-    }
-    
-    case msg: FetchBelgacom => {
+
+    case msg: FetchBelgacom =>
       logger.info(s"[$this] - Received [$msg] from $sender")
-      
+
       BelgacomReader.readMovies(msg.day).onComplete{
         case Failure(e) =>
           reportFailure("Failed to read belgacom day: " + e.getMessage, e)
@@ -180,7 +172,6 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
             }
           }
       }
-    }
   }
 }
 

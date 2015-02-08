@@ -16,19 +16,17 @@ class Master extends MailingActor with LoggingActor with ActorLogging{
 
   // TODO check the LoggingReceive docs and see if we can enable it on heroku
   def receive: Receive = LoggingReceive {
-    case Start => {
+    case Start =>
       Logger.info("[" + this + "] - Received [start] from " + sender)
       val today = new DateMidnight()
       for(day <- 0 until 7){
         belgianTvRef ! FetchHumo(today.plusDays(day))
       }
-    }
-    case StartTomatoes => {
-        for{
-          broadcasts <- Broadcast.findMissingTomatoes()
-        }yield{
-          broadcasts.foreach(belgianTvRef ! LinkTomatoes(_))
-        }
-    }
+    case StartTomatoes =>
+      for{
+        broadcasts <- Broadcast.findMissingTomatoes()
+      }yield{
+        broadcasts.foreach(belgianTvRef ! LinkTomatoes(_))
+      }
   }
 }

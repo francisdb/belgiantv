@@ -19,8 +19,8 @@ class HumoReaderTest extends Specification with NoTimeConversions {
     "return data" in {
       running(FakeApplication()) {
         // if their cache is not warmed up and we get a 504 then we retry after 1 min
-        val list = Await.result(HumoReader.fetchDay(new DateMidnight), 2 minutes)
-        //println(list)
+        val list = Await.result(HumoReader.fetchDay(new DateMidnight), 2.minutes)
+        //list.foreach(println)
         list.size must be > 0
       }
     }
