@@ -1,15 +1,12 @@
 package models.helper
 
-import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
 import org.joda.time.format.DateTimeFormat
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 case class TmdbMovie(
     
 	id:Long,
-	
-	@JsonProperty("imdb_id")
-	imdbId:String,
+
+  imdb_id:String,
 	
 	name:String,
 	url:String,
@@ -17,12 +14,9 @@ case class TmdbMovie(
 	translated:Boolean,
 	adult:Boolean,
 	language:String,
-	@JsonProperty("original_name")
-	originalName:String,
-	@JsonProperty("alternative_name")
-	alternativeName:String,
-	@JsonProperty("movie_type")
-	movieType:String,
+  original_name:String,
+  alternative_name:String,
+  movie_type:String,
 	
 	votes:Int,
 	rating:String,
@@ -31,29 +25,34 @@ case class TmdbMovie(
 	released:String,
 
 	version:Int,
-	@JsonProperty("last_modified_at")
-	lastModifiedAt:String,
+  last_modified_at:String,
 	
 	posters:List[TmdbPoster],
 	
 	backdrops:List[TmdbBackDrop]
 ) {
 
-  def getFirstPoster() = {
-    if (posters != null && !posters.isEmpty) {
+  val imdbId = imdb_id
+  val originalName = original_name
+  val alternativeName = alternative_name
+  val movieType = movie_type
+  val lastModifiedAt = last_modified_at
+
+  def getFirstPoster = {
+    if (posters != null && posters.nonEmpty) {
       posters.head.image.url
     } else {
       null
     }
   }
     
-    def getYear() = {
+    def getYear = {
     	if(released == null){
     		null
     	}else{
     		val fmt = DateTimeFormat.forPattern("yyyy-MM-dd")
 			try{
-				fmt.parseDateTime(released).getYear();
+				fmt.parseDateTime(released).getYear
 			}catch{
 			    case ex:IllegalArgumentException => null
 			}

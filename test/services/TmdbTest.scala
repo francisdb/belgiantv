@@ -12,7 +12,6 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import helper.ConfigSpec
 
-//@RunWith(classOf[JUnitRunner])
 class TmdbTest extends Specification with NoTimeConversions with ConfigSpec {
 
   private val configProperty = "tmdb.apikey"
@@ -24,7 +23,7 @@ class TmdbTest extends Specification with NoTimeConversions with ConfigSpec {
     "return the correct movie" in {
         running(FakeApplication()) {
           skipIfMissingConfig(configProperty)
-	        val movie = Await.result(TmdbApiService.find("don", Option.apply(2006)), 30 seconds).get
+	        val movie = Await.result(TmdbApiService.find("don", Option.apply(2006)), 30.seconds).get
 	        movie.title must_== "Don"
 	        movie.release_date must startWith("2006")
           //print(movie.vote_average)
@@ -37,7 +36,7 @@ class TmdbTest extends Specification with NoTimeConversions with ConfigSpec {
     "return the correct movie" in {
         running(FakeApplication()) {
           skipIfMissingConfig(configProperty)
-	        val movie = Await.result(TmdbApiService.find("I, Robot", Option.apply(2004)), 30 seconds).get
+	        val movie = Await.result(TmdbApiService.find("I, Robot", Option.apply(2004)), 30.seconds).get
 	        movie.title must_== "I, Robot"
 	        movie.release_date must startWith("2004")
         }
@@ -48,7 +47,7 @@ class TmdbTest extends Specification with NoTimeConversions with ConfigSpec {
     "return the correct movie" in {
         running(FakeApplication()) {
           skipIfMissingConfig(configProperty)
-          val movie = Await.result(TmdbApiService.find("I, Robot", Option.apply(2004)), 30 seconds).get
+          val movie = Await.result(TmdbApiService.find("I, Robot", Option.apply(2004)), 30.seconds).get
 	        movie.title must_== "I, Robot"
 	        movie.release_date must startWith("2004")
         }
@@ -59,7 +58,8 @@ class TmdbTest extends Specification with NoTimeConversions with ConfigSpec {
     "return the correct movie" in {
         running(FakeApplication()) {
           skipIfMissingConfig(configProperty)
-          val movie = Await.result(TmdbApiService.find("L'immortel", Option.apply(2010)), 30 seconds).get
+          val movie = Await.result(TmdbApiService.find("L'immortel", Option.apply(2010)), 30.seconds).get
+          println(movie)
 	        // international title
 	        movie.title must startWith("22 Bullets")
 	        movie.release_date must startWith("2010")
@@ -71,7 +71,7 @@ class TmdbTest extends Specification with NoTimeConversions with ConfigSpec {
     "return nothing" in {
         running(FakeApplication()) {
           skipIfMissingConfig(configProperty)
-          val movieOption = Await.result(TmdbApiService.find("hafsjkdhfkdjshadslkfhaskf"), 30 seconds)
+          val movieOption = Await.result(TmdbApiService.find("hafsjkdhfkdjshadslkfhaskf"), 30.seconds)
           movieOption must beNone
         }
     }

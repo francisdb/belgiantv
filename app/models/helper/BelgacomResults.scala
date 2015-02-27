@@ -1,12 +1,10 @@
 package models.helper
 
 case class BelgacomResults(
-	currentPage: Int,
+	currentPage: Option[Int],
   maxPage: Option[Int],
 	baseTimestamp: Long,
-  startTimestamp: Long,
-  endTimestamp: Long,
+  startTimestamp: Option[Long],
+  endTimestamp: Option[Long],
   data: List[BelgacomProgram]
-) {
-
-}
+)

@@ -4,48 +4,24 @@ import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
 import java.util.Date
 import org.joda.time.DateTime
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 case class BelgacomProgram(
 
-  @JsonProperty("pid") programId: String,
-
+  pid: Int,
   title: String,
-
-	@JsonProperty("lg")
-	language:String,
-
-	@JsonProperty("su")
-	summary:String,
+	lg: String,
+	su: Option[String],
+	cname: String,
+	cnumb: Option[String],
+	cid: Int,
+	clogo: String,
+	sts: Long,
+	ets: Long,
+  img: String,
+	gr: Option[Int],
+	grname: Option[String],
 	
-	@JsonProperty("cname")
-	channelName:String,
-	
-	@JsonProperty("cnumb")
-	channelNumber:String,
-	
-	@JsonProperty("cid")
-	channelId:Int,
-	
-	@JsonProperty("clogo")
-	channelLogo:String,
-	
-	@JsonProperty("sts")
-	startTimeSeconds:Long,
-	
-	@JsonProperty("ets")
-	endTimeSeconds:Long,
-
-	@JsonProperty("img")
-	image:String,
-	
-	@JsonProperty("gr")
-	genreId:Int,
-	
-	@JsonProperty("grname")
-	genre:String,
-	
-	bq:String, // ???
-	btv:String // belgacomtv?
+	bq: Option[String], // ???
+	btv: Option[String] // belgacomtv?
 	
 	//def pk; // duplicate of pkey
 	//def seo; // slug
@@ -61,20 +37,34 @@ case class BelgacomProgram(
   //public String hour; // obsolete start hour:minutes
   
   ) {
+
+  val programId = pid
+  val language = lg
+  val summary = su
+  val channelName = cname
+  val channelNumber = cnumb
+  val channelId = cid
+  val channelLogo = clogo
+  val startTimeSeconds = sts
+  val endTimeSeconds = ets
+  val image = img
+  val genreId = gr
+  val genre = grname
+
   
-  def getProgramUrl() = {
+  lazy val getProgramUrl = {
     "http://sphinx.skynet.be/tv-overal/tv-gids/programma/" + programId
   }
 
-  def getStart() = {
+  lazy val getStart = {
     new Date(startTimeSeconds * 1000)
   }
 
-  def getEnd() = {
+  lazy val getEnd = {
     new Date(endTimeSeconds * 1000)
   }
   
-  def toDateTime = new DateTime(startTimeSeconds * 1000)
+  lazy val toDateTime = new DateTime(startTimeSeconds * 1000)
 
   override def toString = title + " " + channelName + "@" + toDateTime
   

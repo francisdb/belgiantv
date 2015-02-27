@@ -1,25 +1,17 @@
 package models.helper
 
-import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 case class BelgacomChannel(
-	@JsonProperty("cid")
-	channelId:String,
-	
-	@JsonProperty("cname")
-	channelName:String,
-	
-	@JsonProperty("cnum")
-	channelNumber:String,
-	
-	@JsonProperty("clogo")
-	channelLogo:String,
-	
+  cid:String,
+  cname:String,
+	cnum:String,
+	clogo:String,
 	pr:List[BelgacomProgram]    
 ) {
 
-  override def toString() = {
-    channelName + " [" + pr.size + "]"
-  }
+  val channelId = cid
+  val channelName = cname
+  val channelNumber = cnum
+  val channelLogo = clogo
+
+  override def toString = s"$channelName [${pr.size}]"
 }

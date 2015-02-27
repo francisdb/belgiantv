@@ -1,45 +1,34 @@
 package models.helper
 
 import play.api.Logger
-import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 case class ImdbApiMovie(
-	@JsonProperty("imdbID")
-	id:String,
-	
-	@JsonProperty("Title")
-	title:String,
-	
-	@JsonProperty("imdbRating")
-	rating:String,
-	
-	@JsonProperty("imdbVotes")
-	votes:String,
-	
-	@JsonProperty("Runtime")
-	runtime:String,
-	
-	@JsonProperty("Poster")
-	poster:String,
-	
-	@JsonProperty("Genre")
-	genre:String,
-	
-	@JsonProperty("Plot")
-	plot:String,
-	
-	@JsonProperty("Year")
-	year:Int,
-	
-	@JsonProperty("Released")
-	released:String,
-	
-	@JsonProperty("Director")
-	director:String
+  imdbID: String,
+	Title: String,
+	imdbRating: String,
+	imdbVotes: String,
+	Runtime: String,
+	Poster: String,
+	Genre: String,
+	Plot: String,
+	Year: String,
+	Released: String,
+	Director: String
 ){
+
+  val id = imdbID
+  val title = Title
+  val rating = imdbRating
+  val votes = imdbVotes
+  val runtime = Runtime
+  val poster = Poster
+  val genre = Genre
+  val plot = Plot
+  val year = Year.toInt
+  val released = Released
+  val director = Director
 	
-  def getPercentRating() = {
+  lazy val getPercentRating = {
 		if(rating == null){
 			-1
 		}else{
@@ -47,18 +36,16 @@ case class ImdbApiMovie(
 				(rating.toDouble * 10).toInt
 			} catch {
 			  case e:NumberFormatException => 
-			    Logger.warn(e.getMessage())
+			    Logger.warn(e.getMessage)
 				-1
 			}
 		}
 		
 	}
 	
-	def getDecimalRating() = {
-		getPercentRating() / 10
+	lazy val getDecimalRating = {
+		getPercentRating / 10
 	}
 	
-	def getUrl() = {
-		"http://www.imdb.com/title/" + id
-	}
+	lazy val getUrl = "http://www.imdb.com/title/" + id
 }

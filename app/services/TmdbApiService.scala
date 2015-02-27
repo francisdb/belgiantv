@@ -1,16 +1,25 @@
 package services
 
+import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.WS
 import play.api.Logger
 import play.api.Play.current
 
-import models.helper.TmdbMovieSearch
-import models.helper.TmdbMovieSearchPager
+import models.helper._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import concurrent.Future
 
-object TmdbApiService extends JacksonMapper{
+object TmdbProtocol{
+  implicit val tmdbImageReads = Json.reads[TmdbImage]
+  implicit val tmdbPosterReads = Json.reads[TmdbPoster]
+  implicit val tmdbBackDropReads = Json.reads[TmdbBackDrop]
+  implicit val tmdbMovieReads = Json.reads[TmdbMovie]
+  implicit val tmdbMovieSearchReads = Json.reads[TmdbMovieSearch]
+  implicit val tmdbMovieSearchPagerReads = Json.reads[TmdbMovieSearchPager]
+}
+
+object TmdbApiService{
 	
 	val BASE = "http://api.themoviedb.org/3"
 	  
@@ -29,7 +38,7 @@ object TmdbApiService extends JacksonMapper{
 	}
 	
 	
-	def search(title:String, year:Option[Int] = None) = {
+	def search(title:String, year:Option[Int] = None): Future[List[TmdbMovieSearch]] = {
 	  println(apiKey)
 		val url = BASE + "/search/movie"
 		
@@ -41,18 +50,21 @@ object TmdbApiService extends JacksonMapper{
 		  .withHeaders("Accept" -> "application/json")
 		  .withQueryString(qs2:_*).get()
 		  
-		response.map{ r =>
-		  logger.info(url + " " + r.status)
-		  r.status match {
+		response.flatMap{ request =>
+		  logger.info(url + " " + request.status)
+		  request.status match {
 		    case 503 => 
-		      logger.error(r.status + " " + r.statusText + " " + r.body)
-		      List()
+		      logger.error(request.status + " " + request.statusText + " " + request.body)
+		      Future.successful(List())
         case 401 =>
-          logger.error(r.status + " " + r.statusText + " " + r.body)
-          List()
-		    case _ => 
-		      val pager = deserialize[TmdbMovieSearchPager](r.body)
-		      pager.results
+          logger.error(request.status + " " + request.statusText + " " + request.body)
+          Future.successful(List())
+		    case _ =>
+          import TmdbProtocol._
+		      Json.fromJson[TmdbMovieSearchPager](request.json) match {
+            case JsSuccess(pager, _) => Future.successful(pager.results)
+            case JsError(errors) => Future.failed(new RuntimeException(errors.toString()))
+          }
 		  }
 	      
 		}

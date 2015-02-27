@@ -2,21 +2,29 @@ package services
 
 import play.api.Logger
 
-import com.fasterxml.jackson.core.JsonParseException
+import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.WS
 import org.apache.commons.lang.StringEscapeUtils
 import org.joda.time.DateMidnight
 import org.joda.time.Interval
-import models.helper.BelgacomProgram
-import models.helper.BelgacomListing
+import models.helper.{BelgacomResults, BelgacomListing, BelgacomProgram}
 import concurrent.Future
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.http.Status
 import play.api.Play.current
 
+import scala.util.{Failure, Success}
 
-object BelgacomReader extends JacksonMapper{
+object BelgacomProtocol{
+
+  implicit val belgacomProgramFormat = Json.reads[BelgacomProgram]
+  implicit val belgacomResulstFormat = Json.reads[BelgacomResults]
+  implicit val belgacomListingFormat = Json.reads[BelgacomListing]
+}
+
+
+object BelgacomReader{
   private val BASE = "http://www.proximustv.be/zcommon/tv-everywhere"
     
   private val logger = Logger("application.belgacom")
@@ -30,8 +38,7 @@ object BelgacomReader extends JacksonMapper{
   def searchMovies(date: DateMidnight): Future[List[BelgacomProgram]] = {
     val page = 1
     searchMovies(date, page).map{ result =>
-      println(result)
-      result.tvmovies.data.map(program => program.copy(title = StringEscapeUtils.unescapeHtml(program.title)))
+      result.tvmovies.get.data.map(program => program.copy(title = StringEscapeUtils.unescapeHtml(program.title)))
     }
   }
   
@@ -61,19 +68,16 @@ object BelgacomReader extends JacksonMapper{
       "tvmovies[page]" -> page.toString,
       "new_lang" -> "nl"
     )
-    WS.url(url).withQueryString(qs:_*).get().map{ response =>
+    WS.url(url).withQueryString(qs:_*).get().flatMap{ response =>
       response.status match {
         case Status.OK =>
-
-
-          try{
-            deserialize[BelgacomListing](response.body)
-          }catch{
-            case jpe:JsonParseException =>
-              throw new RuntimeException(s"Failed to parse $url response to JSON: ${response.body}", jpe)
+          import BelgacomProtocol._
+          Json.fromJson[BelgacomListing](response.json) match {
+            case JsSuccess(listing, _) => Future.successful(listing)
+            case JsError(errors) => Future.failed(new RuntimeException(s"Failed to parse $url response to JSON: $errors ${response.body.take(500)}"))
           }
         case other =>
-          throw new RuntimeException(s"Got $other for $url - ${response.body}")
+          Future.failed(new RuntimeException(s"Got $other for $url - ${response.body}"))
       }
     }
   }

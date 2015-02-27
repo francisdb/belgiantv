@@ -1,18 +1,15 @@
 package models.helper
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 case class TmdbMovieSearch(
   backdrop_path: Option[String],
   id: Long,
   original_title: String,
   popularity: Double,
-  poster_path: String,
+  poster_path: Option[String],
   //"1980-05-21"
   release_date: String,
   title: String,
-  vote_average:String,
+  vote_average: Double,
   vote_count:Long,
   adult:Boolean) {
 

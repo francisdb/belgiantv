@@ -38,13 +38,13 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
   def receive: Receive = {
 
     case msg: LinkTmdb =>
-      logger.info(s"[$this] - Received [$msg] from $sender")
+      logger.info(s"[$this] - Received [$msg] from ${sender()}")
 
       val tmdbmovie = TmdbApiService.find(msg.broadcast.name, msg.broadcast.year)
 
       tmdbmovie.map { mOption =>
         mOption.map{ m =>
-           Broadcast.setTmdb(msg.broadcast, m.id.toString, m.vote_average)
+           Broadcast.setTmdb(msg.broadcast, m.id.toString, m.vote_average.toString)
            m.posterUrl.map(Broadcast.setTmdbImg(msg.broadcast, _))
         }.getOrElse{
         	logger.warn("No TMDb movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
@@ -56,7 +56,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
       }
 
     case msg: LinkImdb =>
-      logger.info(s"[$this] - Received [$msg] from $sender")
+      logger.info(s"[$this] - Received [$msg] from ${sender()}")
 
       Movie.find(msg.broadcast.name, msg.broadcast.year).onComplete{
         case Failure(e) =>
@@ -80,16 +80,16 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
       }
 
     case msg: LinkTomatoes =>
-      logger.info(s"[$this] - Received [$msg] from $sender")
+      logger.info(s"[$this] - Received [$msg] from ${sender()}")
       tomatoesThrottler ! FetchTomatoes(msg.broadcast.name, msg.broadcast.year, msg.broadcast.id.get)
 
     case msg: FetchTomatoesResult =>
-      logger.info(s"[$this] - Received [$msg] from $sender")
+      logger.info(s"[$this] - Received [$msg] from ${sender()}")
       val mergedScore = (msg.tomatoesMovie.ratings.audience_score + msg.tomatoesMovie.ratings.critics_score) / 2
       Broadcast.setTomatoes(msg.broadcastId, msg.tomatoesMovie.id.toString, mergedScore.toString)
 
     case msg: FetchHumo =>
-      logger.info(s"[$this] - Received [$msg] from $sender")
+      logger.info(s"[$this] - Received [$msg] from ${sender()}")
       humoThrottler ! msg
 
     case msg: FetchHumoResult =>
@@ -132,7 +132,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
       }
 
     case msg: FetchYelo =>
-      logger.info(s"[$this] - Received [$msg] from $sender")
+      logger.info(s"[$this] - Received [$msg] from ${sender()}")
 
       YeloReader.fetchDay(msg.day, Channel.channelFilter).onComplete {
         case Failure(e) =>
@@ -153,7 +153,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
       }
 
     case msg: FetchBelgacom =>
-      logger.info(s"[$this] - Received [$msg] from $sender")
+      logger.info(s"[$this] - Received [$msg] from ${sender()}")
 
       BelgacomReader.readMovies(msg.day).onComplete{
         case Failure(e) =>
@@ -165,7 +165,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
                 Channel.unify(belgacomMovie.channelName).toLowerCase == broadcast.channel.toLowerCase && belgacomMovie.toDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC)
               }
               found.map { event =>
-                Broadcast.setBelgacom(broadcast, event.programId.toString, event.getProgramUrl())
+                Broadcast.setBelgacom(broadcast, event.programId.toString, event.getProgramUrl)
               }.getOrElse {
                 logger.warn("No belgacom match for " + broadcast.channel + " " + broadcast.humanDate + " " + broadcast.name)
               }
