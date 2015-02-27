@@ -98,7 +98,7 @@ object HumoReader {
 
     humoSchedule.broadcasters.flatMap{ broadcaster =>
       broadcaster.events.filter(_.isMovie) map { event =>
-        HumoEvent(event.id.toString, event.url, day, broadcaster.display_name, event.startLocalTime, event.program.title, event.program.yearInt)
+        HumoEvent(event.id.toString, event.url, day, broadcaster.display_name, event.startLocalTime, event.program.title.getOrElse(""), event.program.yearInt)
       }
     }.toList
   }
@@ -120,7 +120,7 @@ object HumoProtocol {
 
   case class HumoProgram(
                           id: Long,
-                          title: String,
+                          title: Option[String],
                           description: Option[String],
                           content_short: Option[String],
                           content_long: Option[String],

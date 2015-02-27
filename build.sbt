@@ -2,7 +2,7 @@ name := "belgiantv"
 
 version := "1.0-SNAPSHOT"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.5"
 
 scalacOptions ++= Seq("-feature")
 
@@ -32,7 +32,7 @@ libraryDependencies ++= Seq(
   "org.jsoup" % "jsoup" % "1.8.1",
   "commons-lang" % "commons-lang" % "2.6",
   //"net.vz.mongodb.jackson" %% "play-mongo-jackson-mapper" % "1.0.0"
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.2.0", // TODO get rid of this dependency
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.1", // TODO get rid of this dependency
   "org.reactivemongo" %% "reactivemongo" % reactiveMongoVersion,
   "org.reactivemongo" %% "play2-reactivemongo" % reactiveMongoPluginVersion,
   //"com.foursquare" % "fongo" % "1.0.6" % "test",

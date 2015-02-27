@@ -17,7 +17,7 @@ import play.api.Play.current
 
 
 object BelgacomReader extends JacksonMapper{
-  private val BASE = "http://sphinx.skynet.be/tv-overal/zcommon/tv-everywhere"
+  private val BASE = "http://www.proximustv.be/zcommon/tv-everywhere"
     
   private val logger = Logger("application.belgacom")
 
@@ -30,6 +30,7 @@ object BelgacomReader extends JacksonMapper{
   def searchMovies(date: DateMidnight): Future[List[BelgacomProgram]] = {
     val page = 1
     searchMovies(date, page).map{ result =>
+      println(result)
       result.tvmovies.data.map(program => program.copy(title = StringEscapeUtils.unescapeHtml(program.title)))
     }
   }
@@ -40,15 +41,31 @@ object BelgacomReader extends JacksonMapper{
     
     val url = BASE + "/listing"
 
+    //http://www.proximustv.be/zcommon/tv-everywhere/listing?
+    //tvgrid[filter]:lg-all
+    //tvgrid[day]:1
+    //tvgrid[offset]:1
+    //tvgrid[channel]:0
+    //tvgrid[hourIdx]:14
+    //tvgrid[filterExpanded]:false
+    //cacheBuster:1425065203316
+
+    // or
+
     //tvmovies[day]:2
-	  //tvmovies[genres][]:Oorlog
-	  //tvmovies[languages][]:nl
-	  //tvmovies[page]:1
-    
-    val qs = List("tvmovies[day]"-> dayOffset.toString, "tvmovies[page]" -> page.toString)
+    //tvmovies[page]:1
+    //cacheBuster:1425067433950
+
+    val qs = List(
+      "tvmovies[day]"-> dayOffset.toString,
+      "tvmovies[page]" -> page.toString,
+      "new_lang" -> "nl"
+    )
     WS.url(url).withQueryString(qs:_*).get().map{ response =>
       response.status match {
         case Status.OK =>
+
+
           try{
             deserialize[BelgacomListing](response.body)
           }catch{
