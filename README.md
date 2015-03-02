@@ -10,4 +10,6 @@ MongoDB
 
 ![Build Status](https://www.codeship.io/projects/f0663d10-f562-0130-8cb4-3a7857e44df3/status)
 
+[![Codacy Badge](https://www.codacy.com/project/badge/4901ab784fc54ebe866f5613fa9f8450)](https://www.codacy.com/public/francisdb/belgiantv)
+
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/francisdb/belgiantv?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
