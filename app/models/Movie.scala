@@ -4,6 +4,8 @@ package models
 import reactivemongo.api._
 import reactivemongo.bson._
 
+import scala.util.Try
+
 // Reactive Mongo plugin
 import play.modules.reactivemongo._
 import play.modules.reactivemongo.json.BSONFormats._
@@ -20,16 +22,14 @@ case class Movie(
   id: Option[BSONObjectID],
   name: String,
   imdbId: String,
-  imdbRating: String,
+  imdbRating: Option[String],
   year: Int,
   imgUrl: String
 ){
 
-  def imdbUrl() = "http://www.imdb.com/title/" + imdbId
+  val imdbUrl = "http://www.imdb.com/title/" + imdbId
   
-  def rating() = {
-    Movie.ratingToDouble(imdbRating)
-  }
+  lazy val rating = imdbRating.flatMap(rat => Try(rat.toDouble).toOption)
 }
 
 object Movie extends MongoSupport{

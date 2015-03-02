@@ -67,7 +67,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
             val movie = Await.result(ImdbApiService.find(msg.broadcast.name, msg.broadcast.year), 30.seconds)
 
             movie.map { m =>
-              val dbMovie = new Movie(null, m.title, m.id, m.rating, m.year, m.poster)
+              val dbMovie = new Movie(None, m.title, m.id, m.rating, m.year, m.poster)
               val created = Movie.create(dbMovie)
               created
             }
@@ -86,7 +86,8 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
     case msg: FetchTomatoesResult =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
       val mergedScore = (msg.tomatoesMovie.ratings.audience_score + msg.tomatoesMovie.ratings.critics_score) / 2
-      Broadcast.setTomatoes(msg.broadcastId, msg.tomatoesMovie.id.toString, mergedScore.toString)
+      val scoreOpt = Option(mergedScore).filter(_ != 0)
+      Broadcast.setTomatoes(msg.broadcastId, msg.tomatoesMovie.id.toString, scoreOpt.map(_.toString))
 
     case msg: FetchHumo =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")

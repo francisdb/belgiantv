@@ -51,13 +51,13 @@
                 <ul>
                     <li><a href="@info.broadcast.humoUrl">Humo</a></li>
                 @info.movie.map{ m =>
-                    <li><a href="@m.imdbUrl()">IMDb @m.imdbRating</a></li>
+                    <li><a href="@m.imdbUrl">IMDb @m.imdbRating</a></li>
                 }
                 @info.broadcast.tmdbUrl.map{ u =>
                     <li><a href="@u">TMDb @{info.broadcast.tmdbRating.getOrElse("")}</a></li>
                 }
                 @info.broadcast.tomatoesUrl.map{ u =>
-                    <li><a href="@u">Tomatoes @{info.broadcast.tomatoesRating.get}%</a></li>
+                    <li><a href="@u">Tomatoes @{info.broadcast.tomatoesRating.map(_ + "%")}</a></li>
                 }
                 </ul>
                 <p>

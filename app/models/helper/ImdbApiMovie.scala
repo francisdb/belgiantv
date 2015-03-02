@@ -2,10 +2,12 @@ package models.helper
 
 import play.api.Logger
 
+import scala.util.Try
+
 case class ImdbApiMovie(
   imdbID: String,
 	Title: String,
-	imdbRating: String,
+	imdbRating: Option[String],
 	imdbVotes: String,
 	Runtime: String,
 	Poster: String,
@@ -29,22 +31,13 @@ case class ImdbApiMovie(
   val director = Director
 	
   lazy val getPercentRating = {
-		if(rating == null){
-			-1
-		}else{
-			try{
-				(rating.toDouble * 10).toInt
-			} catch {
-			  case e:NumberFormatException => 
-			    Logger.warn(e.getMessage)
-				-1
-			}
-		}
-		
+    rating.flatMap{ rat =>
+      Try((rat.toDouble * 10).toInt).toOption
+    }
 	}
 	
 	lazy val getDecimalRating = {
-		getPercentRating / 10
+		getPercentRating.map(_ / 10)
 	}
 	
 	lazy val getUrl = "http://www.imdb.com/title/" + id

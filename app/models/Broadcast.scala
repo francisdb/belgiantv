@@ -176,7 +176,7 @@ object Broadcast extends MongoSupport{
     )).cursor[Broadcast].headOption
   }
 
-  def setYelo(b:Broadcast, yeloId:String, yeloUrl:String) {
+  def setYelo(b:Broadcast, yeloId:String, yeloUrl:Option[String]) {
     broadcastCollection.update(
       BSONDocument("_id" -> b.id),
       BSONDocument("$set" -> BSONDocument("yeloId" -> yeloId, "yeloUrl" -> yeloUrl)))
@@ -197,7 +197,7 @@ object Broadcast extends MongoSupport{
       .onComplete(le => mongoLogger(le, "updated imdb for " + b))
   }
 
-  def setTomatoes(broadcastId:BSONObjectID, tomatoesId:String, tomatoesRating:String) {
+  def setTomatoes(broadcastId:BSONObjectID, tomatoesId:String, tomatoesRating:Option[String]) {
     broadcastCollection.update(
       BSONDocument("_id" -> broadcastId),
       BSONDocument("$set" -> BSONDocument(

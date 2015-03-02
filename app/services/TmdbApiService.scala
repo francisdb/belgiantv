@@ -28,9 +28,6 @@ object TmdbApiService{
 	private lazy val apiKey = PlayUtil.config("tmdb.apikey")
 
 	def find(title:String, year:Option[Int] = None): Future[Option[TmdbMovieSearch]] = {
-		if(title==null){
-			throw new IllegalArgumentException("NULL title")
-		}
 		val result = search(title, year)
 		// TODO fall back to title only search if none found?
 		// create test to see if this is needed

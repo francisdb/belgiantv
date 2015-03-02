@@ -15,6 +15,6 @@ case class TmdbMovieSearch(
 
   def posterUrl = {
     // http://help.themoviedb.org/kb/api/configuration
-    Option(poster_path).map("http://cf2.imgobject.com/t/p/w154/" + _)
+    poster_path.map("http://cf2.imgobject.com/t/p/w154/" + _)
   }
 }

@@ -2,6 +2,8 @@ package models.helper
 
 import org.joda.time.format.DateTimeFormat
 
+import scala.util.Try
+
 case class TmdbMovie(
     
 	id:Long,
@@ -19,10 +21,10 @@ case class TmdbMovie(
   movie_type:String,
 	
 	votes:Int,
-	rating:String,
+	rating:Option[String],
 	certification:String,
 	overview:String,
-	released:String,
+	released: Option[String],
 
 	version:Int,
   last_modified_at:String,
@@ -38,42 +40,19 @@ case class TmdbMovie(
   val movieType = movie_type
   val lastModifiedAt = last_modified_at
 
-  def getFirstPoster = {
-    if (posters != null && posters.nonEmpty) {
-      posters.head.image.url
-    } else {
-      null
+  def getFirstPoster = posters.headOption.map(_.image.url)
+
+  def getYear = {
+    released.flatMap { rel =>
+      val fmt = DateTimeFormat.forPattern("yyyy-MM-dd")
+      Try(fmt.parseDateTime(rel).getYear).toOption
     }
   }
     
-    def getYear = {
-    	if(released == null){
-    		null
-    	}else{
-    		val fmt = DateTimeFormat.forPattern("yyyy-MM-dd")
-			try{
-				fmt.parseDateTime(released).getYear
-			}catch{
-			    case ex:IllegalArgumentException => null
-			}
-    	}
-	}
-    
-	def getPercentRating() = {
-		if(rating == null){
-			-1
-		}else{
-		  try { rating.toDouble } catch { 
-		    case e:NumberFormatException => -1
-		    // Logger.warn(e.getMessage())
-		  }
-		}
+	def getPercentRating = {
+    rating.flatMap(rat => Try(rat.toDouble).toOption)
 	}
 	
-	def getDecimalRating() = {
-		getPercentRating() / 10
-	}
-  
-  
-  
+	def getDecimalRating = getPercentRating.map(_ / 10)
+
 }

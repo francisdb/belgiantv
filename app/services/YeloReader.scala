@@ -90,11 +90,11 @@ object YeloReader {
           val epgchanneleventsindex = li.attr("epgchanneleventsindex").toLong
           val url = "http://yelotv.be" + div.getElementsByTag("a").attr("href")
 
-          val channel = channelMap.get(epgchanneleventsindex).getOrElse("UNKNOWN")
-          YeloEvent(eventId, title, url, channel, new Interval(startTimeMillis, endTimeMillis))
+          val channel = channelMap.getOrElse(epgchanneleventsindex, "UNKNOWN")
+          YeloEvent(eventId, title, Some(url), channel, new Interval(startTimeMillis, endTimeMillis))
         }.getOrElse {
           logger.warn("No div found for %s %s at %s".format(divId, title, new DateTime(startTimeMillis)))
-          YeloEvent(eventId, title, null, "UNKNOWN", new Interval(startTimeMillis, endTimeMillis))
+          YeloEvent(eventId, title, None, "UNKNOWN", new Interval(startTimeMillis, endTimeMillis))
         }
       }
     }else{
@@ -124,9 +124,9 @@ object YeloReader {
   }
 
   case class YeloEvent (
-      id:Int, 
-      name:String, 
-      url: String, 
+      id: Int,
+      name: String,
+      url: Option[String],
       channel: String,
       interval: Interval){
     

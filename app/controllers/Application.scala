@@ -9,12 +9,13 @@ import play.api.libs.concurrent.Execution.Implicits._
 
 import java.io.StringReader
 import java.io.ByteArrayOutputStream
+import play.libs.Akka
 import services.YeloReader
 
 
-import services.actors.{StartTomatoes, Start}
+import services.actors.{Master, StartTomatoes, Start}
 //import akka.actor.Props
-import akka.actor.ActorRef
+import akka.actor.{Props, ActorRef}
 
 import org.joda.time.Interval
 import org.joda.time.DateTimeZone
@@ -35,8 +36,11 @@ import play.api.libs.json._
 object Application extends Controller with MongoController {
 
   val timezone = DateTimeZone.forID("Europe/Brussels")
-  
-  var masterActorRef: ActorRef = null
+
+  Logger.info("Scheduling actor trigger")
+  // TODO better location for the actor?
+  val masterActorRef = Akka.system.actorOf(Props[Master], name = "masterActor")
+  //Akka.system.scheduler.schedule(0 seconds, 12 hours, Application.masterActorRef, Start)
 
   def index = Action.async{ implicit request =>
 
