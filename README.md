@@ -8,7 +8,7 @@ MongoDB
 
 [![Build Status](https://travis-ci.org/francisdb/belgiantv.png?branch=master)](https://travis-ci.org/francisdb/belgiantv)
 
-![Build Status](https://www.codeship.io/projects/f0663d10-f562-0130-8cb4-3a7857e44df3/status)
+[![Codeship Status for francisdb/belgiantv](https://codeship.com/projects/f0663d10-f562-0130-8cb4-3a7857e44df3/status?branch=master)](https://codeship.com/projects/6531)
 
 [![Codacy Badge](https://www.codacy.com/project/badge/4901ab784fc54ebe866f5613fa9f8450)](https://www.codacy.com/public/francisdb/belgiantv)
 
