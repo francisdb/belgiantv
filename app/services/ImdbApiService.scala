@@ -24,14 +24,15 @@ object ImdbApiService {
 
     //val url = "http://www.imdbapi.com/"
     val url = "http://www.omdbapi.com/"
-    var request = WS.url(url).withQueryString("t" -> title)
-    if (year.isDefined) {
-      request = request.withQueryString("y" -> year.get.toString)
-    }
+    val request = WS.url(url).withQueryString("t" -> title)
+    val requestExtended = year.map(year =>
+      request.withQueryString("y" -> year.toString)
+    ).getOrElse(request)
+
     
-    logger.info("Fetching " + request)
-    
-    request.get().flatMap{ response =>
+    logger.info("Fetching " + requestExtended)
+
+    requestExtended.get().flatMap{ response =>
 	      val json = response.json
 	      val error = (json \ "Error").asOpt[String]
 	      if(error.isDefined){

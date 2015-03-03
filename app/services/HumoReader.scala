@@ -18,6 +18,8 @@ import play.api.Play.current
 
 import controllers.Application
 
+import scala.util.control.NonFatal
+
 object HumoReader {
 
   final val timezone = DateTimeZone.forID("Europe/Brussels")
@@ -159,7 +161,8 @@ case class HumoEvent(
         time.toDateTime(day.withZoneRetainFields(Application.timezone))
       }
     }catch{
-      case ex: Exception => Logger.error(ex.getMessage, ex)
+      case NonFatal(ex) =>
+        Logger.error(ex.getMessage, ex)
         throw ex
     }
   }

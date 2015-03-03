@@ -9,7 +9,7 @@ import com.typesafe.plugin.{MailerAPI, MailerPlugin}
 import org.apache.commons.mail.EmailException
 
 object Mailer {
-  private val LOGGER = Logger(getClass)
+  private[this] val LOGGER = Logger(getClass)
 
   def sendMail(subject: String, reason:Throwable) {
     val mail = use[MailerPlugin].email
