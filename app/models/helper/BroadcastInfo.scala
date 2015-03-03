@@ -1,6 +1,5 @@
 package models.helper
 
-import com.sun.org.apache.xml.internal.security.c14n.implementations.Canonicalizer20010315ExclOmitComments
 import models.Movie
 
 case class BroadcastInfo(broadcast:models.Broadcast, movie:Option[Movie]){
