@@ -22,22 +22,22 @@ object YeloReader {
   
   private val logger = Logger("application.yelo")
 
-  def fetchDay(day: DateMidnight, channelFilter: List[String] = List()) = {
-    val vlaams = fetchDayData(day)
-    val anderstalig = fetchDayData(day, Some("anderstalig"))
+  def fetchDay(day: DateMidnight, channelFilter: List[String] = List.empty): Future[Seq[YeloEvent]] = {
+    val vlaams = fetchDayData(day, "vlaams")
+    val hd = fetchDayData(day, "hd")
+    val anderstalig = fetchDayData(day, "anderstalig")
     val filter = createFilter(channelFilter)
     for(
       v <- vlaams;
+      h <- hd;
       a <- anderstalig
-    ) yield  v.filter(filter) ++ a.filter(filter)
+    ) yield  (v ++ h ++ a).filter(filter)
   }
 
 
-  private def fetchDayData(day: DateMidnight, groupOption: Option[String] = None): Future[Seq[YeloReader.YeloEvent]] = {
+  private def fetchDayData(day: DateMidnight, group: String = "alles"): Future[Seq[YeloReader.YeloEvent]] = {
     val dateFormat = DateTimeFormat.forPattern("dd-MM-YYYY")
     val baseUrl = "http://yelotv.be/tvgids/detail?date=" + dateFormat.print(day)
-    //val group = groupOption.getOrElse("alles")
-    val group = groupOption.getOrElse("vlaams")
     val url = baseUrl + "&group=" + group
     logger.info("Fetching " + url)
     WS.url(url)

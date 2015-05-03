@@ -14,7 +14,6 @@ import scala.concurrent.duration._
 import models.Channel
 import play.api.libs.ws.WS
 
-//@RunWith(classOf[JUnitRunner])
 class YeloReaderTest extends Specification with NoTimeConversions{
   "the yelo reader" should {
     "return data" in {

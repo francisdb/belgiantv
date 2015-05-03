@@ -27,7 +27,9 @@ object Channel {
       .replace("Nederland 2", "Ned 2")
       .replace("Nederland 3", "Ned 3")
       .replace("BBC One London", "BBC 1")
+      .replace("BBC One", "BBC 1")
       .replace("BBC Two London", "BBC 2")
+      .replace("BBC Two", "BBC 2")
       .replace(" hd", "")
       .replace(" HD", "")
     //      if (!channelFilter.contains(replaced)){
