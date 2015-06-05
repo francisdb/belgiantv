@@ -20,7 +20,7 @@ class BelgacomReaderTest extends Specification with NoTimeConversions {
     "return data" in {
         running(FakeApplication()) {
           val today = new DateMidnight
-	        val result = Await.result(BelgacomReader.readMovies(today), 60 seconds)
+	        val result = Await.result(BelgacomReader.readMovies(today), 60.seconds)
 //	      result.map{ movie =>
 //	          println(movie)
 //	      }
@@ -33,16 +33,16 @@ class BelgacomReaderTest extends Specification with NoTimeConversions {
     }
   }
  
- "the movie search for tomorow" should {
+ "the movie search for tomorrow" should {
     "return data" in {
         running(FakeApplication()) {
-          val tomorow = new DateMidnight().plusDays(1)
-	        val result = Await.result(BelgacomReader.readMovies(tomorow), 60 seconds)
+          val tomorrow = new DateMidnight().plusDays(1)
+	        val result = Await.result(BelgacomReader.readMovies(tomorrow), 60.seconds)
 //	      result.map{ movie =>
 //	          println(movie)
 //	      }
           val movie = result.head
-          movie.toDateTime.toDateMidnight must be equalTo tomorow
+          movie.toDateTime.toDateMidnight must be equalTo tomorrow
           movie.getProgramUrl must not contain "null"
           movie.title must not beNull
 	      //result must not be empty

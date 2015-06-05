@@ -2,16 +2,17 @@ name := "belgiantv"
 
 version := "1.0-SNAPSHOT"
 
-scalaVersion := "2.11.5"
+scalaVersion := "2.11.6"
 
 scalacOptions ++= Seq("-feature")
 
 // copying jvm parameters for testing:
 // http://play.lighthouseapp.com/projects/82401/tickets/981-overriding-configuration-for-tests
-javaOptions in test ++= List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI").map( property =>
-  Option(System.getProperty(property)).map{value =>
+javaOptions in test ++= List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI").flatMap(property =>
+  Option(System.getProperty(property)).map { value =>
     "-D" + property + "=" + value
-  }).flatten
+  }
+)
 
 includeFilter in (Assets, LessKeys.less) := "*.less"
 
@@ -29,7 +30,7 @@ libraryDependencies ++= Seq(
   //anorm,
   ws,
   "com.typesafe.play.plugins" %% "play-plugins-mailer" % "2.3.0",
-  "org.jsoup" % "jsoup" % "1.8.1",
+  "org.jsoup" % "jsoup" % "1.8.2",
   "commons-lang" % "commons-lang" % "2.6",
   "org.reactivemongo" %% "reactivemongo" % reactiveMongoVersion,
   "org.reactivemongo" %% "play2-reactivemongo" % reactiveMongoPluginVersion,
