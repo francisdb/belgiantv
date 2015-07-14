@@ -1,6 +1,6 @@
 package services.actors
 
-import akka.actor.Actor
+import akka.actor.{Props, Actor}
 import play.api.Logger
 import org.joda.time.DateMidnight
 import models.Broadcast
@@ -9,10 +9,14 @@ import services.{ErrorReportingSupport, Mailer, TomatoesApiService}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
 
+object TomatoesActor{
+  def props(mailer: Mailer) = Props(classOf[TomatoesActor], mailer)
+}
+
 /**
  * Makes sure we only have 10	Calls per second
  */
-class TomatoesActor extends MailingActor with ErrorReportingSupport with LoggingActor{
+class TomatoesActor(val mailer: Mailer) extends MailingActor with ErrorReportingSupport with LoggingActor{
 
   val logger = Logger("application.actor.tomatoes")
 

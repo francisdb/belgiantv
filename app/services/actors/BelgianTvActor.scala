@@ -1,12 +1,12 @@
 package services.actors
 
+import models.Channel
 import play.api.Logger
 import _root_.akka.actor.Props
 
 import org.joda.time.DateTimeZone
 
 import scala.util.Failure
-import scala.Some
 import scala.util.Success
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -15,19 +15,23 @@ import scala.concurrent.duration._
 import _root_.akka.contrib.throttle.TimerBasedThrottler
 import _root_.akka.contrib.throttle.Throttler._
 
-import models.{Channel, Movie, Broadcast}
+import models._
 import services._
 
+object BelgianTvActor{
+  def props(broadcastRepository: BroadcastRepository, movieRepository: MovieRepository, mailer: Mailer) =
+    Props(classOf[BelgianTvActor], broadcastRepository, movieRepository, mailer)
+}
 
-class BelgianTvActor extends MailingActor with ErrorReportingSupport with LoggingActor{
+class BelgianTvActor(broadcastRepository: BroadcastRepository, movieRepository: MovieRepository, val mailer: Mailer) extends MailingActor with ErrorReportingSupport with LoggingActor{
   
   val logger = Logger("application.actor")
 
-  val tomatoesRef = context.actorOf(Props[TomatoesActor], name = "Tomatoes")
+  val tomatoesRef = context.actorOf(TomatoesActor.props(mailer), name = "Tomatoes")
   val tomatoesThrottler = context.actorOf(Props(new TimerBasedThrottler(2 msgsPer 1.second)), name = "TomatoesThrottler")
   tomatoesThrottler ! SetTarget(Some(tomatoesRef))
 
-  val humoRef = context.actorOf(Props[HumoActor], name = "Humo")
+  val humoRef = context.actorOf(HumoActor.props(mailer), name = "Humo")
   val humoThrottler = context.actorOf(Props(new TimerBasedThrottler(1 msgsPer 5.second)), name = "HumoThrottler")
   humoThrottler ! SetTarget(Some(humoRef))
   
@@ -44,8 +48,8 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
 
       tmdbmovie.map { mOption =>
         mOption.map{ m =>
-           Broadcast.setTmdb(msg.broadcast, m.id.toString, m.vote_average.toString)
-           m.posterUrl.map(Broadcast.setTmdbImg(msg.broadcast, _))
+          broadcastRepository.setTmdb(msg.broadcast, m.id.toString, m.vote_average.toString)
+           m.posterUrl.map(broadcastRepository.setTmdbImg(msg.broadcast, _))
         }.getOrElse{
         	logger.warn("No TMDb movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
         	None
@@ -58,7 +62,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
     case msg: LinkImdb =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
 
-      Movie.find(msg.broadcast.name, msg.broadcast.year).onComplete{
+      movieRepository.find(msg.broadcast.name, msg.broadcast.year).onComplete{
         case Failure(e) =>
           reportFailure("Failed to find imdb: " + e.getMessage, e)
         case Success(movie) =>
@@ -68,13 +72,13 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
 
             movie.map { m =>
               val dbMovie = new Movie(None, m.title, m.id, m.rating, m.year, m.poster)
-              val created = Movie.create(dbMovie)
+              val created = movieRepository.create(dbMovie)
               created
             }
           }
 
           movie2 match{
-            case Some(m:Movie) => Broadcast.setImdb(msg.broadcast, m.imdbId)
+            case Some(m:Movie) => broadcastRepository.setImdb(msg.broadcast, m.imdbId)
             case None => logger.warn("No IMDB movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
           }
       }
@@ -87,7 +91,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
       val mergedScore = (msg.tomatoesMovie.ratings.audience_score + msg.tomatoesMovie.ratings.critics_score) / 2
       val scoreOpt = Option(mergedScore).filter(_ != 0)
-      Broadcast.setTomatoes(msg.broadcastId, msg.tomatoesMovie.id.toString, scoreOpt.map(_.toString))
+      broadcastRepository.setTomatoes(msg.broadcastId, msg.tomatoesMovie.id.toString, scoreOpt.map(_.toString))
 
     case msg: FetchHumo =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
@@ -107,14 +111,14 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
               event.year,
               humoId = Some(event.id),
               humoUrl = Some(event.url))
-            Broadcast.findByDateTimeAndChannel(broadcast.datetime, broadcast.channel).map{
+            broadcastRepository.findByDateTimeAndChannel(broadcast.datetime, broadcast.channel).map{
               case Some(existingBroadcast) =>
                 if (existingBroadcast.imdbId.isEmpty) {
                   self ! LinkImdb(existingBroadcast)
                 }
                 existingBroadcast
               case None =>
-                val saved = Broadcast.create(broadcast)
+                val saved = broadcastRepository.create(broadcast)
                 self ! LinkImdb(saved)
                 self ! LinkTmdb(saved)
                 self ! LinkTomatoes(saved)
@@ -145,7 +149,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
             if (broadcast.yeloUrl.isEmpty) {
               val found = movies.find(yeloMovie => Channel.unify(yeloMovie.channel).toLowerCase == broadcast.channel.toLowerCase && yeloMovie.startDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC))
               found.map { event =>
-                Broadcast.setYelo(broadcast, event.id.toString, event.url)
+                broadcastRepository.setYelo(broadcast, event.id.toString, event.url)
               }.getOrElse {
                 logger.warn("No yelo match for " + broadcast.channel + " " + broadcast.humanDate + " " + broadcast.name)
               }
@@ -166,7 +170,7 @@ class BelgianTvActor extends MailingActor with ErrorReportingSupport with Loggin
                 Channel.unify(belgacomMovie.channelName).toLowerCase == broadcast.channel.toLowerCase && belgacomMovie.toDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC)
               }
               found.map { event =>
-                Broadcast.setBelgacom(broadcast, event.programId.toString, event.getProgramUrl)
+                broadcastRepository.setBelgacom(broadcast, event.programId.toString, event.getProgramUrl)
               }.getOrElse {
                 logger.warn("No belgacom match for " + broadcast.channel + " " + broadcast.humanDate + " " + broadcast.name)
               }

@@ -1,5 +1,7 @@
 package models
 
+import reactivemongo.api.commands.WriteResult
+
 import scala.util.{Try, Success, Failure}
 import reactivemongo.core.commands.LastError
 import play.api.Logger
@@ -9,8 +11,8 @@ trait MongoSupport extends ErrorReportingSupport{
 
   protected val logger:Logger
 
-  protected def mongoLogger(le:Try[LastError], successMessage:String) = {
-    le match {
+  protected def mongoLogger(lastError:Try[WriteResult], successMessage:String) = {
+    lastError match {
       case Success(le) =>
         if (le.inError) {
           logger.error(le.message)

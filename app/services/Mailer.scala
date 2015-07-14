@@ -1,27 +1,28 @@
 package services
 
-import play.api.Play.current
-
 import play.api.Logger
-import com.typesafe.plugin._
 import java.io.{PrintStream, ByteArrayOutputStream}
-import com.typesafe.plugin.{MailerAPI, MailerPlugin}
 import org.apache.commons.mail.EmailException
 
-object Mailer {
+import play.api.libs.mailer._
+import javax.inject.Inject
+
+class Mailer @Inject() (mailerClient: MailerClient){
   private[this] val LOGGER = Logger(getClass)
 
   def sendMail(subject: String, reason:Throwable) {
-    val mail = use[MailerPlugin].email
-
-    mail.setRecipient("Francis De Brabandere <francisdb@gmail.com>")
-    mail.setFrom("BelgianTV <belgiantv@somatik.be>")
 
     val stacktrace = stacktraceToString(reason)
     val content = "Unhandled serverside exception, please check this ASAP.\n\n" + stacktrace
 
-    mail.setSubject("BelgianTV - " + subject)
-    sendAndLogFailure(mail, content)
+    val email = Email(
+      "BelgianTV - " + subject,
+      "BelgianTV <belgiantv@somatik.be>",
+      Seq("Francis De Brabandere <francisdb@gmail.com>"),
+      // sends text, HTML or both...
+      bodyText = Some(content)
+    )
+    sendAndLogFailure(email)
   }
 
   private def stacktraceToString(throwable:Throwable) = {
@@ -35,9 +36,9 @@ object Mailer {
     stacktrace
   }
 
-  private def sendAndLogFailure(mail: MailerAPI, content: String) {
+  private def sendAndLogFailure(email: Email) {
     try {
-      mail.send(content)
+      mailerClient.send(email)
     } catch {
       case ex: EmailException =>
         LOGGER.error(ex.getMessage, ex)

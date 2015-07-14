@@ -6,6 +6,8 @@ import services.Mailer
 
 trait MailingActor extends Actor{
 
+  def mailer: Mailer
+
   private val LOGGER = Logger(getClass)
 
 // TODO not sure how to handle this in scala
@@ -15,8 +17,8 @@ trait MailingActor extends Actor{
 //  }
 
   override def postRestart(reason: Throwable) {
-    LOGGER.info("Actor restarted: " + reason.getMessage())
-    Mailer.sendMail(s"Actor ${this.getClass().getSimpleName()} restarted", reason)
+    LOGGER.info("Actor restarted: " + reason.getMessage)
+    mailer.sendMail(s"Actor ${this.getClass.getSimpleName} restarted", reason)
     super.postRestart(reason)
   }
 

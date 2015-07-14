@@ -1,45 +1,39 @@
 package controllers
 
+import javax.inject.Inject
+
 import _root_.models.helper.BroadcastInfo
-import _root_.models.{Channel, Movie, Broadcast}
+import models.{MovieRepository, BroadcastRepository, Movie, Broadcast}
 
 import play.api._
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits._
 
-import java.io.StringReader
-import java.io.ByteArrayOutputStream
 import play.libs.Akka
-import services.YeloReader
+import services.Mailer
 
 
 import services.actors.{Master, StartTomatoes, Start}
-//import akka.actor.Props
-import akka.actor.{Props, ActorRef}
+import akka.actor.Props
 
 import org.joda.time.Interval
-import org.joda.time.DateTimeZone
 import org.joda.time.DateTime
 import org.joda.time.DateMidnight
 
+import play.modules.reactivemongo.{ReactiveMongoApi, ReactiveMongoComponents, MongoController}
 
-
-import play.modules.reactivemongo.{MongoController, ReactiveMongoPlugin}
-
-
-
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 // Play Json imports
 import play.api.libs.json._
 
-object Application extends Controller with MongoController {
-
-  val timezone = DateTimeZone.forID("Europe/Brussels")
+class Application @Inject() (val reactiveMongoApi: ReactiveMongoApi, broadcastRepository: BroadcastRepository, movieRepository: MovieRepository, mailer: Mailer)
+  extends Controller with MongoController with ReactiveMongoComponents {
 
   Logger.info("Scheduling actor trigger")
   // TODO better location for the actor?
-  val masterActorRef = Akka.system.actorOf(Props[Master], name = "masterActor")
+  // TODO create an actor module that is enabled in the application.conf
+  val masterActorRef = Akka.system.actorOf(Master.props(broadcastRepository, movieRepository, mailer), name = "masterActor")
   //Akka.system.scheduler.schedule(0 seconds, 12 hours, Application.masterActorRef, Start)
 
   def index = Action.async{ implicit request =>
@@ -51,7 +45,7 @@ object Application extends Controller with MongoController {
     val interval = new Interval(start, end)
 
     for{
-      broadcasts <- Broadcast.findByInterval(interval)
+      broadcasts <- broadcastRepository.findByInterval(interval)
       infos <- Future.traverse(broadcasts)(broadcast => linkWithMovie(broadcast))
     }yield{
       val sorted = infos.sortWith(BroadcastInfo.scoreSorter)
@@ -64,19 +58,21 @@ object Application extends Controller with MongoController {
     implicit val reader = Movie.movieFormat//MovieBSONReader
 
     broadcast.imdbId match {
-      case Some(imdbId) => Movie.findByImdbId(imdbId).map(BroadcastInfo(broadcast, _))
+      case Some(imdbId) => movieRepository.findByImdbId(imdbId).map(BroadcastInfo(broadcast, _))
       case None => Future.successful(BroadcastInfo(broadcast, None))
     }
   }
 
   def scan = Action {
     masterActorRef ! Start
-    Redirect(routes.Application.index).flashing("message" -> "Started database update...")
+    Redirect(routes.Application.index())
+      .flashing("message" -> "Started database update...")
   }
 
   def tomatoes = Action {
     masterActorRef ! StartTomatoes
-    Redirect(routes.Application.index).flashing("message" -> "Started tomatoes update...")
+    Redirect(routes.Application.index())
+      .flashing("message" -> "Started tomatoes update...")
   }
   
 

@@ -1,18 +1,23 @@
 package services.actors
 
 import _root_.akka.actor.{Actor, Props}
-import _root_.akka.routing.RoundRobinRouter
+import akka.routing.{RoundRobinPool, RoundRobinRouter}
 import play.api.Logger
 import org.joda.time.DateMidnight
 import akka.actor.ActorLogging
-import models.Broadcast
+import models.{MovieRepository, BroadcastRepository, Broadcast}
+import services.Mailer
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import akka.event.LoggingReceive
 
-class Master extends MailingActor with LoggingActor with ActorLogging{
+object Master{
+  def props(broadcastRepository: BroadcastRepository, movieRepository: MovieRepository, mailer: Mailer) = Props(classOf[Master], broadcastRepository, movieRepository, mailer)
+}
 
-  val belgianTvRef = context.actorOf(Props[BelgianTvActor].withRouter(RoundRobinRouter(2)), name = "BelgianTV")
+class Master(broadcastRepository: BroadcastRepository, movieRepository: MovieRepository, val mailer: Mailer) extends MailingActor with LoggingActor with ActorLogging{
+
+  val belgianTvRef = context.actorOf(BelgianTvActor.props(broadcastRepository, movieRepository, mailer).withRouter(RoundRobinPool(2)), name = "BelgianTV")
 
   // TODO check the LoggingReceive docs and see if we can enable it on heroku
   def receive: Receive = LoggingReceive {
@@ -24,7 +29,7 @@ class Master extends MailingActor with LoggingActor with ActorLogging{
       }
     case StartTomatoes =>
       for{
-        broadcasts <- Broadcast.findMissingTomatoes()
+        broadcasts <- broadcastRepository.findMissingTomatoes()
       }yield{
         broadcasts.foreach(belgianTvRef ! LinkTomatoes(_))
       }

@@ -16,17 +16,13 @@ class MovieTest extends Specification with NoTimeConversions with ConfigSpec {
   "trying to read a movie" should {
     "return data" in {
 
-      // TODO try to get the driver working without the fake app
-//      lazy val driver = new MongoDriver
-//      lazy val connection = driver.connection(servers, auth)
-//      lazy val db = DB(dbName, connection)
+      // TODO use https://github.com/athieriot/specs2-embedmongo
 
-      //val fongo = new Fongo("test mongo")
-
-      running(FakeApplication()) {
+      val app = FakeApplication()
+      running(app) {
         skipIfMissingConfig(configProperty)
-        //Application.db = fongo.getDB("testdb")
-        val result = Await.result(Movie.find("ddd", Some(1980)), 30 seconds)
+        val movieRepository = app.injector.instanceOf[MovieRepository]
+        val result = Await.result(movieRepository.find("ddd", Some(1980)), 30.seconds)
         //println(result.isDefined)
         result.isDefined must beFalse
       }

@@ -1,5 +1,6 @@
 package services
 
+import global.Globals
 import play.api.libs.json.{JsError, JsSuccess, Json, JsValue}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -156,9 +157,9 @@ case class HumoEvent(
     try{
       // artificial check, we say 6:00 starts the day
       if(time.isBefore(LocalTime.parse("6:00"))){
-        time.toDateTime(day.plusDays(1).withZoneRetainFields(Application.timezone))
+        time.toDateTime(day.plusDays(1).withZoneRetainFields(Globals.timezone))
       }else{
-        time.toDateTime(day.withZoneRetainFields(Application.timezone))
+        time.toDateTime(day.withZoneRetainFields(Globals.timezone))
       }
     }catch{
       case NonFatal(ex) =>

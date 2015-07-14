@@ -4,11 +4,12 @@ import play.api.Logger
 
 trait ErrorReportingSupport {
 
-  protected val logger:Logger
+  protected val mailer: Mailer
+  protected val logger: Logger
 
   protected def reportFailure(message:String, e: Throwable) {
     logger.error(message, e)
-    Mailer.sendMail(message, e)
+    mailer.sendMail(message, e)
   }
 
   protected def reportFailure(e: Throwable) {
