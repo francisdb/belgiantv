@@ -3,5 +3,6 @@ scala:
    - 2.11.7
 
 jdk:
-  - openjdk8
+# openjdk8 still not available
+#  - openjdk8
   - oraclejdk8
