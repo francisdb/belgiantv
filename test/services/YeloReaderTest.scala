@@ -2,7 +2,6 @@ package services
 
 import org.specs2.mutable._
 import org.specs2.runner.JUnitRunner
-import org.specs2.time.NoTimeConversions
 
 import play.api.test._
 import play.api.test.Helpers._
@@ -14,7 +13,7 @@ import scala.concurrent.duration._
 import models.Channel
 import play.api.libs.ws.WS
 
-class YeloReaderTest extends Specification with NoTimeConversions{
+class YeloReaderTest extends Specification{
   "the yelo reader" should {
     "return data" in {
       running(FakeApplication()) {

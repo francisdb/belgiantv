@@ -2,7 +2,6 @@ package services
 
 import org.specs2.mutable._
 import org.specs2.runner.JUnitRunner
-import org.specs2.time.NoTimeConversions
 
 import play.api.test._
 import play.api.test.Helpers._
@@ -14,7 +13,7 @@ import helper.ConfigSpec
 
 //@RunWith(classOf[JUnitRunner])
 // WARN the line above causes testing issues where, multiple akka instances are launched!
-class TomatoesTest extends Specification with NoTimeConversions with ConfigSpec{
+class TomatoesTest extends Specification with ConfigSpec{
 
   private val configProperty = "tomatoes.apikey"
 

@@ -7,14 +7,13 @@ import org.joda.time.DateMidnight
 
 
 import org.specs2.mutable._
-import org.specs2.time.NoTimeConversions
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration._
 import play.api.test.FakeApplication
 
-class BelgacomReaderTest extends Specification with NoTimeConversions {
+class BelgacomReaderTest extends Specification{
 
  "the movie search for today" should {
     "return data" in {

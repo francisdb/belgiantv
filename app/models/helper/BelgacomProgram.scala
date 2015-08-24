@@ -16,7 +16,7 @@ case class BelgacomProgram(
 	clogo: String,
 	sts: Long,
 	ets: Long,
-  img: String,
+  img: Option[String],
 	gr: Option[Int],
 	grname: Option[String],
 	

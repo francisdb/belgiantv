@@ -2,7 +2,6 @@ package services
 
 import org.specs2.mutable._
 import org.specs2.runner.JUnitRunner
-import org.specs2.time.NoTimeConversions
 
 import play.api.test._
 import play.api.test.Helpers._
@@ -12,7 +11,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import helper.ConfigSpec
 
-class TmdbTest extends Specification with NoTimeConversions with ConfigSpec {
+class TmdbTest extends Specification with ConfigSpec {
 
   private val configProperty = "tmdb.apikey"
 

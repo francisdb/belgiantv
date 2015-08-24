@@ -2,7 +2,6 @@ package services
 
 import org.specs2.mutable._
 import org.specs2.runner.JUnitRunner
-import org.specs2.time.NoTimeConversions
 
 import play.api.test._
 import play.api.test.Helpers._
@@ -13,7 +12,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 
 //@RunWith(classOf[JUnitRunner])
-class ImdbTest extends Specification with NoTimeConversions{
+class ImdbTest extends Specification{
   "the search for Pulp Fiction" should {
     "return the correct movie" in {
         running(FakeApplication()) {

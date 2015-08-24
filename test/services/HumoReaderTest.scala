@@ -2,7 +2,6 @@ package services
 
 import org.specs2.mutable._
 import org.specs2.runner.JUnitRunner
-import org.specs2.time.NoTimeConversions
 
 import play.api.test._
 import play.api.test.Helpers._
@@ -13,7 +12,7 @@ import org.joda.time.DateMidnight
 import scala.concurrent._
 import scala.concurrent.duration._
 
-class HumoReaderTest extends Specification with NoTimeConversions {
+class HumoReaderTest extends Specification{
   
   "the humo reader" should {
     "return data" in {
