@@ -19,7 +19,7 @@ class MovieTest extends Specification with ConfigSpec {
 
       val app = FakeApplication()
       running(app) {
-        skipIfMissingConfig(configProperty)
+        skipped("need to implement this using specs2-embedmongo")
         val movieRepository = app.injector.instanceOf[MovieRepository]
         val result = Await.result(movieRepository.find("ddd", Some(1980)), 30.seconds)
         //println(result.isDefined)
