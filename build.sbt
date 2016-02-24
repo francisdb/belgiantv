@@ -32,7 +32,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-contrib" % akkaVersion,
   "org.webjars" %% "webjars-play" % "2.4.0-1",
   "org.webjars" % "bootstrap" % "3.3.5",
-  "org.webjars" % "jquery" % "2.1.4"
+  "org.webjars" % "jquery" % "2.1.4",
+  "org.specs2" %% "specs2-core" % "3.6.6" % Test // play comes with 3.6 that depends on unavailable scalaz-streams
 )
 
 
