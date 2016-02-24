@@ -5,12 +5,14 @@ import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
-import play.modules.reactivemongo.json.collection.JSONCollection
-
+import reactivemongo.play.json._
+import reactivemongo.play.json.collection.JSONCollection
+import reactivemongo.api.FailoverStrategy
 import reactivemongo.bson.BSONObjectID
 import services.Mailer
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 
 class MovieRepository @Inject() (val mailer: Mailer, reactiveMongoApi: ReactiveMongoApi) extends MongoSupport {
@@ -18,17 +20,13 @@ class MovieRepository @Inject() (val mailer: Mailer, reactiveMongoApi: ReactiveM
 
   import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-  import play.modules.reactivemongo.json._
-  import play.modules.reactivemongo.json.collection._
-  import play.modules.reactivemongo.json._, ImplicitBSONHandlers._
-
-  // TODO remove, somehow I still need this despite of
-  // https://groups.google.com/forum/#!topic/reactivemongo/9BGeLw13twk
-  implicit val identityWriter = JSONSerializationPack.IdentityWriter
-
   protected override val logger = Logger("application.db")
 
+  //lazy val db = reactiveMongoApi.connection("heroku_app4877663", FailoverStrategy(50.milliseconds, 20, {n => val w = n * 2; println(w); w}))
+  //private lazy val movieCollection = db.collection[JSONCollection]("movies")
+
   private lazy val movieCollection:JSONCollection = reactiveMongoApi.db.collection[JSONCollection]("movies")
+
 
   def create(movie: Movie) = {
     val id = BSONObjectID.generate
@@ -56,6 +54,7 @@ class MovieRepository @Inject() (val mailer: Mailer, reactiveMongoApi: ReactiveM
     movieCollection.find(
       Json.obj("imdbId" -> imdbId)
     ).cursor[Movie]().headOption
+
   }
 
   def findByNameAndYear(name: String, year:Int): Future[Option[Movie]] = {

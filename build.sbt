@@ -14,8 +14,8 @@ javaOptions in test ++= List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI")
 includeFilter in (Assets, LessKeys.less) := "*.less"
 excludeFilter in (Assets, LessKeys.less) := "_*.less"
 
-val reactiveMongoVersion = "0.11.7"
-val reactiveMongoPluginVersion = "0.11.7.play24"
+val reactiveMongoVersion = "0.11.10"
+val reactiveMongoPluginVersion = "0.11.10"
 val akkaVersion = "2.3.11" // TODO update when migrating to newer play
 
 libraryDependencies ++= Seq(
@@ -35,9 +35,6 @@ libraryDependencies ++= Seq(
   "org.webjars" % "jquery" % "2.1.4"
 )
 
-// for specs2 :-(
-// see https://github.com/scalaz/scalaz-stream/issues/258#issuecomment-95975632
-resolvers += Resolver.bintrayRepo("scalaz", "releases")
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala).settings(
   routesGenerator := InjectedRoutesGenerator
