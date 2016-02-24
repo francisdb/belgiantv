@@ -17,13 +17,13 @@ excludeFilter in (Assets, LessKeys.less) := "_*.less"
 val reactiveMongoVersion = "0.11.10"
 val reactiveMongoPluginVersion = "0.11.10"
 val akkaVersion = "2.3.11" // TODO update when migrating to newer play
+val specs2Version = "3.6.6"
 
 libraryDependencies ++= Seq(
   // Add your project dependencies here,
   //jdbc,
   //anorm,
   ws,
-  specs2 % Test,
   "com.typesafe.play" %% "play-mailer" % "3.0.1",
   "org.jsoup" % "jsoup" % "1.8.2",
   "commons-lang" % "commons-lang" % "2.6",
@@ -33,7 +33,12 @@ libraryDependencies ++= Seq(
   "org.webjars" %% "webjars-play" % "2.4.0-1",
   "org.webjars" % "bootstrap" % "3.3.5",
   "org.webjars" % "jquery" % "2.1.4",
-  "org.specs2" %% "specs2-core" % "3.6.6" % Test // play comes with 3.6 that depends on unavailable scalaz-streams
+
+  // play comes with 3.6 that depends on unavailable scalaz-streams
+  specs2 % Test,
+  "org.specs2" %% "specs2-core" % specs2Version % Test,
+  "org.specs2" %% "specs2-mock" % specs2Version % Test,
+  "org.specs2" %% "specs2-junit" % specs2Version % Test
 )
 
 
