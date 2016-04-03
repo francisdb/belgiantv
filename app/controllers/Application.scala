@@ -3,37 +3,31 @@ package controllers
 import javax.inject.Inject
 
 import _root_.models.helper.BroadcastInfo
-import models.{MovieRepository, BroadcastRepository, Movie, Broadcast}
-
+import akka.actor.ActorSystem
+import models.{Broadcast, BroadcastRepository, Movie, MovieRepository}
 import play.api._
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits._
-
-import play.libs.Akka
 import services.Mailer
-
-
-import services.actors.{Master, StartTomatoes, Start}
-import akka.actor.Props
-
+import services.actors.{Master, Start, StartTomatoes}
 import org.joda.time.Interval
 import org.joda.time.DateTime
 import org.joda.time.DateMidnight
-
-import play.modules.reactivemongo.{ReactiveMongoApi, ReactiveMongoComponents, MongoController}
+import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 
 import scala.concurrent.Future
 
-// Play Json imports
-import play.api.libs.json._
-
-class Application @Inject() (val reactiveMongoApi: ReactiveMongoApi, broadcastRepository: BroadcastRepository, movieRepository: MovieRepository, mailer: Mailer)
-  extends Controller with MongoController with ReactiveMongoComponents {
+class Application @Inject() (
+  actorSystem: ActorSystem,
+  val reactiveMongoApi: ReactiveMongoApi,
+  broadcastRepository: BroadcastRepository,
+  movieRepository: MovieRepository,
+  mailer: Mailer) extends Controller with MongoController with ReactiveMongoComponents {
 
   Logger.info("Scheduling actor trigger")
   // TODO better location for the actor?
   // TODO create an actor module that is enabled in the application.conf
-  val masterActorRef = Akka.system.actorOf(Master.props(broadcastRepository, movieRepository, mailer), name = "masterActor")
+  val masterActorRef = actorSystem.actorOf(Master.props(broadcastRepository, movieRepository, mailer), name = "masterActor")
   //Akka.system.scheduler.schedule(0 seconds, 12 hours, Application.masterActorRef, Start)
 
   def index = Action.async{ implicit request =>

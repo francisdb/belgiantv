@@ -6,13 +6,10 @@ import models.Broadcast._
 import org.joda.time.{DateTime, Interval}
 import play.api.Logger
 import play.modules.reactivemongo.ReactiveMongoApi
-import play.modules.reactivemongo.json.collection.JSONCollection
-import reactivemongo.api.FailoverStrategy
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson._
 import services.Mailer
 
-import scala.concurrent.duration._
 import scala.concurrent.Future
 
 class BroadcastRepository @Inject() (val mailer: Mailer, val reactiveMongoApi: ReactiveMongoApi) extends MongoSupport {
@@ -20,14 +17,12 @@ class BroadcastRepository @Inject() (val mailer: Mailer, val reactiveMongoApi: R
 
   import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-  //private lazy val dbFuture = reactiveMongoApi.connection.database("heroku_app4877663", FailoverStrategy(100.milliseconds, 20, {n => val w = n * 2; println(w); w}))
-  //private lazy val broadcastCollectionFuture = dbFuture.map(_.collection[BSONCollection]("broadcasts"))
+  private lazy val dbFuture = reactiveMongoApi.connection.database(dbName, herokuMLabFailover)
+  private lazy val broadcastCollectionFuture = dbFuture.map(_.collection[BSONCollection]("broadcasts"))
 
-  private lazy val broadcastCollectionFuture = Future.successful(reactiveMongoApi.db.collection[BSONCollection]("broadcasts"))
+  //private lazy val broadcastCollectionFuture = Future.successful(reactiveMongoApi.db.collection[BSONCollection]("broadcasts"))
 
   protected override val logger = Logger("application.db")
-
-  //private lazy val broadcastCollectionJson: Future[JSONCollection] = db.map(_.collection[JSONCollection]("broadcasts"))
 
   // TODO make all these properly anync
 
