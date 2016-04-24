@@ -14,10 +14,10 @@ javaOptions in test ++= List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI")
 includeFilter in (Assets, LessKeys.less) := "*.less"
 excludeFilter in (Assets, LessKeys.less) := "_*.less"
 
-val reactiveMongoVersion = "0.11.10"
-val reactiveMongoPluginVersion = "0.11.10"
-val akkaVersion = "2.3.11" // TODO update when migrating to newer play
-val specs2Version = "3.6.6"
+val reactiveMongoVersion = "0.11.11"
+val reactiveMongoPluginVersion = "0.11.11"
+val akkaVersion = "2.4.1" // TODO update when migrating to newer play
+val specs2Version = "3.7.2"
 
 libraryDependencies ++= Seq(
   // Add your project dependencies here,
@@ -40,6 +40,9 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2-mock" % specs2Version % Test,
   "org.specs2" %% "specs2-junit" % specs2Version % Test
 )
+
+// for specs2, see https://etorreborre.github.io/specs2/website/SPECS2-3.7.2/quickstart.html
+scalacOptions in Test ++= Seq("-Yrangepos")
 
 
 lazy val root = (project in file("."))

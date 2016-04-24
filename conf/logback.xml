@@ -1,8 +1,7 @@
 <configuration>
 
 <!-- More info here: http://www.playframework.org/documentation/2.0.1/SettingsLogger -->
-    
-  <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
+    <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
   
   <appender name="FILE" class="ch.qos.logback.core.FileAppender">
      <file>${application.home}/logs/application.log</file>
