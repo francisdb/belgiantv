@@ -19,11 +19,15 @@ trait MongoSupport extends ErrorReportingSupport{
 
   protected def mongoLogger(lastError:Try[WriteResult], successMessage:String) = {
     lastError match {
-      case Success(le) =>
-        if (le.inError) {
-          logger.error(le.message)
-        } else {
-          logger.debug(successMessage)
+      case Success(result) =>
+        result.writeConcernError.map{ e =>
+          logger.error(e.errmsg)
+        }.getOrElse{
+          if(result.writeErrors.nonEmpty){
+            logger.error(result.writeErrors.mkString("|"))
+          }else{
+            logger.debug(successMessage)
+          }
         }
       case Failure(ex) =>
         reportFailure(ex)

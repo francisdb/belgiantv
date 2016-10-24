@@ -1,17 +1,14 @@
 package services
 
 import org.specs2.mutable._
-import org.specs2.runner.JUnitRunner
 
 import play.api.test._
 import play.api.test.Helpers._
-import org.junit.runner.RunWith
 import org.joda.time.DateMidnight
 
 import scala.concurrent._
 import scala.concurrent.duration._
 import models.Channel
-import play.api.libs.ws.WS
 
 class YeloReaderTest extends Specification{
   "the yelo reader" should {

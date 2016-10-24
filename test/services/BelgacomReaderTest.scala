@@ -20,6 +20,7 @@ class BelgacomReaderTest extends Specification{
         running(FakeApplication()) {
           val today = new DateMidnight
 	        val result = Await.result(BelgacomReader.readMovies(today), 60.seconds)
+          //println(result.map(_.channelName).toSet)
 //	      result.map{ movie =>
 //	          println(movie)
 //	      }
@@ -37,6 +38,7 @@ class BelgacomReaderTest extends Specification{
         running(FakeApplication()) {
           val tomorrow = new DateMidnight().plusDays(1)
 	        val result = Await.result(BelgacomReader.readMovies(tomorrow), 60.seconds)
+          //println(result.map(_.channelName).toSet)
 //	      result.map{ movie =>
 //	          println(movie)
 //	      }

@@ -22,13 +22,16 @@ class Application @Inject() (
   val reactiveMongoApi: ReactiveMongoApi,
   broadcastRepository: BroadcastRepository,
   movieRepository: MovieRepository,
-  mailer: Mailer) extends Controller with MongoController with ReactiveMongoComponents {
+  mailer: Mailer,
+  webJarAssets: WebJarAssets) extends Controller with MongoController with ReactiveMongoComponents {
 
   Logger.info("Scheduling actor trigger")
   // TODO better location for the actor?
   // TODO create an actor module that is enabled in the application.conf
   val masterActorRef = actorSystem.actorOf(Master.props(broadcastRepository, movieRepository, mailer), name = "masterActor")
   //Akka.system.scheduler.schedule(0 seconds, 12 hours, Application.masterActorRef, Start)
+
+  private implicit val wjAssets = webJarAssets
 
   def index = Action.async{ implicit request =>
 

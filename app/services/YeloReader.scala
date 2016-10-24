@@ -31,7 +31,11 @@ object YeloReader {
       v <- vlaams;
       h <- hd;
       a <- anderstalig
-    ) yield  (v ++ h ++ a).filter(filter)
+    ) yield{
+//      println((v ++ h ++ a).map(_.channel).toSet)
+//      println((v ++ h ++ a).filter(filter).map(_.channel).toSet)
+      (v ++ h ++ a).filter(filter)
+    }
   }
 
 

@@ -1,23 +1,20 @@
 package services
 
 import global.Globals
-import play.api.libs.json.{JsError, JsSuccess, Json, JsValue}
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import akka.actor.Scheduler
-
-import org.joda.time.{DateTimeZone, DateTime, DateMidnight, LocalTime}
+import org.joda.time.{DateMidnight, DateTime, DateTimeZone, LocalTime}
 import org.joda.time.format.DateTimeFormat
-
 import play.api.Logger
 import play.api.libs.ws.WS
 import play.api.http.Status
 import play.api.Play.current
-
 import controllers.Application
+import models.Channel
 
 import scala.util.control.NonFatal
 
@@ -67,7 +64,12 @@ object HumoReader {
     WS.url(url).get().flatMap{ response =>
       response.status match {
         case Status.OK =>
-          Future.successful(parseDay(day, response.json).filter(result => channelFilter.isEmpty || channelFilter.contains(result.channel)))
+          val dayData = parseDay(day, response.json)
+          val interestingData = dayData.filter { result =>
+            val unifiedChannel = Channel.unify(result.channel).toLowerCase
+            channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(unifiedChannel)
+          }
+          Future.successful(interestingData)
         case Status.GATEWAY_TIMEOUT =>
           throw GatewayTimeoutException(s"Gateway timeout at remote site when trying to get $url : ${response.body.take(100)}...")
         case other =>
@@ -101,7 +103,14 @@ object HumoReader {
 
     humoSchedule.broadcasters.flatMap{ broadcaster =>
       broadcaster.events.filter(_.isMovie) map { event =>
-        HumoEvent(event.id.toString, event.url, day, broadcaster.display_name, event.startLocalTime, event.program.title.getOrElse(""), event.program.yearInt)
+        HumoEvent(
+          event.id.toString,
+          event.url,
+          day,
+          broadcaster.display_name,
+          event.startLocalTime,
+          event.program.title.getOrElse(""),
+          event.program.yearInt)
       }
     }.toList
   }
