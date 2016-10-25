@@ -2,7 +2,6 @@ package services
 
 import org.specs2.mutable._
 import org.specs2.runner.JUnitRunner
-
 import play.api.test._
 import play.api.test.Helpers._
 import org.junit.runner.RunWith
@@ -10,6 +9,7 @@ import org.junit.runner.RunWith
 import scala.concurrent._
 import scala.concurrent.duration._
 import helper.ConfigSpec
+import play.api.inject.guice.GuiceApplicationBuilder
 
 class TmdbTest extends Specification with ConfigSpec {
 
@@ -20,7 +20,7 @@ class TmdbTest extends Specification with ConfigSpec {
 
   "the search for don 2006" should {
     "return the correct movie" in {
-        running(FakeApplication()) {
+        running(GuiceApplicationBuilder().build()) {
           skipIfMissingConfig(configProperty)
 	        val movie = Await.result(TmdbApiService.find("don", Option.apply(2006)), 30.seconds).get
 	        movie.title must_== "Don"
@@ -33,7 +33,7 @@ class TmdbTest extends Specification with ConfigSpec {
   
   "the search for I, Robot 2004" should {
     "return the correct movie" in {
-        running(FakeApplication()) {
+        running(GuiceApplicationBuilder().build()) {
           skipIfMissingConfig(configProperty)
 	        val movie = Await.result(TmdbApiService.find("I, Robot", Option.apply(2004)), 30.seconds).get
 	        movie.title must_== "I, Robot"
@@ -44,7 +44,7 @@ class TmdbTest extends Specification with ConfigSpec {
   
   "the search for I, Robot 2004" should {
     "return the correct movie" in {
-        running(FakeApplication()) {
+        running(GuiceApplicationBuilder().build()) {
           skipIfMissingConfig(configProperty)
           val movie = Await.result(TmdbApiService.find("I, Robot", Option.apply(2004)), 30.seconds).get
 	        movie.title must_== "I, Robot"
@@ -68,7 +68,7 @@ class TmdbTest extends Specification with ConfigSpec {
   
   "the search for hafsjkdhfkdjshadslkfhaskf" should {
     "return nothing" in {
-        running(FakeApplication()) {
+        running(GuiceApplicationBuilder().build()) {
           skipIfMissingConfig(configProperty)
           val movieOption = Await.result(TmdbApiService.find("hafsjkdhfkdjshadslkfhaskf"), 30.seconds)
           movieOption must beNone

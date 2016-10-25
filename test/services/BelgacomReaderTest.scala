@@ -2,11 +2,9 @@ package services
 
 
 import play.api.test.Helpers._
-
 import org.joda.time.DateMidnight
-
-
 import org.specs2.mutable._
+import play.api.inject.guice.GuiceApplicationBuilder
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -17,7 +15,7 @@ class BelgacomReaderTest extends Specification{
 
  "the movie search for today" should {
     "return data" in {
-        running(FakeApplication()) {
+        running(GuiceApplicationBuilder().build()) {
           val today = new DateMidnight
 	        val result = Await.result(BelgacomReader.readMovies(today), 60.seconds)
           //println(result.map(_.channelName).toSet)
@@ -35,7 +33,7 @@ class BelgacomReaderTest extends Specification{
  
  "the movie search for tomorrow" should {
     "return data" in {
-        running(FakeApplication()) {
+        running(GuiceApplicationBuilder().build()) {
           val tomorrow = new DateMidnight().plusDays(1)
 	        val result = Await.result(BelgacomReader.readMovies(tomorrow), 60.seconds)
           //println(result.map(_.channelName).toSet)
