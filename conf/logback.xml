@@ -18,9 +18,10 @@
 
   <logger name="ch.qos.logback" level="WARN"/>
   <logger name="play" level="INFO" />
+  <logger name="access" level="INFO" />
   <logger name="application" level="INFO" />
 
-  <root level="ERROR">
+  <root level="WARN">
     <appender-ref ref="STDOUT" />
     <appender-ref ref="FILE" />
   </root>

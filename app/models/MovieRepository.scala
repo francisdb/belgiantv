@@ -1,19 +1,16 @@
 package models
 
-import javax.inject.Inject
-
 import play.api.Logger
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.play.json._
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.bson.BSONObjectID
-import services.Mailer
 
 import scala.concurrent.Future
 
 
-class MovieRepository @Inject() (val mailer: Mailer, reactiveMongoApi: ReactiveMongoApi) extends MongoSupport {
+class MovieRepository(reactiveMongoApi: ReactiveMongoApi) extends MongoSupport {
   // TODO inject MongoSupport to get rid of the mailer dependency?
 
   import play.api.libs.concurrent.Execution.Implicits.defaultContext

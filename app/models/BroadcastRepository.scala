@@ -1,18 +1,15 @@
 package models
 
-import javax.inject.Inject
-
 import models.Broadcast._
 import org.joda.time.{DateTime, Interval}
 import play.api.Logger
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson._
-import services.Mailer
 
 import scala.concurrent.Future
 
-class BroadcastRepository @Inject() (val mailer: Mailer, val reactiveMongoApi: ReactiveMongoApi) extends MongoSupport {
+class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoSupport {
   // TODO inject MongoSupport to get rid of the mailer dependency?
 
   import play.api.libs.concurrent.Execution.Implicits.defaultContext

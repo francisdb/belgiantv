@@ -7,7 +7,7 @@ import org.apache.commons.mail.EmailException
 import play.api.libs.mailer._
 import javax.inject.Inject
 
-class Mailer @Inject() (mailerClient: MailerClient){
+class Mailer(mailerClient: MailerClient){
   private[this] val LOGGER = Logger(getClass)
 
   def sendMail(subject: String, reason:Throwable) {

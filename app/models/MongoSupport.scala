@@ -8,7 +8,7 @@ import reactivemongo.api.FailoverStrategy
 import services.ErrorReportingSupport
 import scala.concurrent.duration._
 
-trait MongoSupport extends ErrorReportingSupport{
+trait MongoSupport{
 
   protected val logger:Logger
 
@@ -30,7 +30,7 @@ trait MongoSupport extends ErrorReportingSupport{
           }
         }
       case Failure(ex) =>
-        reportFailure(ex)
+        logger.error(s"Mongo error: ${ex.getMessage}", ex)
     }
   }
 }

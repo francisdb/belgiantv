@@ -9,14 +9,12 @@ import play.api.routing.Router
 import play.core.SourceMapper
 import services.Mailer
 
-@Singleton
 class ErrorReportingHttpErrorHandler( mailer: Mailer,
                                       environment: Environment,
                                       configuration: Configuration,
                                       sourceMapper: Option[SourceMapper] = None,
                                       router: => Option[Router] = None) extends DefaultHttpErrorHandler(environment, configuration, sourceMapper, router){
 
-  @Inject
   def this(mailer: Mailer, environment: Environment, configuration: Configuration, sourceMapper: OptionalSourceMapper,
            router: Provider[Router]) =
     this(mailer, environment, configuration, sourceMapper.sourceMapper, Some(router.get))

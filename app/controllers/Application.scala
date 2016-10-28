@@ -1,7 +1,5 @@
 package controllers
 
-import javax.inject.Inject
-
 import _root_.models.helper.BroadcastInfo
 import akka.actor.ActorSystem
 import models.{Broadcast, BroadcastRepository, Movie, MovieRepository}
@@ -17,7 +15,7 @@ import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMo
 
 import scala.concurrent.Future
 
-class Application @Inject() (
+class Application(
   actorSystem: ActorSystem,
   val reactiveMongoApi: ReactiveMongoApi,
   broadcastRepository: BroadcastRepository,
