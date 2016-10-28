@@ -16,7 +16,9 @@ class YeloReaderTest extends Specification{
       running(GuiceApplicationBuilder().build()) {
         val list = Await.result(YeloReader.fetchDay(new DateMidnight, Channel.channelFilter), 30.seconds)
         //list.map(_.channel).distinct.foreach(println)
-        //ist.groupBy(_.channel).foreach(g => println(g._1, g._2.mkString("\n\t")))
+//        list.groupBy(_.channel).foreach{case (channel, item) =>
+//          println(s"$channel -> ${item.mkString("\n\t")}")
+//        }
         list.size must be > 20
       }
     }

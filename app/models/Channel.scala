@@ -15,7 +15,7 @@ object Channel {
   val NPO3 = "NPO 3"
 
   val channelFilter = List(
-    "één", "Canvas", "Ketnet", "VTM", "2BE", "VIER", "VijfTV", "ZES", "CAZ",
+    "één", "Canvas", "Ketnet", "VTM", "2BE", "VIER", "VIJF", "ZES", "CAZ",
     "JIM", "Ketnet", "Acht", NPO1, NPO2, NPO3,
     "Vitaya", "VTM Kzoom", "Q2", BBC1, BBC2, BBC3)
 
@@ -26,8 +26,8 @@ object Channel {
       .replace("Ketnet/OP12", "Ketnet")
       .replace("vtmKzoom", "VTM Kzoom")
       .replace("vtm", "VTM")
-      .replace("Vijf TV", "VijfTV")
-      .replace("VIJF", "VijfTV")
+      .replace("Vijf TV", "VIJF")
+      .replace("VijfTV", "VIJF")
       .replace("VT4", "VIER")
       .replace("Ned1", "Ned 1")
       .replace("Ned2", "Ned 2")

@@ -26,6 +26,9 @@ object YeloReader {
     val vlaams = fetchDayData(day, "vlaams")
     val hd = fetchDayData(day, "hd")
     val anderstalig = fetchDayData(day, "anderstalig")
+
+    // TODO we can request "alles" offset=0&limit=20 and then check next pages per 20 until we get in the body "Success": false
+
     val filter = createFilter(channelFilter)
     for(
       v <- vlaams;
