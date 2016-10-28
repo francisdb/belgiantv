@@ -10,10 +10,10 @@ import services.{Mailer, HumoReader}
 import models.Channel
 
 object HumoActor{
-  def props(mailer: Mailer) = Props(classOf[HumoActor], mailer)
+  def props(mailer: Mailer, humoReader: HumoReader) = Props(classOf[HumoActor], mailer, humoReader)
 }
 
-class HumoActor(var mailer: Mailer) extends MailingActor with LoggingActor{
+class HumoActor(var mailer: Mailer, humoReader: HumoReader) extends MailingActor with LoggingActor{
 
   val logger = Logger("application.actor.humo")
 
@@ -25,7 +25,7 @@ class HumoActor(var mailer: Mailer) extends MailingActor with LoggingActor{
 
       implicit val scheduler = context.system.scheduler
 
-      HumoReader.fetchDayRetryOnGatewayTimeout(msg.day, Channel.channelFilter).onComplete { maybeHumoEvents =>
+      humoReader.fetchDayRetryOnGatewayTimeout(msg.day, Channel.channelFilter).onComplete { maybeHumoEvents =>
         senderCopy ! FetchHumoResult(msg.day, maybeHumoEvents)
       }
   }

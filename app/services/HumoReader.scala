@@ -10,17 +10,19 @@ import akka.actor.Scheduler
 import org.joda.time.{DateMidnight, DateTime, DateTimeZone, LocalTime}
 import org.joda.time.format.DateTimeFormat
 import play.api.Logger
-import play.api.libs.ws.WS
 import play.api.http.Status
-import play.api.Play.current
-import controllers.Application
 import models.Channel
+import play.api.libs.ws.WSAPI
 
 import scala.util.control.NonFatal
 
-object HumoReader {
+object HumoReader{
 
   final val timezone = DateTimeZone.forID("Europe/Brussels")
+}
+
+class HumoReader(ws: WSAPI) {
+
 
   private val logger = Logger("application.humo")
   
@@ -61,7 +63,7 @@ object HumoReader {
 
   def fetchPage(url: String, day: DateMidnight, channelFilter: List[String] = List()):Future[Seq[HumoEvent]] = {
     logger.info("Fetching " + url)
-    WS.url(url).get().flatMap{ response =>
+    ws.url(url).get().flatMap{ response =>
       response.status match {
         case Status.OK =>
           val dayData = parseDay(day, response.json)
@@ -148,8 +150,6 @@ object HumoProtocol {
   implicit val scheduleFormat = Json.format[HumoSchedule]
 
 }
-
-
 
 
 

@@ -3,7 +3,7 @@ package services
 import play.api.Logger
 
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import play.api.libs.ws.WS
+import play.api.libs.ws.WSAPI
 import org.apache.commons.lang.StringEscapeUtils
 import org.joda.time.DateMidnight
 import org.joda.time.Interval
@@ -12,9 +12,6 @@ import concurrent.Future
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.http.Status
-import play.api.Play.current
-
-import scala.util.{Failure, Success}
 
 object BelgacomProtocol{
 
@@ -24,7 +21,7 @@ object BelgacomProtocol{
 }
 
 
-object BelgacomReader{
+class BelgacomReader(ws: WSAPI){
   private val BASE = "http://www.proximustv.be/zcommon/tv-everywhere"
     
   private val logger = Logger("application.belgacom")
@@ -68,7 +65,7 @@ object BelgacomReader{
       "tvmovies[page]" -> page.toString,
       "new_lang" -> "nl"
     )
-    WS.url(url).withQueryString(qs:_*).get().flatMap{ response =>
+    ws.url(url).withQueryString(qs:_*).get().flatMap{ response =>
       response.status match {
         case Status.OK =>
           import BelgacomProtocol._

@@ -1,6 +1,6 @@
 package services
 
-import play.api.Play
+import play.api.{Configuration, Environment}
 
 object PlayUtil {
 
@@ -9,11 +9,12 @@ object PlayUtil {
   }
 
   def configOpt(property:String) = {
-    Play.current.configuration.getString(property)
-      .map(_ match {
+    // TODO not sure this is correct for production use
+    val configuration = Configuration.load(Environment.simple())
+    configuration.getString(property).map{
       case "null" => throw new RuntimeException(property + " = \"null\"")
-      case v => v}
-    )
+      case v => v
+    }
   }
 
   def configExists(property: String) = configOpt(property).isDefined

@@ -6,7 +6,7 @@ import models.{Broadcast, BroadcastRepository, Movie, MovieRepository}
 import play.api._
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits._
-import services.Mailer
+import services._
 import services.actors.{Master, Start, StartTomatoes}
 import org.joda.time.Interval
 import org.joda.time.DateTime
@@ -21,12 +21,31 @@ class Application(
   broadcastRepository: BroadcastRepository,
   movieRepository: MovieRepository,
   mailer: Mailer,
-  webJarAssets: WebJarAssets) extends Controller with MongoController with ReactiveMongoComponents {
+  webJarAssets: WebJarAssets,
+  humoReader: HumoReader,
+  yeloReader: YeloReader,
+  belgacomReader: BelgacomReader,
+  imdbApiService: ImdbApiService,
+  tmdbApiService: TmdbApiService,
+  tomatoesApiService: TomatoesApiService) extends Controller with MongoController with ReactiveMongoComponents {
 
   Logger.info("Scheduling actor trigger")
   // TODO better location for the actor?
   // TODO create an actor module that is enabled in the application.conf
-  val masterActorRef = actorSystem.actorOf(Master.props(broadcastRepository, movieRepository, mailer), name = "masterActor")
+  val masterActorRef = actorSystem.actorOf(
+    Master.props(
+      broadcastRepository,
+      movieRepository,
+      mailer,
+      humoReader,
+      yeloReader,
+      belgacomReader,
+      imdbApiService,
+      tmdbApiService,
+      tomatoesApiService
+    ),
+    name = "masterActor"
+  )
   //Akka.system.scheduler.schedule(0 seconds, 12 hours, Application.masterActorRef, Start)
 
   private implicit val wjAssets = webJarAssets

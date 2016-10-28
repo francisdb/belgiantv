@@ -1,9 +1,8 @@
 package services
 
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import play.api.libs.ws.WS
+import play.api.libs.ws.WSAPI
 import play.api.Logger
-import play.api.Play.current
 import models.helper.ImdbApiMovie
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -15,6 +14,10 @@ object ImdbProtocol{
 
 object ImdbApiService {
 
+}
+
+class ImdbApiService(ws: WSAPI){
+
   private val logger = Logger("application.imdb")
 
 
@@ -24,7 +27,7 @@ object ImdbApiService {
 
     //val url = "http://www.imdbapi.com/"
     val url = "http://www.omdbapi.com/"
-    val request = WS.url(url).withQueryString("t" -> title)
+    val request = ws.url(url).withQueryString("t" -> title)
     val requestExtended = year.map(year =>
       request.withQueryString("y" -> year.toString)
     ).getOrElse(request)

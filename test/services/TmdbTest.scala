@@ -1,15 +1,10 @@
 package services
 
 import org.specs2.mutable._
-import org.specs2.runner.JUnitRunner
-import play.api.test._
-import play.api.test.Helpers._
-import org.junit.runner.RunWith
 
 import scala.concurrent._
 import scala.concurrent.duration._
-import helper.ConfigSpec
-import play.api.inject.guice.GuiceApplicationBuilder
+import helper.{ConfigSpec, WithWS}
 
 class TmdbTest extends Specification with ConfigSpec {
 
@@ -19,60 +14,65 @@ class TmdbTest extends Specification with ConfigSpec {
   // skipAllUnless(PlayUtil.configExists("tmdb.apikey"))
 
   "the search for don 2006" should {
-    "return the correct movie" in {
-        running(GuiceApplicationBuilder().build()) {
-          skipIfMissingConfig(configProperty)
-	        val movie = Await.result(TmdbApiService.find("don", Option.apply(2006)), 30.seconds).get
-	        movie.title must_== "Don"
-	        movie.release_date must startWith("2006")
-          //print(movie.vote_average)
-          (movie.vote_average must not).beNull
-        }
+
+    "return the correct movie" in new WithWS{
+      skipIfMissingConfig(configProperty)
+      val tmdb = new TmdbApiService(ws)
+      val movie = Await.result(tmdb.find("don", Option.apply(2006)), 30.seconds).get
+      movie.title must_== "Don"
+      movie.release_date must startWith("2006")
+      //print(movie.vote_average)
+      (movie.vote_average must not).beNull
+
     }
   }
-  
+
   "the search for I, Robot 2004" should {
-    "return the correct movie" in {
-        running(GuiceApplicationBuilder().build()) {
-          skipIfMissingConfig(configProperty)
-	        val movie = Await.result(TmdbApiService.find("I, Robot", Option.apply(2004)), 30.seconds).get
-	        movie.title must_== "I, Robot"
-	        movie.release_date must startWith("2004")
-        }
+
+    "return the correct movie" in new WithWS{
+      skipIfMissingConfig(configProperty)
+      val tmdb = new TmdbApiService(ws)
+      val movie = Await.result(tmdb.find("I, Robot", Option.apply(2004)), 30.seconds).get
+      movie.title must_== "I, Robot"
+      movie.release_date must startWith("2004")
+
     }
   }
-  
+
   "the search for I, Robot 2004" should {
-    "return the correct movie" in {
-        running(GuiceApplicationBuilder().build()) {
-          skipIfMissingConfig(configProperty)
-          val movie = Await.result(TmdbApiService.find("I, Robot", Option.apply(2004)), 30.seconds).get
-	        movie.title must_== "I, Robot"
-	        movie.release_date must startWith("2004")
-        }
+
+    "return the correct movie" in new WithWS{
+      skipIfMissingConfig(configProperty)
+      val tmdb = new TmdbApiService(ws)
+      val movie = Await.result(tmdb.find("I, Robot", Option.apply(2004)), 30.seconds).get
+      movie.title must_== "I, Robot"
+      movie.release_date must startWith("2004")
+
     }
   }
-  
+
   "the search for L'immortel 2010" should {
-    "return the correct movie" in {
-        running(FakeApplication()) {
-          skipIfMissingConfig(configProperty)
-          val movie = Await.result(TmdbApiService.find("L'immortel", Option.apply(2010)), 30.seconds).get
-          println(movie)
-	        // international title
-	        movie.title must startWith("22 Bullets")
-	        movie.release_date must startWith("2010")
-        }
+
+    "return the correct movie" in new WithWS{
+      skipIfMissingConfig(configProperty)
+      val tmdb = new TmdbApiService(ws)
+      val movie = Await.result(tmdb.find("L'immortel", Option.apply(2010)), 30.seconds).get
+      println(movie)
+      // international title
+      movie.title must startWith("22 Bullets")
+      movie.release_date must startWith("2010")
+
     }
   }
-  
+
   "the search for hafsjkdhfkdjshadslkfhaskf" should {
-    "return nothing" in {
-        running(GuiceApplicationBuilder().build()) {
-          skipIfMissingConfig(configProperty)
-          val movieOption = Await.result(TmdbApiService.find("hafsjkdhfkdjshadslkfhaskf"), 30.seconds)
-          movieOption must beNone
-        }
+
+    "return nothing" in new WithWS{
+      skipIfMissingConfig(configProperty)
+      val tmdb = new TmdbApiService(ws)
+      val movieOption = Await.result(tmdb.find("hafsjkdhfkdjshadslkfhaskf"), 30.seconds)
+      movieOption must beNone
+
     }
   }
 }

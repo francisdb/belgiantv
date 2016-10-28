@@ -1,9 +1,8 @@
 package services
 
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import play.api.libs.ws.WS
+import play.api.libs.ws.WSAPI
 import play.api.Logger
-import play.api.Play.current
 
 import models.helper._
 
@@ -19,7 +18,7 @@ object TmdbProtocol{
   implicit val tmdbMovieSearchPagerReads = Json.reads[TmdbMovieSearchPager]
 }
 
-object TmdbApiService{
+class TmdbApiService(ws: WSAPI){
 	
 	val BASE = "http://api.themoviedb.org/3"
 	  
@@ -43,7 +42,7 @@ object TmdbApiService{
 		val qs2 = year.map(y => qs.+:("year" -> y.toString)).getOrElse(qs)
 		
 		logger.info(url)
-		val response = WS.url(url)
+		val response = ws.url(url)
 		  .withHeaders("Accept" -> "application/json")
 		  .withQueryString(qs2:_*).get()
 		  

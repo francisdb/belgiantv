@@ -1,21 +1,20 @@
 package services
-import play.api.libs.ws.WS
+import play.api.libs.ws.WSAPI
 import play.api.Logger
-import play.api.Play.current
 import models.helper.{TomatoesMovie, TomatoesSearch}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.libs.json.Json
 import scala.concurrent.Future
 
-object TomatoesApiService{
+class TomatoesApiService(ws: WSAPI){
   
   private lazy val apikey = PlayUtil.config("tomatoes.apikey")
   
   def find(title:String, year:Option[Int] = None): Future[Option[TomatoesMovie]] = {
     val url = "http://api.rottentomatoes.com/api/public/v1.0/movies.json"
     val q = title + year.map(" " + _).getOrElse("")
-    val response = WS.url(url).withQueryString("q" -> q, "apikey" -> apikey).get()
+    val response = ws.url(url).withQueryString("q" -> q, "apikey" -> apikey).get()
     response.map { response =>
       val json = response.json
       val error = (json \ "error").asOpt[String]
@@ -55,7 +54,7 @@ object TomatoesApiService{
 
   private def yearMatchIfExists(year: Option[Int], movies: List[models.helper.TomatoesMovie]) = {
     year.map { y =>
-      movies.filter(m => (m.year.getOrElse(Int.MinValue) == y)).headOption.orElse(movies.headOption)
+      movies.find(m => m.year.getOrElse(Int.MinValue) == y).orElse(movies.headOption)
     } getOrElse {
       movies.headOption
     }

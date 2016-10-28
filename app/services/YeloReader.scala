@@ -3,22 +3,35 @@ package services
 import org.joda.time.DateMidnight
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.Interval
-import play.api.libs.json.{Json, JsValue, JsObject}
+import play.api.libs.json.{JsObject, JsValue}
 import play.api.Logger
-import play.api.Play.current
 import org.jsoup.Jsoup
+
 import scala.collection.JavaConversions._
-import play.api.libs.ws.WS
+import play.api.libs.ws.WSAPI
 import org.joda.time.DateTime
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import models.Channel
+
 import concurrent.Future
 import com.fasterxml.jackson.core.JsonParseException
 import play.api.http.Status
+import services.YeloReader.YeloEvent
 
+object YeloReader{
+  case class YeloEvent (
+    id: Int,
+    name: String,
+    url: Option[String],
+    channel: String,
+    interval: Interval){
 
-object YeloReader {
+    lazy val startDateTime = interval.getStart
+  }
+}
+
+class YeloReader(ws: WSAPI) {
   
   private val logger = Logger("application.yelo")
 
@@ -47,7 +60,7 @@ object YeloReader {
     val baseUrl = "http://yelotv.be/tvgids/detail?date=" + dateFormat.print(day)
     val url = baseUrl + "&group=" + group
     logger.info("Fetching " + url)
-    WS.url(url)
+    ws.url(url)
       .withHeaders(
         "Referer" -> "http://yelotv.be/tvgids",
         "X-Requested-With" -> "XMLHttpRequest"
@@ -131,13 +144,5 @@ object YeloReader {
     channelMap
   }
 
-  case class YeloEvent (
-      id: Int,
-      name: String,
-      url: Option[String],
-      channel: String,
-      interval: Interval){
-    
-    lazy val startDateTime = interval.getStart
-  }
+
 }

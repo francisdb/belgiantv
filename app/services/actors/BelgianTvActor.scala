@@ -19,19 +19,49 @@ import models._
 import services._
 
 object BelgianTvActor{
-  def props(broadcastRepository: BroadcastRepository, movieRepository: MovieRepository, mailer: Mailer) =
-    Props(classOf[BelgianTvActor], broadcastRepository, movieRepository, mailer)
+  def props(
+    broadcastRepository: BroadcastRepository,
+    movieRepository: MovieRepository,
+    mailer: Mailer,
+    humoReader: HumoReader,
+    yeloReader: YeloReader,
+    belgacomReader: BelgacomReader,
+    imdbApiService: ImdbApiService,
+    tmdbApiService: TmdbApiService,
+    tomatoesApiService: TomatoesApiService) =
+
+    Props(
+      classOf[BelgianTvActor],
+      broadcastRepository,
+      movieRepository,
+      mailer,
+      humoReader,
+      yeloReader,
+      belgacomReader,
+      imdbApiService,
+      tmdbApiService,
+      tomatoesApiService
+    )
 }
 
-class BelgianTvActor(broadcastRepository: BroadcastRepository, movieRepository: MovieRepository, val mailer: Mailer) extends MailingActor with ErrorReportingSupport with LoggingActor{
+class BelgianTvActor(
+  broadcastRepository: BroadcastRepository,
+  movieRepository: MovieRepository,
+  val mailer: Mailer,
+  humoReader: HumoReader,
+  yeloReader: YeloReader,
+  belgacomReader: BelgacomReader,
+  imdbApiService: ImdbApiService,
+  tmdbApiService: TmdbApiService,
+  tomatoesApiService: TomatoesApiService) extends MailingActor with ErrorReportingSupport with LoggingActor{
   
   val logger = Logger("application.actor")
 
-  val tomatoesRef = context.actorOf(TomatoesActor.props(mailer), name = "Tomatoes")
+  val tomatoesRef = context.actorOf(TomatoesActor.props(mailer, tomatoesApiService), name = "Tomatoes")
   val tomatoesThrottler = context.actorOf(Props(new TimerBasedThrottler(2 msgsPer 1.second)), name = "TomatoesThrottler")
   tomatoesThrottler ! SetTarget(Some(tomatoesRef))
 
-  val humoRef = context.actorOf(HumoActor.props(mailer), name = "Humo")
+  val humoRef = context.actorOf(HumoActor.props(mailer, humoReader), name = "Humo")
   val humoThrottler = context.actorOf(Props(new TimerBasedThrottler(1 msgsPer 5.second)), name = "HumoThrottler")
   humoThrottler ! SetTarget(Some(humoRef))
   
@@ -44,7 +74,7 @@ class BelgianTvActor(broadcastRepository: BroadcastRepository, movieRepository: 
     case msg: LinkTmdb =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
 
-      val tmdbmovie = TmdbApiService.find(msg.broadcast.name, msg.broadcast.year)
+      val tmdbmovie = tmdbApiService.find(msg.broadcast.name, msg.broadcast.year)
 
       tmdbmovie.map { mOption =>
         mOption.map{ m =>
@@ -68,7 +98,7 @@ class BelgianTvActor(broadcastRepository: BroadcastRepository, movieRepository: 
         case Success(movie) =>
           val movie2 = movie.orElse {
             // FIXME this is blocking
-            val movie = Await.result(ImdbApiService.find(msg.broadcast.name, msg.broadcast.year), 30.seconds)
+            val movie = Await.result(imdbApiService.find(msg.broadcast.name, msg.broadcast.year), 30.seconds)
 
             movie.map { m =>
               val dbMovie = new Movie(None, m.title, m.id, m.rating, m.year, m.poster)
@@ -139,7 +169,7 @@ class BelgianTvActor(broadcastRepository: BroadcastRepository, movieRepository: 
     case msg: FetchYelo =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
 
-      YeloReader.fetchDay(msg.day, Channel.channelFilter).onComplete {
+      yeloReader.fetchDay(msg.day, Channel.channelFilter).onComplete {
         case Failure(e) =>
           reportFailure("Failed to read yelo day: " + msg.day + " - " + e.getMessage, e)
         case Success(movies) =>
@@ -160,7 +190,7 @@ class BelgianTvActor(broadcastRepository: BroadcastRepository, movieRepository: 
     case msg: FetchBelgacom =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
 
-      BelgacomReader.readMovies(msg.day).onComplete{
+      belgacomReader.readMovies(msg.day).onComplete{
         case Failure(e) =>
           reportFailure("Failed to read belgacom day: " + e.getMessage, e)
         case Success(movies) =>
