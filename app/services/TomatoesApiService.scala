@@ -5,7 +5,9 @@ import models.helper.{TomatoesMovie, TomatoesSearch}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.libs.json.Json
+
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 class TomatoesApiService(ws: WSAPI){
   
@@ -16,7 +18,14 @@ class TomatoesApiService(ws: WSAPI){
     val q = title + year.map(" " + _).getOrElse("")
     val response = ws.url(url).withQueryString("q" -> q, "apikey" -> apikey).get()
     response.map { response =>
-      val json = response.json
+      val json = try{
+        response.json
+      }catch{
+        // fake error response for non-json response
+        case NonFatal(e) => Json.obj(
+          "error" -> response.body.take(100)
+        )
+      }
       val error = (json \ "error").asOpt[String]
       if (error.isDefined) {
         Logger.warn("Tomatoes api error: " + error.get)
