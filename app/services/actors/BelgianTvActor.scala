@@ -102,14 +102,14 @@ class BelgianTvActor(
 
             movie.map { m =>
               val dbMovie = new Movie(None, m.title, m.id, m.rating, m.year, m.poster)
-              val created = movieRepository.create(dbMovie)
+              val created = Await.result(movieRepository.create(dbMovie), 30.seconds)
               created
             }
           }
 
           movie2 match{
-            case Some(m:Movie) => broadcastRepository.setImdb(msg.broadcast, m.imdbId)
-            case None => logger.warn("No IMDB movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
+            case Some(m) => broadcastRepository.setImdb(msg.broadcast, m.imdbId)
+            case None    => logger.warn("No IMDB movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
           }
       }
 

@@ -26,7 +26,7 @@ case class ImdbApiMovie(
   val poster = Poster
   val genre = Genre
   val plot = Plot
-  val year = Year.toInt
+  val year = Try(Year.takeWhile(_ != '-').toInt).getOrElse(0) // year can be in format 2013 or 2013–2015
   val released = Released
   val director = Director
 	

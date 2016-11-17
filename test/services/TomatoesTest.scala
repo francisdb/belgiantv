@@ -8,6 +8,9 @@ import helper.{ConfigSpec, WithWS}
 
 class TomatoesTest extends Specification with ConfigSpec{
 
+  // we no longer have access
+  skipAll
+
   private val configProperty = "tomatoes.apikey"
 
   // TODO see if we can read the play config without starting the application

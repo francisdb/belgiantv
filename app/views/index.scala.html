@@ -6,7 +6,7 @@
 
     <div class="jumbotron">
         <h1>Movies on Belgian TV</h1>
-        <p class="lead">For the coming 7 days ordered by ratings. Click on the Telenet Yelo &amp; Belgacom TV links to program your digicorder.</p>
+        <p class="lead">For the coming 7 days ordered by ratings. Click on the Telenet Yelo &amp; Proximus TV links to program your digicorder.</p>
     </div>
 
     @if(!flash.isEmpty){
@@ -32,10 +32,14 @@
                     <small>
                         @info.broadcast.year
                         @info.broadcast.yeloUrl.map{ y =>
-                            <a href="@y"><img src="@routes.Assets.at("images/telenet-logo-large.png")" class="logo"  alt="Movie on Telenet Yelo"/></a>
+                            <a href="@y" target="_blank">
+                                <img src="@routes.Assets.at("images/telenet-logo-large.png")" class="logo" alt="Movie on Telenet Yelo"/>
+                            </a>
                         }
                         @info.broadcast.belgacomUrl.map{ b =>
-                            <a href="@b"><img src="@routes.Assets.at("images/belgacom_tv-logo-large.png")" class="logo" alt="Movie on Belgacom TV"/></a>
+                            <a href="@b" target="_blank">
+                                <img src="@routes.Assets.at("images/belgacom_tv-logo-large.png")" class="logo" alt="Movie on Belgacom TV"/>
+                            </a>
                         }
                     </small>
                 </h2>
