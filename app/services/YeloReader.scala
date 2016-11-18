@@ -20,7 +20,7 @@ import YeloReader._
 
 object YeloReader{
 
-  val pubbaBase = "https://www.yeloplay.be/api/pubba/"
+  val pubbaBase = "https://www.yeloplay.be/api/pubba"
 
   val headers = Seq(
     "Referer" -> "https://www.yeloplay.be/tv-gids"
@@ -164,7 +164,7 @@ class YeloReader(ws: WSAPI) {
 
   private def fetchDayData(day: DateMidnight, channels: Seq[Channel]): Future[Seq[YeloReader.YeloEvent]] = {
     val dateFormat = DateTimeFormat.forPattern("YYYY-MM-dd")
-    val baseUrl = s"${pubbaBase}v1/events/schedule-day/outformat/json/lng/en/"
+    val baseUrl = s"$pubbaBase/v1/events/schedule-day/outformat/json/lng/en/"
     val orderedChannelIds = channels.map(_.id).sorted
 
     val channelsPart = orderedChannelIds.map(c => s"channel/$c/").mkString("")
