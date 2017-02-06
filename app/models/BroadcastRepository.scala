@@ -106,24 +106,41 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
     broadcastCollectionFuture.flatMap{ broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> b.id),
-        BSONDocument("$set" -> BSONDocument("yeloId" -> yeloId, "yeloUrl" -> yeloUrl)))
-    }.onComplete(le => mongoLogger(le, "updated yelo for " + b))
+        BSONDocument(
+          "$set" -> BSONDocument(
+            "yeloId" -> yeloId,
+            "yeloUrl" -> yeloUrl
+          )
+        )
+      )
+    }.onComplete(le => mongoLogger(le, s"updated yelo for $b"))
   }
 
   def setBelgacom(b:Broadcast, belgacomId:String, belgacomUrl:String) = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> b.id),
-        BSONDocument("$set" -> BSONDocument("belgacomId" -> belgacomId, "belgacomUrl" -> belgacomUrl)))
-    }.onComplete(le => mongoLogger(le, "updated belgacom for " + b))
+        BSONDocument(
+          "$set" -> BSONDocument(
+            "belgacomId" -> belgacomId,
+            "belgacomUrl" -> belgacomUrl
+          )
+        )
+      )
+    }.onComplete(le => mongoLogger(le, s"updated belgacom for $b"))
   }
 
   def setImdb(b:Broadcast, imdbId:String) = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> b.id),
-        BSONDocument("$set" -> BSONDocument("imdbId" -> BSONString(imdbId))))
-    }.onComplete(le => mongoLogger(le, "updated imdb for " + b))
+        BSONDocument(
+          "$set" -> BSONDocument(
+            "imdbId" -> BSONString(imdbId)
+          )
+        )
+      )
+    }.onComplete(le => mongoLogger(le, s"updated imdb for $b"))
   }
 
   def setTomatoes(broadcastId:BSONObjectID, tomatoesId:String, tomatoesRating:Option[String]) = {
@@ -137,10 +154,10 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
           )
         )
       )
-    }.onComplete(le => mongoLogger(le, "updated tomatoes for " + broadcastId))
+    }.onComplete(le => mongoLogger(le, s"updated tomatoes for $broadcastId"))
   }
 
-  def setTmdb(b:Broadcast, tmdbId:String, tmdbRating:String) = {
+  def setTmdb(b:Broadcast, tmdbId:String, tmdbRating: Option[String]) = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> b.id),
@@ -151,15 +168,19 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
           )
         )
       )
-    }.onComplete(le => mongoLogger(le, "updated tmdb for " + b))
+    }.onComplete(le => mongoLogger(le, s"updated tmdb for $b"))
   }
 
   def setTmdbImg(b:Broadcast, tmdbImg:String) = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> b.id),
-        BSONDocument("$set" -> BSONDocument("tmdbImg" -> tmdbImg))
+        BSONDocument(
+          "$set" -> BSONDocument(
+            "tmdbImg" -> tmdbImg
+          )
+        )
       )
-    }.onComplete(le => mongoLogger(le, "updated tmdb img for " + b))
+    }.onComplete(le => mongoLogger(le, s"updated tmdb img for $b"))
   }
 }

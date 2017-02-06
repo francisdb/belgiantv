@@ -75,4 +75,14 @@ class TmdbTest extends Specification with ConfigSpec {
 
     }
   }
+
+  "the search for Relative Chaos (2006)" should {
+
+    "return no score as it is 0 %" in new WithWS{
+      skipIfMissingConfig(configProperty)
+      val tmdb = new TmdbApiService(ws)
+      val movieOption = Await.result(tmdb.find("Relative Chaos", Some(2006)), 30.seconds)
+      movieOption.map(_.fixedAverage) must beSome(None)
+    }
+  }
 }

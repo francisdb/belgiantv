@@ -9,7 +9,7 @@ case class TmdbMovieSearch(
   //"1980-05-21"
   release_date: String,
   title: String,
-  vote_average: Double,
+  vote_average: Option[Double],
   vote_count:Long,
   adult:Boolean) {
 
@@ -17,4 +17,6 @@ case class TmdbMovieSearch(
     // http://help.themoviedb.org/kb/api/configuration
     poster_path.map("http://cf2.imgobject.com/t/p/w154/" + _)
   }
+
+  lazy val fixedAverage = vote_average.filter(_ != 0.0)
 }

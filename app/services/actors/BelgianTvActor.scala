@@ -78,7 +78,7 @@ class BelgianTvActor(
 
       tmdbmovie.map { mOption =>
         mOption.map{ m =>
-          broadcastRepository.setTmdb(msg.broadcast, m.id.toString, m.vote_average.toString)
+          broadcastRepository.setTmdb(msg.broadcast, m.id.toString, m.fixedAverage.map(_.toString))
            m.posterUrl.map(broadcastRepository.setTmdbImg(msg.broadcast, _))
         }.getOrElse{
         	logger.warn("No TMDb movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
