@@ -37,17 +37,18 @@ class ImdbApiService(ws: WSAPI){
 
     requestExtended.get().flatMap{ response =>
       val json = response.json
-      val error = (json \ "Error").asOpt[String]
-      if(error.isDefined){
-        logger.warn(s"IMDB api internal error for $title $year: ${error.get}")
-        // TODO should we also fail the future here?
-        Future.successful(None)
-      }else{
-        import ImdbProtocol._
-        Json.fromJson[ImdbApiMovie](response.json) match {
-          case JsSuccess(movie, _) => Future.successful(Option(movie))
-          case JsError(errors) => Future.failed(new RuntimeException(errors.toString()))
-        }
+      val errorOpt = (json \ "Error").asOpt[String]
+      errorOpt match {
+        case None =>
+          import ImdbProtocol._
+          Json.fromJson[ImdbApiMovie](response.json) match {
+            case JsSuccess(movie, _) => Future.successful(Option(movie))
+            case JsError(errors) => Future.failed(new RuntimeException(errors.toString()))
+          }
+        case Some(error) =>
+          logger.warn(s"IMDB api internal error for $title $year: $error")
+          // TODO should we also fail the future here?
+          Future.successful(None)
       }
     }
   }
