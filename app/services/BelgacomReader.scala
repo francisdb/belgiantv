@@ -1,80 +1,162 @@
 package services
 
-import play.api.Logger
+import java.time.{LocalDate, ZoneId}
+import java.util.Locale
 
+import models.Channel
+import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.WSAPI
-import org.apache.commons.lang.StringEscapeUtils
-import org.joda.time.DateMidnight
-import org.joda.time.Interval
-import models.helper.{BelgacomResults, BelgacomListing, BelgacomProgram}
-import concurrent.Future
+import models.helper._
 
+import concurrent.Future
+import scala.collection.immutable.Seq
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.http.Status
+import BelgacomReader._
+import org.slf4j.LoggerFactory
 
 object BelgacomProtocol{
 
   implicit val belgacomProgramFormat = Json.reads[BelgacomProgram]
-  implicit val belgacomResulstFormat = Json.reads[BelgacomResults]
-  implicit val belgacomListingFormat = Json.reads[BelgacomListing]
+  implicit val belgacomChannelReads = Json.reads[BelgacomChannel]
+  implicit val belgacomChannelListingReads = Json.reads[BelgacomChannelListing]
 }
 
+object BelgacomReader{
+  final val timeZone = ZoneId.of("Europe/Brussels")
+
+  private final val BASE = "http://www.proximustv.be/zcommon/bep"
+  private final val log = LoggerFactory.getLogger(classOf[BelgacomReader])
+}
 
 class BelgacomReader(ws: WSAPI){
-  private val BASE = "http://www.proximustv.be/zcommon/tv-everywhere"
+  // http://www.proximustv.be/nl/televisie/tv-gids
+
+  // api
+  //  baseUrl: "http://www.proximustv.be/zcommon/bep",
+
+//  resources: {
+//    getUser: "get-user",
+//    getChannels: "get-channels",
+//    getPlayableChannels: "get-playable-channels",
+//    getSchedulesTimelineByScheduleTrailId: "get-schedules-timeline-by-schedule-trail-id",
+//    getLiveTimelineForChannels: "get-live-timeline-for-channels",
+//    getStreamingUrl: "play",
+//    getStreamingMetadata: "metadata",
+//    getGlobalData: "get-global-data",
+//    startRecording: "start-recording",
+//    stopRecording: "stop-recording",
+//    deleteRecording: "delete-recording",
+//    getRecordings: "get-recordings",
+//    refreshCscWatch: "heartbeat",
+//    stopCscWatch: "stop",
+//    getSchedulesForChannels: "get-schedules-for-channels",
+//    getScheduleDetail: "get-schedule-detail"
+
+
     
   private val logger = Logger("application.belgacom")
-
-  def readMovies(date: DateMidnight) = {
-    val now = new DateMidnight
-    val dayOffset = new Interval(now, date).toPeriod.toStandardDays.getDays
-    searchMovies(date)
-  }
   
-  def searchMovies(date: DateMidnight): Future[List[BelgacomProgram]] = {
-    val page = 1
-    searchMovies(date, page).map{ result =>
-      result.tvmovies.get.data.map(program => program.copy(title = StringEscapeUtils.unescapeHtml(program.title)))
+  def searchMovies(date: LocalDate): Future[Seq[BelgacomProgramWithChannel]] = {
+    readChannels().flatMap{ channels =>
+
+      val lowerFilter = Channel.channelFilter.map(_.toLowerCase(Locale.ENGLISH))
+      val filteredChannels = channels.channels.filter{ channel =>
+        val unifiedName = models.Channel.unify(channel.name).toLowerCase(Locale.ENGLISH)
+        lowerFilter.contains(unifiedName)
+      }.to[Seq]
+
+      //filteredChannels.foreach(println)
+
+      searchMovies(date, filteredChannels)
+    }
+
+  }
+
+  private def readChannels(): Future[BelgacomChannelListing] = {
+    val url = BASE + "/get-channels"
+    val qs = Seq(
+      "language" -> "nl",
+      "userId" -> ""
+    )
+    ws.url(url).withQueryString(qs:_*).get().map { response =>
+      import BelgacomProtocol._
+      response.json.validate[BelgacomChannelListing] match {
+        case JsSuccess(listing, _) => listing
+        case JsError(errors) =>
+          throw new RuntimeException(s"Failed to parse $url response to JSON: $errors ${response.body.take(500)}")
+      }
     }
   }
   
-  private def searchMovies(date: DateMidnight, page:Int): Future[BelgacomListing] = {
-    val now = new DateMidnight
-    val dayOffset = new Interval(now, date).toPeriod.toStandardDays.getDays
-    
-    val url = BASE + "/listing"
+  private def searchMovies(date: LocalDate, channels: Seq[BelgacomChannel]): Future[Seq[BelgacomProgramWithChannel]] = {
+    //http://www.proximustv.be/zcommon/bep/get-schedules-for-channels?language=nl&externalIds=UID50037%2CUID50084%2CUID50040%2CUID50083%2CUID50066%2CUID50044&unixDate=1486497686
 
-    //http://www.proximustv.be/zcommon/tv-everywhere/listing?
-    //tvgrid[filter]:lg-all
-    //tvgrid[day]:1
-    //tvgrid[offset]:1
-    //tvgrid[channel]:0
-    //tvgrid[hourIdx]:14
-    //tvgrid[filterExpanded]:false
-    //cacheBuster:1425065203316
+    val url = BASE + "/get-schedules-for-channels"
 
-    // or
+    // TODO how do we filter movies?
+    // => "category": "C.Movies",
 
-    //tvmovies[day]:2
-    //tvmovies[page]:1
-    //cacheBuster:1425067433950
+//    {
+//      "UID50037": [{
+//        "trailId": "2017020711357",
+//        "programReferenceNumber": "005045664380",
+//        "channelId": "UID50037",
+//        "channel": null,
+//        "title": "Journaallus",
+//        "startTime": 1486433700,
+//        "endTime": 1486444500,
+//        "timePeriod": "03:15 > 06:15",
+//        "image": {
+//          "Original": "https:\/\/experience-cache.proximustv.be:443\/posterserver\/poster\/EPG\/250_250_B0312EE71AFB8B410C952EAEAC4DBE8E.jpg",
+//          "custom": "https:\/\/experience-cache.proximustv.be:443\/posterserver\/poster\/EPG\/%s\/250_250_B0312EE71AFB8B410C952EAEAC4DBE8E.jpg"
+//        },
+//        "imageOnErrorHandler": null,
+//        "parentalRating": "",
+//        "detailUrl": "http:\/\/www.proximustv.be\/nl\/televisie\/tv-gids\/epg-2017020711357\/journaallus",
+//        "ottBlacklisted": false,
+//        "cloudRecordable": true,
+//        "grouped": false,
+//        "description": "Doorlopende herhalingen in lusvorm tot omstreeks 9. 00 uur.",
+//        "shortDescription": "Doorlopende herhalingen in lusvorm tot omstreeks 9. 00 uur.",
+//        "category": "C.News",
+//        "translatedCategory": "Actualiteit",
+//        "categoryId": 0,
+//        "formattedStartTime": "03:15",
+//        "formattedEndTime": "06:15",
+//        "offset": -11.458333333333,
+//        "width": 12.5,
+//        "isFeaturedEvening": false
+//      },
 
     val qs = List(
-      "tvmovies[day]"-> dayOffset.toString,
-      "tvmovies[page]" -> page.toString,
-      "new_lang" -> "nl"
+      "externalIds" -> channels.map(_.id).mkString(","),
+      "language" -> "nl",
+      "unixDate" -> date.atStartOfDay(timeZone).toEpochSecond.toString
     )
-    ws.url(url).withQueryString(qs:_*).get().flatMap{ response =>
+
+    qs.foreach(println)
+
+    ws.url(url).withQueryString(qs:_*).get().map{ response =>
       response.status match {
         case Status.OK =>
           import BelgacomProtocol._
-          Json.fromJson[BelgacomListing](response.json) match {
-            case JsSuccess(listing, _) => Future.successful(listing)
-            case JsError(errors) => Future.failed(new RuntimeException(s"Failed to parse $url response to JSON: $errors ${response.body.take(500)}"))
+          response.json.validate[Map[String, Seq[BelgacomProgram]]] match {
+            case JsSuccess(listing, _) =>
+              listing.values.flatten.filter(_.category == BelgacomProgram.CATEGORY_MOVIES).map{ program =>
+                val channel = channels.find(_.id == program.channelId).get
+                val programWithChannel = BelgacomProgramWithChannel(program, channel)
+                println(programWithChannel)
+                programWithChannel
+              }.to[Seq]
+            case JsError(errors) =>
+              log.error(s"Failed to parse $url response to JSON: $errors ${response.body.take(500)}")
+              Seq.empty
           }
         case other =>
-          Future.failed(new RuntimeException(s"Got $other for $url - ${response.body}"))
+          log.error(s"Got $other for $url - ${response.body}")
+          Seq.empty
       }
     }
   }

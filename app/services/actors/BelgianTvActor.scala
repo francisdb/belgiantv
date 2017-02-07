@@ -1,9 +1,10 @@
 package services.actors
 
+import java.time.LocalDate
+
 import models.Channel
 import play.api.Logger
 import _root_.akka.actor.Props
-
 import org.joda.time.DateTimeZone
 
 import scala.util.Failure
@@ -11,10 +12,8 @@ import scala.util.Success
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration._
-
 import _root_.akka.contrib.throttle.TimerBasedThrottler
 import _root_.akka.contrib.throttle.Throttler._
-
 import models._
 import services._
 
@@ -190,17 +189,18 @@ class BelgianTvActor(
     case msg: FetchBelgacom =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
 
-      belgacomReader.readMovies(msg.day).onComplete{
+      belgacomReader.searchMovies(LocalDate.parse(msg.day.toLocalDate.toString)).onComplete{
         case Failure(e) =>
           reportFailure("Failed to read belgacom day: " + e.getMessage, e)
         case Success(movies) =>
           msg.events.foreach { broadcast =>
             if (broadcast.belgacomUrl.isEmpty) {
-              val found = movies.find{belgacomMovie =>
-                Channel.unify(belgacomMovie.channelName).toLowerCase == broadcast.channel.toLowerCase && belgacomMovie.toDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC)
+              val found = movies.find{ belgacomMovie =>
+                Channel.unify(belgacomMovie.channel.name).toLowerCase == broadcast.channel.toLowerCase &&
+                  belgacomMovie.program.toDateTime.toEpochMilli == broadcast.datetime.withZone(DateTimeZone.UTC).getMillis
               }
               found.map { event =>
-                broadcastRepository.setBelgacom(broadcast, event.programId.toString, event.getProgramUrl)
+                broadcastRepository.setBelgacom(broadcast, event.program.programReferenceNumber, event.program.detailUrl)
               }.getOrElse {
                 logger.warn("No belgacom match for " + broadcast.channel + " " + broadcast.humanDate + " " + broadcast.name)
               }

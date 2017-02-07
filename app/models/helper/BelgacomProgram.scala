@@ -1,71 +1,71 @@
 package models.helper
 
-import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
-import java.util.Date
-import org.joda.time.DateTime
+import java.time.Instant
+
+case class BelgacomProgramWithChannel(
+  program: BelgacomProgram,
+  channel: BelgacomChannel
+){
+  override def toString = s"${program.title} ${channel.name}@${program.toDateTime}"
+}
+
+object BelgacomProgram{
+  final val CATEGORY_MOVIES = "C.Movies"
+}
 
 case class BelgacomProgram(
-
-  pid: Int,
+  programReferenceNumber: String,
+  channelId: String,
   title: String,
-	lg: String,
-	su: Option[String],
-	cname: String,
-	cnumb: Option[String],
-	cid: Int,
-	clogo: String,
-	sts: Long,
-	ets: Long,
-  img: Option[String],
-	gr: Option[Int],
-	grname: Option[String],
-	
-	bq: Option[String], // ???
-	btv: Option[String] // belgacomtv?
-	
-	//def pk; // duplicate of pkey
-	//def seo; // slug
-	//def shour; // obsolete start hour:minutes
-  
-  //public int idx; // visualisation helper index
-  //public int lenpx; // visualisation helper length in pixels
-  //public int hr; // obsolete start hour
-  //public int min; // obsolete start minutes
-  //public int ehr; // obsolete end hour
-  //public int emin; // obsolete end minutes
-  //public String seo; // slug
-  //public String hour; // obsolete start hour:minutes
-  
-  ) {
 
-  val programId = pid
-  val language = lg
-  val summary = su
-  val channelName = cname
-  val channelNumber = cnumb
-  val channelId = cid
-  val channelLogo = clogo
-  val startTimeSeconds = sts
-  val endTimeSeconds = ets
-  val image = img
-  val genreId = gr
-  val genre = grname
+  startTime: Int,
+  endTime: Int,
+  description: String,
+  shortDescription: String,
+  category: String,
+  detailUrl: String){
 
-  
-  lazy val getProgramUrl = {
-    "http://sphinx.skynet.be/tv-overal/tv-gids/programma/" + programId
-  }
+
+//        "trailId": "2017020711357",
+//        "programReferenceNumber": "005045664380",
+//        "channelId": "UID50037",
+//        "channel": null,
+//        "title": "Journaallus",
+//        "startTime": 1486433700,
+//        "endTime": 1486444500,
+//        "timePeriod": "03:15 > 06:15",
+//        "image": {
+//          "Original": "https:\/\/experience-cache.proximustv.be:443\/posterserver\/poster\/EPG\/250_250_B0312EE71AFB8B410C952EAEAC4DBE8E.jpg",
+//          "custom": "https:\/\/experience-cache.proximustv.be:443\/posterserver\/poster\/EPG\/%s\/250_250_B0312EE71AFB8B410C952EAEAC4DBE8E.jpg"
+//        },
+//        "imageOnErrorHandler": null,
+//        "parentalRating": "",
+//        "detailUrl": "http:\/\/www.proximustv.be\/nl\/televisie\/tv-gids\/epg-2017020711357\/journaallus",
+//        "ottBlacklisted": false,
+//        "cloudRecordable": true,
+//        "grouped": false,
+//        "description": "Doorlopende herhalingen in lusvorm tot omstreeks 9. 00 uur.",
+//        "shortDescription": "Doorlopende herhalingen in lusvorm tot omstreeks 9. 00 uur.",
+//        "category": "C.News",
+//        "translatedCategory": "Actualiteit",
+//        "categoryId": 0,
+//        "formattedStartTime": "03:15",
+//        "formattedEndTime": "06:15",
+//        "offset": -11.458333333333,
+//        "width": 12.5,
+//        "isFeaturedEvening": false
+
 
   lazy val getStart = {
-    new Date(startTimeSeconds * 1000)
+    Instant.ofEpochSecond(startTime)
   }
 
   lazy val getEnd = {
-    new Date(endTimeSeconds * 1000)
+    Instant.ofEpochSecond(endTime)
   }
   
-  lazy val toDateTime = new DateTime(startTimeSeconds * 1000)
+  lazy val toDateTime = Instant.ofEpochSecond(startTime)
 
-  override def toString = title + " " + channelName + "@" + toDateTime
+  override def toString = title + " " + channelId + "@" + toDateTime
   
 }

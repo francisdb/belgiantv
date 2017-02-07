@@ -7,6 +7,7 @@ import models.helper.ImdbApiMovie
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 object ImdbProtocol{
   implicit val imdbApiMovieReads = Json.reads[ImdbApiMovie]
@@ -35,20 +36,25 @@ class ImdbApiService(ws: WSAPI){
     
     logger.info("Fetching " + requestExtended)
 
-    requestExtended.get().flatMap{ response =>
-      val json = response.json
+    requestExtended.get().map{ response =>
+      val json = try{
+        response.json
+      }catch{
+        case NonFatal(e) =>
+          sys.error(s"Failed to parse $url response to JSON: ${e.getMessage} ${response.body.take(500)}")
+      }
       val errorOpt = (json \ "Error").asOpt[String]
       errorOpt match {
         case None =>
           import ImdbProtocol._
           Json.fromJson[ImdbApiMovie](response.json) match {
-            case JsSuccess(movie, _) => Future.successful(Option(movie))
-            case JsError(errors) => Future.failed(new RuntimeException(errors.toString()))
+            case JsSuccess(movie, _) => Option(movie)
+            case JsError(errors) => sys.error(errors.toString())
           }
         case Some(error) =>
           logger.warn(s"IMDB api internal error for $title $year: $error")
           // TODO should we also fail the future here?
-          Future.successful(None)
+          None
       }
     }
   }
