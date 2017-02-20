@@ -22,7 +22,6 @@ val specs2Version = "3.8.5"
 libraryDependencies ++= Seq(
   // Add your project dependencies here,
   //jdbc,
-  //anorm,
   ws,
   "com.typesafe.play" %% "play-mailer" % "5.0.0",
   "org.jsoup" % "jsoup" % "1.9.1",
