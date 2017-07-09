@@ -1,10 +1,9 @@
 package services.actors
 
-import _root_.akka.actor.Props
+import _root_.akka.actor.{Actor, ActorLogging, Props}
 import akka.routing.RoundRobinPool
 import play.api.Logger
 import org.joda.time.DateMidnight
-import akka.actor.ActorLogging
 import models.{BroadcastRepository, MovieRepository}
 import services._
 
@@ -15,7 +14,6 @@ object Master{
   def props(
     broadcastRepository: BroadcastRepository,
     movieRepository: MovieRepository,
-    mailer: Mailer,
     humoReader: HumoReader,
     yeloReader: YeloReader,
     belgacomReader: BelgacomReader,
@@ -27,7 +25,6 @@ object Master{
     classOf[Master],
     broadcastRepository,
     movieRepository,
-    mailer,
     humoReader,
     yeloReader,
     belgacomReader,
@@ -40,19 +37,18 @@ object Master{
 class Master(
   broadcastRepository: BroadcastRepository,
   movieRepository: MovieRepository,
-  val mailer: Mailer,
   humoReader: HumoReader,
   yeloReader: YeloReader,
   belgacomReader: BelgacomReader,
   imdbApiService: ImdbApiService,
   tmdbApiService: TmdbApiService,
-  tomatoesApiService: TomatoesApiService) extends MailingActor with LoggingActor with ActorLogging{
+  tomatoesApiService: TomatoesApiService) extends Actor with LoggingActor with ActorLogging{
 
   val belgianTvRef = context
     .actorOf(BelgianTvActor.props(
       broadcastRepository,
       movieRepository,
-      mailer, humoReader,
+      humoReader,
       yeloReader,
       belgacomReader,
       imdbApiService,

@@ -1,6 +1,6 @@
 name := "belgiantv"
 version := "1.0-SNAPSHOT"
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.2"
 
 scalacOptions ++= Seq("-feature")
 // copying jvm parameters for testing:
@@ -14,24 +14,27 @@ javaOptions in test ++= List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI")
 includeFilter in (Assets, LessKeys.less) := "*.less"
 excludeFilter in (Assets, LessKeys.less) := "_*.less"
 
-val reactiveMongoVersion = "0.12.0"
-val reactiveMongoPluginVersion = "0.12.0"
-val akkaVersion = "2.4.11" // TODO update when migrating to newer play
-val specs2Version = "3.8.5"
+val reactiveMongoVersion = "0.12.4"
+val reactiveMongoPluginVersion = "0.12.5-play26"
+val akkaVersion = "2.5.3" // TODO update when migrating to newer play
+val specs2Version = "3.8.9"
 
 libraryDependencies ++= Seq(
   // Add your project dependencies here,
   //jdbc,
   ws,
-  "com.typesafe.play" %% "play-mailer" % "5.0.0",
+  "com.typesafe.play" %% "play-json" % "2.6.2",
+  // "com.typesafe.play" %% "play-iteratees" % "2.6.1" // do we need this?
   "org.jsoup" % "jsoup" % "1.9.1",
   "commons-lang" % "commons-lang" % "2.6",
   "org.reactivemongo" %% "reactivemongo" % reactiveMongoVersion,
   "org.reactivemongo" %% "play2-reactivemongo" % reactiveMongoPluginVersion,
   "com.typesafe.akka" %% "akka-contrib" % akkaVersion,
-  "org.webjars" %% "webjars-play" % "2.5.0-3",
+  "org.webjars" %% "webjars-play" % "2.6.0",
   "org.webjars" % "bootstrap" % "3.3.5",
   "org.webjars" % "jquery" % "2.1.4",
+
+  "io.sentry" % "sentry-logback" % "1.2.2",
 
   // play comes with 3.6 that depends on unavailable scalaz-streams
   specs2 % Test,

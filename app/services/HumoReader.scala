@@ -12,7 +12,7 @@ import org.joda.time.format.DateTimeFormat
 import play.api.Logger
 import play.api.http.Status
 import models.Channel
-import play.api.libs.ws.WSAPI
+import play.api.libs.ws.WSClient
 
 import scala.util.control.NonFatal
 
@@ -21,7 +21,7 @@ object HumoReader{
   final val timezone = DateTimeZone.forID("Europe/Brussels")
 }
 
-class HumoReader(ws: WSAPI) {
+class HumoReader(ws: WSClient) {
 
 
   private val logger = Logger("application.humo")
@@ -44,7 +44,7 @@ class HumoReader(ws: WSAPI) {
   // http://www.humo.be/api/epg/humosite/schedule/rest/2015-02-08/full
 
   
-  def fetchDayRetryOnGatewayTimeout(day: DateMidnight, channelFilter: List[String] = List())(implicit scheduler:Scheduler, executionContetext:ExecutionContext):Future[Seq[HumoEvent]] = {
+  def fetchDayRetryOnGatewayTimeout(day: DateMidnight, channelFilter: List[String] = List())(implicit scheduler:Scheduler):Future[Seq[HumoEvent]] = {
     // TODO better would be to actually use a delay between the retries, we could also use a throttled WS
     val dayData = fetchDay(day, channelFilter)
     dayData.recoverWith{

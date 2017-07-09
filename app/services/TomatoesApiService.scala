@@ -1,5 +1,5 @@
 package services
-import play.api.libs.ws.WSAPI
+import play.api.libs.ws.WSClient
 import play.api.Logger
 import models.helper.{TomatoesMovie, TomatoesSearch}
 
@@ -9,7 +9,7 @@ import play.api.libs.json.Json
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-class TomatoesApiService(ws: WSAPI){
+class TomatoesApiService(ws: WSClient){
   
   private lazy val apikey = PlayUtil.config("tomatoes.apikey")
   

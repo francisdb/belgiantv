@@ -1,19 +1,17 @@
 package services.actors
 
-import akka.actor.Props
+import akka.actor.{Actor, Props}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import play.api.Logger
-
-import services.{Mailer, HumoReader}
+import services.HumoReader
 import models.Channel
 
 object HumoActor{
-  def props(mailer: Mailer, humoReader: HumoReader) = Props(classOf[HumoActor], mailer, humoReader)
+  def props(humoReader: HumoReader) = Props(classOf[HumoActor], humoReader)
 }
 
-class HumoActor(var mailer: Mailer, humoReader: HumoReader) extends MailingActor with LoggingActor{
+class HumoActor(humoReader: HumoReader) extends Actor with LoggingActor{
 
   val logger = Logger("application.actor.humo")
 

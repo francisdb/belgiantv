@@ -6,7 +6,7 @@ import java.util.Locale
 import models.Channel
 import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import play.api.libs.ws.WSAPI
+import play.api.libs.ws.WSClient
 import models.helper._
 
 import concurrent.Future
@@ -30,7 +30,7 @@ object BelgacomReader{
   private final val log = LoggerFactory.getLogger(classOf[BelgacomReader])
 }
 
-class BelgacomReader(ws: WSAPI){
+class BelgacomReader(ws: WSClient){
   // http://www.proximustv.be/nl/televisie/tv-gids
 
   // api
@@ -80,7 +80,7 @@ class BelgacomReader(ws: WSAPI){
       "language" -> "nl",
       "userId" -> ""
     )
-    ws.url(url).withQueryString(qs:_*).get().map { response =>
+    ws.url(url).withQueryStringParameters(qs:_*).get().map { response =>
       import BelgacomProtocol._
       response.json.validate[BelgacomChannelListing] match {
         case JsSuccess(listing, _) => listing
@@ -138,7 +138,7 @@ class BelgacomReader(ws: WSAPI){
 
     qs.foreach(println)
 
-    ws.url(url).withQueryString(qs:_*).get().map{ response =>
+    ws.url(url).withQueryStringParameters(qs:_*).get().map{ response =>
       response.status match {
         case Status.OK =>
           import BelgacomProtocol._

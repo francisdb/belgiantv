@@ -3,18 +3,18 @@ package services
 
 import java.time.LocalDate
 
-import helper.WithWS
+import helper.WithWsClient
 import org.joda.time.DateMidnight
 import org.specs2.mutable._
 
 import scala.concurrent._
 import scala.concurrent.duration._
 
-class BelgacomReaderTest extends Specification{
+class BelgacomReaderTest extends Specification with WithWsClient {
 
  "the movie search for today" should {
 
-    "return data" in new WithWS{
+    "return data" in {
       val belgacom = new BelgacomReader(ws)
       val today = LocalDate.now(BelgacomReader.timeZone)
       val result = Await.result(belgacom.searchMovies(today), 60.seconds)
@@ -32,7 +32,7 @@ class BelgacomReaderTest extends Specification{
 
   "the movie search for tomorrow" should {
 
-    "return data" in new WithWS{
+    "return data" in {
       val belgacom = new BelgacomReader(ws)
       val tomorrow = LocalDate.now(BelgacomReader.timeZone).plusDays(1)
       val result = Await.result(belgacom.searchMovies(tomorrow), 60.seconds)

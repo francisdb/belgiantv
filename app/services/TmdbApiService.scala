@@ -1,9 +1,8 @@
 package services
 
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import play.api.libs.ws.WSAPI
+import play.api.libs.ws.WSClient
 import play.api.Logger
-
 import models.helper._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -18,7 +17,7 @@ object TmdbProtocol{
   implicit val tmdbMovieSearchPagerReads = Json.reads[TmdbMovieSearchPager]
 }
 
-class TmdbApiService(ws: WSAPI){
+class TmdbApiService(ws: WSClient){
 	
 	val BASE = "http://api.themoviedb.org/3"
 	  

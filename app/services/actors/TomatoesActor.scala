@@ -4,19 +4,19 @@ import akka.actor.{Props, Actor}
 import play.api.Logger
 import org.joda.time.DateMidnight
 import models.Broadcast
-import services.{ErrorReportingSupport, Mailer, TomatoesApiService}
+import services.TomatoesApiService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
 
 object TomatoesActor{
-  def props(mailer: Mailer, tomatoesApiService: TomatoesApiService) = Props(classOf[TomatoesActor], mailer, tomatoesApiService)
+  def props(tomatoesApiService: TomatoesApiService) = Props(classOf[TomatoesActor], tomatoesApiService)
 }
 
 /**
  * Makes sure we only have 10	Calls per second
  */
-class TomatoesActor(val mailer: Mailer, tomatoesApiService: TomatoesApiService) extends MailingActor with ErrorReportingSupport with LoggingActor{
+class TomatoesActor(tomatoesApiService: TomatoesApiService) extends Actor with LoggingActor{
 
   val logger = Logger("application.actor.tomatoes")
 
@@ -29,7 +29,7 @@ class TomatoesActor(val mailer: Mailer, tomatoesApiService: TomatoesApiService) 
 
       tomatoesApiService.find(msg.title, msg.year).onComplete{
         case Failure(e) =>
-          reportFailure("Failed to find tomatoes: " + e.getMessage, e)
+          logger.error("Failed to find tomatoes: " + e.getMessage, e)
         case Success(tomatoesMovie) =>
           tomatoesMovie.map( m =>
             senderCopy ! FetchTomatoesResult(m, msg.broadcastId)

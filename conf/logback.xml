@@ -1,29 +1,37 @@
 <configuration>
 
-<!-- More info here: http://www.playframework.org/documentation/2.0.1/SettingsLogger -->
+    <!-- More info here: http://www.playframework.org/documentation/2.0.1/SettingsLogger -->
     <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
-  
-  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-     <file>${application.home}/logs/application.log</file>
-     <encoder>
-       <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
-     </encoder>
-   </appender>
 
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern>%date - %-18coloredLevel %-18logger{15} - %message%n%xException{5}</pattern>
-    </encoder>
-  </appender>
+    <!-- Configure the Sentry appender, overriding the logging threshold to the WARN level -->
+    <appender name="Sentry" class="io.sentry.logback.SentryAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+    </appender>
 
-  <logger name="ch.qos.logback" level="WARN"/>
-  <logger name="play" level="INFO" />
-  <logger name="access" level="INFO" />
-  <logger name="application" level="INFO" />
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${application.home}/logs/application.log</file>
+        <encoder>
+            <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
+        </encoder>
+    </appender>
 
-  <root level="WARN">
-    <appender-ref ref="STDOUT" />
-    <appender-ref ref="FILE" />
-  </root>
-  
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date - %-18coloredLevel %-18logger{15} - %message%n%xException{5}</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="ch.qos.logback" level="WARN"/>
+    <logger name="play" level="INFO" />
+    <logger name="access" level="INFO" />
+    <logger name="application" level="INFO" />
+
+    <root level="WARN">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+        <appender-ref ref="Sentry" />
+    </root>
+
 </configuration>

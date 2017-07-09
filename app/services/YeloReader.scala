@@ -7,8 +7,7 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.Interval
 import play.api.libs.json._
 import play.api.Logger
-
-import play.api.libs.ws.WSAPI
+import play.api.libs.ws.WSClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import models.Channel
@@ -130,7 +129,7 @@ object YeloReader{
 //
 // https://www.yeloplay.be/api/pubba/v1/events/schedule-day/outformat/json/lng/nl/channel/8/channel/534/channel/585/channel/625/channel/801/day/2016-11-17/platform/web/
 
-class YeloReader(ws: WSAPI) {
+class YeloReader(ws: WSClient) {
   
   private val logger = Logger("application.yelo")
 
@@ -143,7 +142,7 @@ class YeloReader(ws: WSAPI) {
 
   private def fetchChannels() = {
     val url = s"$pubbaBase/v3/channels/all/outformat/json/platform/web/"
-    ws.url(url).withHeaders(headers:_*).get().map { response =>
+    ws.url(url).withHttpHeaders(headers:_*).get().map { response =>
       if (response.status != Status.OK) {
         throw new RuntimeException(s"Got ${response.status} while fetching $url -> ${response.body}")
       }

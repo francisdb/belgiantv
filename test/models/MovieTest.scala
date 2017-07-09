@@ -2,8 +2,6 @@ package models
 
 import _root_.helper.ConfigSpec
 import org.specs2.mutable.Specification
-import play.api.test.Helpers._
-import play.api.test.FakeApplication
 
 import scala.concurrent._
 import scala.concurrent.duration._

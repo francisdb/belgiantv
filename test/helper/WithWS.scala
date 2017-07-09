@@ -1,43 +1,42 @@
 package helper
 
-import akka.actor.Cancellable
-import akka.stream.{ClosedShape, Graph, Materializer}
-import org.specs2.execute.{AsResult, Result}
-import org.specs2.mutable.Around
-import org.specs2.specification.Scope
-import play.api.Environment
-import play.api.inject.DefaultApplicationLifecycle
-import play.api.libs.ws.ahc.{AhcWSAPI, AhcWSClientConfig}
+import akka.stream._
+import org.specs2.specification.AfterAll
+import play.api.libs.ws.ahc.{AhcWSClient, StandaloneAhcWSClient}
+import play.shaded.ahc.org.asynchttpclient.{DefaultAsyncHttpClient, DefaultAsyncHttpClientConfig}
 
-import scala.concurrent.duration.FiniteDuration
+/**
+  * Use this instead of AfterAll and call super.afterAll when done
+  *
+  * Without this construct these are not composeable
+  * TODO find out if there is a cleaner solution
+  */
+trait BaseAfterAll extends AfterAll{
+  override def afterAll = ()
+}
 
-abstract class WithWS extends Around with Scope {
-  val lifecycle = new DefaultApplicationLifecycle
-  lazy val environment = Environment.simple()
-  lazy val clientConfig = AhcWSClientConfig()
-  implicit lazy val mat = NoMaterializer
-  lazy val ws = new AhcWSAPI(environment, clientConfig, lifecycle)
+trait WithMaterializer extends BaseAfterAll{
+  //implicit val sys = ActorSystem("test")
+  private val actorMaterializer = play.api.test.NoMaterializer// ActorMaterializer()
+  implicit val mat: Materializer = actorMaterializer
 
-  def around[T: AsResult](t: => T): Result = {
-    try {
-      AsResult.effectively(t)
-    } finally {
-      lifecycle.stop()
-    }
+  override def afterAll = {
+    //actorMaterializer.shutdown()
+    //Await.result(sys.terminate(), 10.seconds)
+    super.afterAll
+  }
+}
+
+trait WithWsClient extends WithMaterializer{
+  private val clientConfig = new DefaultAsyncHttpClientConfig.Builder().build()
+  val client = new DefaultAsyncHttpClient(clientConfig)
+  val standaloneAhcWSClient = new StandaloneAhcWSClient(client)
+  val ws = new AhcWSClient(standaloneAhcWSClient)
+
+  override def afterAll = {
+    ws.close()
+    super.afterAll
   }
 }
 
 
-/**
-  * copy from the play NoMaterializer
-  */
-private[helper] object NoMaterializer extends Materializer {
-  def withNamePrefix(name: String) = throw new UnsupportedOperationException("NoMaterializer cannot be named")
-  implicit def executionContext = throw new UnsupportedOperationException("NoMaterializer does not have an execution context")
-  def materialize[Mat](runnable: Graph[ClosedShape, Mat]) =
-    throw new UnsupportedOperationException("No materializer was provided, probably when attempting to extract a response body, but that body is a streamed body and so requires a materializer to extract it.")
-  override def scheduleOnce(delay: FiniteDuration, task: Runnable): Cancellable =
-    throw new UnsupportedOperationException("NoMaterializer can't schedule tasks")
-  override def schedulePeriodically(initialDelay: FiniteDuration, interval: FiniteDuration, task: Runnable): Cancellable =
-    throw new UnsupportedOperationException("NoMaterializer can't schedule tasks")
-}

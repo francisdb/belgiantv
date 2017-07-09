@@ -1,21 +1,10 @@
 package models
 
-// Reactive Mongo imports
-import reactivemongo.api._
 import reactivemongo.bson._
 
 import scala.util.Try
 
-// Reactive Mongo plugin
-import play.modules.reactivemongo._
-import play.modules.reactivemongo.json.BSONFormats._
-
-import play.api.Logger
-import controllers.Application
-import concurrent.Future
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import play.modules.reactivemongo.json.collection.JSONCollection
+import reactivemongo.play.json.BSONFormats.BSONObjectIDFormat
 import play.api.libs.json._
 
 case class Movie(

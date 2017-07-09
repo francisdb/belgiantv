@@ -9,4 +9,10 @@ trait LoggingActor extends Actor{
     Logger.warn("[" + this + "] - Received unknown message [" + message + "] from " + sender)
     super.unhandled(message)
   }
+
+  override def postRestart(reason: Throwable) {
+    Logger.error("Actor restarted: " + reason.getMessage, reason)
+    super.postRestart(reason)
+  }
+
 }

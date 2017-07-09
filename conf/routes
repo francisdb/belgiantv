@@ -9,5 +9,5 @@ GET     /trigger/scan               controllers.Application.scan
 GET     /trigger/tomatoes           controllers.Application.tomatoes
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /webjars/*file              controllers.WebJarAssets.at(file)
+->      /webjars                    webjars.Routes
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

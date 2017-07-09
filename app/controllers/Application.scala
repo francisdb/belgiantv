@@ -3,40 +3,40 @@ package controllers
 import _root_.models.helper.BroadcastInfo
 import akka.actor.ActorSystem
 import models.{Broadcast, BroadcastRepository, Movie, MovieRepository}
-import play.api._
+import org.joda.time.{DateMidnight, DateTime, Interval}
+import org.webjars.play.WebJarsUtil
+import play.api.Logger
 import play.api.mvc._
-import play.api.libs.concurrent.Execution.Implicits._
 import services._
 import services.actors.{Master, Start, StartTomatoes}
-import org.joda.time.Interval
-import org.joda.time.DateTime
-import org.joda.time.DateMidnight
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class Application(
+  components: ControllerComponents,
   actorSystem: ActorSystem,
   val reactiveMongoApi: ReactiveMongoApi,
   broadcastRepository: BroadcastRepository,
   movieRepository: MovieRepository,
-  mailer: Mailer,
-  webJarAssets: WebJarAssets,
+  webJarsUtil: WebJarsUtil,
   humoReader: HumoReader,
   yeloReader: YeloReader,
   belgacomReader: BelgacomReader,
   imdbApiService: ImdbApiService,
   tmdbApiService: TmdbApiService,
-  tomatoesApiService: TomatoesApiService) extends Controller with MongoController with ReactiveMongoComponents {
+  tomatoesApiService: TomatoesApiService
+  )(implicit ec: ExecutionContext) /*extends AbstractController(components)*/ extends Controller with MongoController with ReactiveMongoComponents {
+
+  implicit val wu: WebJarsUtil = webJarsUtil
 
   Logger.info("Scheduling actor trigger")
   // TODO better location for the actor?
   // TODO create an actor module that is enabled in the application.conf
-  val masterActorRef = actorSystem.actorOf(
+  private val masterActorRef = actorSystem.actorOf(
     Master.props(
       broadcastRepository,
       movieRepository,
-      mailer,
       humoReader,
       yeloReader,
       belgacomReader,
@@ -48,7 +48,7 @@ class Application(
   )
   //Akka.system.scheduler.schedule(0 seconds, 12 hours, Application.masterActorRef, Start)
 
-  private implicit val wjAssets = webJarAssets
+  //private implicit val wjAssets = webJarAssets
 
   def index = Action.async{ implicit request =>
 
@@ -66,7 +66,6 @@ class Application(
       Ok(views.html.index(sorted))
     }
   }
-
 
   def linkWithMovie(broadcast: Broadcast): Future[BroadcastInfo] = {
     implicit val reader = Movie.movieFormat//MovieBSONReader

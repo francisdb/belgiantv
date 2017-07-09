@@ -5,7 +5,6 @@ import reactivemongo.api.commands.WriteResult
 import scala.util.{Failure, Success, Try}
 import play.api.Logger
 import reactivemongo.api.FailoverStrategy
-import services.ErrorReportingSupport
 import scala.concurrent.duration._
 
 trait MongoSupport{

@@ -4,9 +4,9 @@ import org.specs2.mutable._
 
 import scala.concurrent._
 import scala.concurrent.duration._
-import helper.{ConfigSpec, WithWS}
+import helper.{ConfigSpec, WithWsClient}
 
-class TmdbTest extends Specification with ConfigSpec {
+class TmdbTest extends Specification with ConfigSpec with WithWsClient {
 
   private val configProperty = "tmdb.apikey"
 
@@ -15,7 +15,7 @@ class TmdbTest extends Specification with ConfigSpec {
 
   "the search for don 2006" should {
 
-    "return the correct movie" in new WithWS{
+    "return the correct movie" in {
       skipIfMissingConfig(configProperty)
       val tmdb = new TmdbApiService(ws)
       val movie = Await.result(tmdb.find("don", Option.apply(2006)), 30.seconds).get
@@ -29,7 +29,7 @@ class TmdbTest extends Specification with ConfigSpec {
 
   "the search for I, Robot 2004" should {
 
-    "return the correct movie" in new WithWS{
+    "return the correct movie" in {
       skipIfMissingConfig(configProperty)
       val tmdb = new TmdbApiService(ws)
       val movie = Await.result(tmdb.find("I, Robot", Option.apply(2004)), 30.seconds).get
@@ -41,7 +41,7 @@ class TmdbTest extends Specification with ConfigSpec {
 
   "the search for I, Robot 2004" should {
 
-    "return the correct movie" in new WithWS{
+    "return the correct movie" in {
       skipIfMissingConfig(configProperty)
       val tmdb = new TmdbApiService(ws)
       val movie = Await.result(tmdb.find("I, Robot", Option.apply(2004)), 30.seconds).get
@@ -53,7 +53,7 @@ class TmdbTest extends Specification with ConfigSpec {
 
   "the search for L'immortel 2010" should {
 
-    "return the correct movie" in new WithWS{
+    "return the correct movie" in {
       skipIfMissingConfig(configProperty)
       val tmdb = new TmdbApiService(ws)
       val movie = Await.result(tmdb.find("L'immortel", Option.apply(2010)), 30.seconds).get
@@ -67,7 +67,7 @@ class TmdbTest extends Specification with ConfigSpec {
 
   "the search for hafsjkdhfkdjshadslkfhaskf" should {
 
-    "return nothing" in new WithWS{
+    "return nothing" in {
       skipIfMissingConfig(configProperty)
       val tmdb = new TmdbApiService(ws)
       val movieOption = Await.result(tmdb.find("hafsjkdhfkdjshadslkfhaskf"), 30.seconds)
@@ -78,10 +78,10 @@ class TmdbTest extends Specification with ConfigSpec {
 
   "the search for Relative Chaos (2006)" should {
 
-    "return no score as it is 0 %" in new WithWS{
+    "return no score as it is 0 %" in {
       skipIfMissingConfig(configProperty)
       val tmdb = new TmdbApiService(ws)
-      val movieOption = Await.result(tmdb.find("Relative Chaos", Some(2006)), 30.seconds)
+      val movieOption = Await.result(tmdb.find("Murdered for Being Different"), 30.seconds)
       movieOption.map(_.fixedAverage) must beSome(None)
     }
   }

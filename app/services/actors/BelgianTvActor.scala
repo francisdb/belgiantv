@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 import models.Channel
 import play.api.Logger
-import _root_.akka.actor.Props
+import _root_.akka.actor.{Actor, Props}
 import org.joda.time.DateTimeZone
 
 import scala.util.Failure
@@ -21,7 +21,6 @@ object BelgianTvActor{
   def props(
     broadcastRepository: BroadcastRepository,
     movieRepository: MovieRepository,
-    mailer: Mailer,
     humoReader: HumoReader,
     yeloReader: YeloReader,
     belgacomReader: BelgacomReader,
@@ -33,7 +32,6 @@ object BelgianTvActor{
       classOf[BelgianTvActor],
       broadcastRepository,
       movieRepository,
-      mailer,
       humoReader,
       yeloReader,
       belgacomReader,
@@ -46,21 +44,20 @@ object BelgianTvActor{
 class BelgianTvActor(
   broadcastRepository: BroadcastRepository,
   movieRepository: MovieRepository,
-  val mailer: Mailer,
   humoReader: HumoReader,
   yeloReader: YeloReader,
   belgacomReader: BelgacomReader,
   imdbApiService: ImdbApiService,
   tmdbApiService: TmdbApiService,
-  tomatoesApiService: TomatoesApiService) extends MailingActor with ErrorReportingSupport with LoggingActor{
+  tomatoesApiService: TomatoesApiService) extends Actor with LoggingActor{
   
   val logger = Logger("application.actor")
 
-  val tomatoesRef = context.actorOf(TomatoesActor.props(mailer, tomatoesApiService), name = "Tomatoes")
+  val tomatoesRef = context.actorOf(TomatoesActor.props(tomatoesApiService), name = "Tomatoes")
   val tomatoesThrottler = context.actorOf(Props(new TimerBasedThrottler(2 msgsPer 1.second)), name = "TomatoesThrottler")
   tomatoesThrottler ! SetTarget(Some(tomatoesRef))
 
-  val humoRef = context.actorOf(HumoActor.props(mailer, humoReader), name = "Humo")
+  val humoRef = context.actorOf(HumoActor.props(humoReader), name = "Humo")
   val humoThrottler = context.actorOf(Props(new TimerBasedThrottler(1 msgsPer 5.second)), name = "HumoThrottler")
   humoThrottler ! SetTarget(Some(humoRef))
   
@@ -93,7 +90,7 @@ class BelgianTvActor(
 
       movieRepository.find(msg.broadcast.name, msg.broadcast.year).onComplete{
         case Failure(e) =>
-          reportFailure("Failed to find imdb: " + e.getMessage, e)
+          logger.error("Failed to find imdb: " + e.getMessage, e)
         case Success(movie) =>
           val movie2 = movie.orElse {
             // FIXME this is blocking
@@ -129,7 +126,7 @@ class BelgianTvActor(
     case msg: FetchHumoResult =>
       msg.events match {
         case Failure(e) =>
-          reportFailure("Failed to read humo day: " + e.getMessage, e)
+          logger.error("Failed to read humo day: " + e.getMessage, e)
         case Success(humoEvents) =>
           val broadcasts:Future[Seq[Broadcast]] = Future.traverse(humoEvents){ event =>
             val broadcast = new Broadcast(
@@ -158,7 +155,7 @@ class BelgianTvActor(
 
           broadcasts.onComplete{
             case Failure(e) =>
-              reportFailure("Failed to find broadcasts for humo events: " + e.getMessage, e)
+              logger.error("Failed to find broadcasts for humo events: " + e.getMessage, e)
             case Success(foundBroadcast) =>
               self ! FetchYelo(msg.day, foundBroadcast)
               self ! FetchBelgacom(msg.day, foundBroadcast)
@@ -170,7 +167,7 @@ class BelgianTvActor(
 
       yeloReader.fetchDay(msg.day, Channel.channelFilter).onComplete {
         case Failure(e) =>
-          reportFailure("Failed to read yelo day: " + msg.day + " - " + e.getMessage, e)
+          logger.error("Failed to read yelo day: " + msg.day + " - " + e.getMessage, e)
         case Success(movies) =>
           // all unique channels
           // println(movies.groupBy{_.channel}.map{_._1})
@@ -191,7 +188,7 @@ class BelgianTvActor(
 
       belgacomReader.searchMovies(LocalDate.parse(msg.day.toLocalDate.toString)).onComplete{
         case Failure(e) =>
-          reportFailure("Failed to read belgacom day: " + e.getMessage, e)
+          logger.error("Failed to read belgacom day: " + e.getMessage, e)
         case Success(movies) =>
           msg.events.foreach { broadcast =>
             if (broadcast.belgacomUrl.isEmpty) {
