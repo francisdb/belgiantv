@@ -1,6 +1,6 @@
 name := "belgiantv"
 version := "1.0-SNAPSHOT"
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.3"
 
 scalacOptions ++= Seq("-feature")
 // copying jvm parameters for testing:
@@ -23,7 +23,7 @@ libraryDependencies ++= Seq(
   // Add your project dependencies here,
   //jdbc,
   ws,
-  "com.typesafe.play" %% "play-json" % "2.6.2",
+  "com.typesafe.play" %% "play-json" % "2.6.3",
   // "com.typesafe.play" %% "play-iteratees" % "2.6.1" // do we need this?
   "org.jsoup" % "jsoup" % "1.9.1",
   "commons-lang" % "commons-lang" % "2.6",
