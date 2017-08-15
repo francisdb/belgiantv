@@ -26,7 +26,7 @@ class Application(
   imdbApiService: ImdbApiService,
   tmdbApiService: TmdbApiService,
   tomatoesApiService: TomatoesApiService
-  )(implicit ec: ExecutionContext) /*extends AbstractController(components)*/ extends Controller with MongoController with ReactiveMongoComponents {
+  )(implicit ec: ExecutionContext) extends AbstractController(components) with ReactiveMongoComponents {
 
   implicit val wu: WebJarsUtil = webJarsUtil
 
