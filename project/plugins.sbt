@@ -28,4 +28,4 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.1.1")
 //)
 
 // there is a compatibility issue with sbt-less and the latest sbt-js-engine - downgrade version until fixed
-dependencyOverrides += "com.typesafe.sbt" % "sbt-js-engine" % "1.1.4"
+dependencyOverrides += "com.typesafe.sbt" % "sbt-js-engine" % "1.1.2"
