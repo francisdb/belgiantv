@@ -16,8 +16,8 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.3")
 //addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.0")
 
 // advanced stylesheets
-// addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.1.1")
-addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.0.6")
+addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.1.1")
+//addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.0.6")
 
 // FIXME remove once this is fixed: https://github.com/sbt/sbt-js-engine/issues/56
 //https://stackoverflow.com/questions/18065982/how-to-override-the-dependency-of-an-sbt-plugin
