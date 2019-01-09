@@ -1,6 +1,6 @@
 name := "belgiantv"
 version := "1.0-SNAPSHOT"
-scalaVersion := "2.12.3"
+scalaVersion := "2.12.8"
 
 scalacOptions ++= Seq("-feature")
 // copying jvm parameters for testing:
