@@ -3,7 +3,7 @@ sudo: false
 
 language: scala
 scala:
-   - 2.11.8
+   - 2.12.8
 
 jdk:
 # openjdk8 still not available
