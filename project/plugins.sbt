@@ -13,13 +13,7 @@ addSbtPlugin("org.duhemm" % "sbt-errors-summary" % "0.6.3")
 // Use the Play sbt plugin for Play projects
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.20")
 
-//addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.0")
+//addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
 
-// advanced stylesheets (1.1.1 is currently broken)
-// https://github.com/sbt/sbt-js-engine/issues/56#issuecomment-322953837
-//addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.1.1")
+// advanced stylesheets
 addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.1.2")
-
-// there is a compatibility issue with sbt-less and the latest sbt-js-engine - downgrade version until fixed
-// https://github.com/sbt/sbt-less/issues/95
-// dependencyOverrides += "com.typesafe.sbt" % "sbt-js-engine" % "1.1.4"
