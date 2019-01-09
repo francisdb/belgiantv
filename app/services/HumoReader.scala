@@ -36,12 +36,12 @@ class HumoReader(ws: WSClient) {
 
 
   // channels json
-  // http://www.humo.be/api/epg/humosite/channels/main
-  // http://www.humo.be/api/epg/humosite/channels/rest
+  // https://www.humo.be/api/epg/humosite/channels/main
+  // https://www.humo.be/api/epg/humosite/channels/rest
 
   // epg
-  // http://www.humo.be/api/epg/humosite/schedule/main/2015-02-08/full
-  // http://www.humo.be/api/epg/humosite/schedule/rest/2015-02-08/full
+  // https://www.humo.be/api/epg/humosite/schedule/main/2015-02-08/full
+  // https://www.humo.be/api/epg/humosite/schedule/rest/2015-02-08/full
 
   
   def fetchDayRetryOnGatewayTimeout(day: DateMidnight, channelFilter: List[String] = List())(implicit scheduler:Scheduler):Future[Seq[HumoEvent]] = {
@@ -85,8 +85,8 @@ class HumoReader(ws: WSClient) {
   private def urlsForDay(day: DateMidnight) = {
     val dayFormatted = dateFormat.print(day)
     Seq(
-      s"http://www.humo.be/api/epg/humosite/schedule/main/$dayFormatted/full",
-      s"http://www.humo.be/api/epg/humosite/schedule/rest/$dayFormatted/full"
+      s"https://www.humo.be/api/epg/humosite/schedule/main/$dayFormatted/full",
+      s"https://www.humo.be/api/epg/humosite/schedule/rest/$dayFormatted/full"
     )
   }
   

@@ -26,7 +26,7 @@ object BelgacomProtocol{
 object BelgacomReader{
   final val timeZone = ZoneId.of("Europe/Brussels")
 
-  private final val BASE = "http://www.proximustv.be/zcommon/bep"
+  private final val BASE = "https://www.proximustv.be/zcommon/bep"
   private final val log = LoggerFactory.getLogger(classOf[BelgacomReader])
 }
 
@@ -81,11 +81,16 @@ class BelgacomReader(ws: WSClient){
       "userId" -> ""
     )
     ws.url(url).withQueryStringParameters(qs:_*).get().map { response =>
-      import BelgacomProtocol._
-      response.json.validate[BelgacomChannelListing] match {
-        case JsSuccess(listing, _) => listing
-        case JsError(errors) =>
-          throw new RuntimeException(s"Failed to parse $url response to JSON: $errors ${response.body.take(500)}")
+      response.status match {
+        case Status.OK =>
+          import BelgacomProtocol._
+          response.json.validate[BelgacomChannelListing] match {
+            case JsSuccess(listing, _) => listing
+            case JsError(errors) =>
+              throw new RuntimeException(s"Failed to parse $url response to JSON: $errors ${response.body.take(500)}")
+          }
+        case otherStatus =>
+          throw new RuntimeException(s"Got $otherStatus for $url : ${response.body.take(500)}")
       }
     }
   }
