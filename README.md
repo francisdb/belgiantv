@@ -11,3 +11,12 @@ MongoDB
 [![Codeship Status for francisdb/belgiantv](https://codeship.com/projects/f0663d10-f562-0130-8cb4-3a7857e44df3/status?branch=master)](https://codeship.com/projects/6531)
 
 [![Codacy Badge](https://www.codacy.com/project/badge/4901ab784fc54ebe866f5613fa9f8450)](https://www.codacy.com/public/francisdb/belgiantv)
+
+# Deploying
+
+This project uses heroku, [a guide is available on their website](https://devcenter.heroku.com/articles/getting-started-with-scala).
+
+
+```bash
+git push heroku master
+```
