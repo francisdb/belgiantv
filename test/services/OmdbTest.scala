@@ -1,17 +1,19 @@
 package services
 
 import org.specs2.mutable._
-
-import helper.WithWsClient
+import helper.{ConfigSpec, WithWsClient}
 
 import scala.concurrent._
 import scala.concurrent.duration._
 
-class OmdbTest extends Specification with WithWsClient {
+class OmdbTest extends Specification with WithWsClient with ConfigSpec{
+
+  private val configProperty = "omdb.apikey"
 
   "the search for Pulp Fiction" should {
 
     "return the correct movie" in {
+      skipIfMissingConfig(configProperty)
       val omdb = new OmdbApiService(ws)
 
       val movieOpt = Await.result(omdb.find("Pulp Fiction"), 30.seconds)
@@ -24,7 +26,7 @@ class OmdbTest extends Specification with WithWsClient {
 
   "the search for don 2006" should {
     "return the correct movie" in {
-      //skipped("Currently returns 'The service is unavailable.', strangely other requests succeed")
+      skipIfMissingConfig(configProperty)
       val omdb = new OmdbApiService(ws)
       val movieOption = Await.result(omdb.find("don", Option.apply(2006)), 30.seconds)
       movieOption must beSome
