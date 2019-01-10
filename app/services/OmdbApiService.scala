@@ -9,8 +9,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-object ImdbProtocol{
-  implicit val imdbApiMovieReads = Json.reads[ImdbApiMovie]
+object OmdbProtocol{
+  implicit val omdbApiMovieReads = Json.reads[ImdbApiMovie]
 }
 
 object OmdbApiService {
@@ -27,8 +27,6 @@ class OmdbApiService(ws: WSClient){
   def find(title: String, year: Option[Int] = None): Future[Option[ImdbApiMovie]] = {
 
     // TODO fallback to a search without year if no result was found for a search including the year
-
-    //val url = "http://www.imdbapi.com/"
     val url = "http://www.omdbapi.com/"
     val request = ws.url(url)
       .addQueryStringParameters("t" -> title)
@@ -37,7 +35,7 @@ class OmdbApiService(ws: WSClient){
       request.addQueryStringParameters("y" -> year.toString)
     ).getOrElse(request)
 
-    
+
     logger.info("Fetching " + requestExtended)
 
     requestExtended.get().map{ response =>
@@ -50,13 +48,13 @@ class OmdbApiService(ws: WSClient){
       val errorOpt = (json \ "Error").asOpt[String]
       errorOpt match {
         case None =>
-          import ImdbProtocol._
+          import OmdbProtocol._
           Json.fromJson[ImdbApiMovie](response.json) match {
             case JsSuccess(movie, _) => Option(movie)
             case JsError(errors) => sys.error(errors.toString())
           }
         case Some(error) =>
-          logger.warn(s"IMDB api internal error for $title $year: $error")
+          logger.warn(s"Omdb api internal error for $title $year: $error")
           // TODO should we also fail the future here?
           None
       }

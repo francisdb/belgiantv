@@ -1,11 +1,12 @@
 package models
 
+import play.api.libs.json._
+
 import reactivemongo.bson._
+import reactivemongo.play.json.BSONFormats._
 
 import scala.util.Try
 
-import reactivemongo.play.json.BSONFormats.BSONObjectIDFormat
-import play.api.libs.json._
 
 case class Movie(
   id: Option[BSONObjectID],

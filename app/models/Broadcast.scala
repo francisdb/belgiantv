@@ -1,21 +1,11 @@
 package models
 
 import global.Globals
-import play.api.Logger
 
-import org.joda.time.{Interval, DateTime}
+import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import controllers.Application
-import reactivemongo.api.collections.bson.BSONCollection
-import concurrent.Future
 
 import reactivemongo.bson._
-
-
-import play.api.libs.json._
-import play.api.libs.json.Reads._
-import play.api.libs.functional.syntax._
-
 
 case class Broadcast(
   id: Option[BSONObjectID],
