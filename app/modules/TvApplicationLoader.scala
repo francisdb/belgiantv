@@ -46,7 +46,7 @@ class MyComponents(context: Context)
   lazy val humoReader = new HumoReader(wsClient)
   lazy val yeloReader = new YeloReader(wsClient)
   lazy val belgacomReader = new BelgacomReader(wsClient)
-  lazy val imdbApiService = new ImdbApiService(wsClient)
+  lazy val imdbApiService = new OmdbApiService(wsClient)
   lazy val tmdbApiService = new TmdbApiService(wsClient)
   lazy val tomatoesApiService = new TomatoesApiService(wsClient)
 

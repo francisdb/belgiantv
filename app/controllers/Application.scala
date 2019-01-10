@@ -23,7 +23,7 @@ class Application(
   humoReader: HumoReader,
   yeloReader: YeloReader,
   belgacomReader: BelgacomReader,
-  imdbApiService: ImdbApiService,
+  imdbApiService: OmdbApiService,
   tmdbApiService: TmdbApiService,
   tomatoesApiService: TomatoesApiService
   )(implicit ec: ExecutionContext) extends AbstractController(components) with ReactiveMongoComponents {

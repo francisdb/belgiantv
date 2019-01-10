@@ -13,13 +13,15 @@ object ImdbProtocol{
   implicit val imdbApiMovieReads = Json.reads[ImdbApiMovie]
 }
 
-object ImdbApiService {
+object OmdbApiService {
 
 }
 
-class ImdbApiService(ws: WSClient){
+class OmdbApiService(ws: WSClient){
 
-  private val logger = Logger("application.imdb")
+  private val logger = Logger("application.omdb")
+
+  private lazy val apiKey = PlayUtil.config("omdb.apikey")
 
 
   def find(title: String, year: Option[Int] = None): Future[Option[ImdbApiMovie]] = {
@@ -28,7 +30,9 @@ class ImdbApiService(ws: WSClient){
 
     //val url = "http://www.imdbapi.com/"
     val url = "http://www.omdbapi.com/"
-    val request = ws.url(url).addQueryStringParameters("t" -> title)
+    val request = ws.url(url)
+      .addQueryStringParameters("t" -> title)
+      .addQueryStringParameters("apikey" -> apiKey)
     val requestExtended = year.map(year =>
       request.addQueryStringParameters("y" -> year.toString)
     ).getOrElse(request)

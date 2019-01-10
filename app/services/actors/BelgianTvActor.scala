@@ -24,7 +24,7 @@ object BelgianTvActor{
     humoReader: HumoReader,
     yeloReader: YeloReader,
     belgacomReader: BelgacomReader,
-    imdbApiService: ImdbApiService,
+    imdbApiService: OmdbApiService,
     tmdbApiService: TmdbApiService,
     tomatoesApiService: TomatoesApiService) =
 
@@ -47,7 +47,7 @@ class BelgianTvActor(
   humoReader: HumoReader,
   yeloReader: YeloReader,
   belgacomReader: BelgacomReader,
-  imdbApiService: ImdbApiService,
+  imdbApiService: OmdbApiService,
   tmdbApiService: TmdbApiService,
   tomatoesApiService: TomatoesApiService) extends Actor with LoggingActor{
   
