@@ -4,6 +4,7 @@ import models.Broadcast._
 import org.joda.time.{DateTime, Interval}
 import play.api.Logger
 import play.modules.reactivemongo.ReactiveMongoApi
+import reactivemongo.api.Cursor
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson._
 
@@ -59,7 +60,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
         "datetime" -> BSONInteger(1))
       )
       .cursor[Broadcast]()
-      .collect[List]()
+      .collect[List](1000, Cursor.FailOnError[List[Broadcast]]())
 
     //    broadcastCollectionJson.find(Json.obj(
     //        "datetime" -> Json.obj("$gt" -> interval.getStart.getMillis),
@@ -79,7 +80,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
       ))
       .sort(BSONDocument("datetime" -> BSONInteger(1)))
       .cursor[Broadcast]()
-      .collect[List]()
+      .collect[List](1000, Cursor.FailOnError[List[Broadcast]]())
 
 
     //    broadcastCollectionJson

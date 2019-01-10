@@ -1,15 +1,12 @@
 import com.typesafe.config.ConfigFactory
 import models.Broadcast
 import org.specs2.mutable.Specification
-import reactivemongo.api.{MongoConnection, MongoDriver}
-
-import reactivemongo.api.FailoverStrategy
+import reactivemongo.api.{Cursor, FailoverStrategy, MongoConnection, MongoDriver}
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ReactiveMongoTest extends Specification{
@@ -32,14 +29,14 @@ class ReactiveMongoTest extends Specification{
         broadcastCollection
           .find(BSONDocument())
           .cursor[Broadcast]()
-          .collect[List](1)
+          .collect[List](1, Cursor.FailOnError[List[Broadcast]]())
       }
 
       val result = Await.result(q, 20.seconds)
 
       result.foreach(println)
 
-      connection.close()
+      connection.askClose()(10.seconds)
       driver.close()
 
       true must beTrue

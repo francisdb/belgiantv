@@ -11,9 +11,6 @@ import concurrent.Future
 
 import reactivemongo.bson._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import play.modules.reactivemongo.json.collection.JSONCollection
 
 import play.api.libs.json._
 import play.api.libs.json.Reads._

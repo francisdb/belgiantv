@@ -3,7 +3,7 @@ package modules
 import controllers.Assets
 import global.{ErrorReportingHttpErrorHandler, LoggingFilter}
 import models.{BroadcastRepository, MovieRepository}
-import org.webjars.play.{RequireJS, WebJarComponents}
+import org.webjars.play.{RequireJS, WebJarComponents, WebJarsUtil}
 import play.api.ApplicationLoader.Context
 import play.api.http.HttpErrorHandler
 import play.modules.reactivemongo._
@@ -28,7 +28,7 @@ trait FixedWebjarComponents extends WebJarComponents{
   lazy val errorHandler: HttpErrorHandler = httpErrorHandler
 
   // all this stuff for webjars?
-  lazy val requireJs = new RequireJS()
+  lazy val requireJs = new RequireJS(webJarsUtil)
   lazy val webjarsRoutes: webjars.Routes = new webjars.Routes(
     errorHandler, requireJs, webJarAssets
   )

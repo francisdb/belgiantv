@@ -8,7 +8,7 @@
         @*<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">*@
         @*<link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">*@
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.ico")">
-        <link rel='stylesheet' href='@webJarsUtil.url("css/bootstrap.min.css")'>
+        @webJarsUtil.locate("css/bootstrap.min.css").css()
 
 
         <link type="text/css" rel="stylesheet" href="@routes.Assets.at("stylesheets/belgiantv.css")">
@@ -35,7 +35,7 @@
         </div> <!-- /container -->
 
         <!-- Placed at the end of the document so the pages load faster -->
-        <script type='text/javascript' src='@webJarsUtil.url("jquery.min.js")'></script>
-        <script type='text/javascript' src='@webJarsUtil.url("bootstrap.min.js")'></script>
+        @webJarsUtil.locate("jquery.min.js").script()
+        @webJarsUtil.locate("bootstrap.min.js").script()
     </body>
 </html>
