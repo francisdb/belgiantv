@@ -40,7 +40,7 @@ class MyComponents(context: Context)
   with AhcWSComponents
   with AssetsComponents{
 
-  lazy val broadcastRepository = new BroadcastRepository(reactiveMongoApi)
+  lazy val broadcastRepository = new BroadcastRepository(reactiveMongoApi, executionContext)
   lazy val movieRepository = new MovieRepository(reactiveMongoApi)
 
   lazy val humoReader = new HumoReader(wsClient)

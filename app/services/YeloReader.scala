@@ -1,10 +1,9 @@
 package services
 
+import java.time.{Instant, LocalDate}
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-import org.joda.time.DateMidnight
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.Interval
 import play.api.libs.json._
 import play.api.Logger
 import play.api.libs.ws.WSClient
@@ -16,6 +15,7 @@ import concurrent.Future
 import play.api.http.Status
 import services.YeloReader.{ScheduleDay, YeloEvent}
 import YeloReader._
+import org.threeten.extra.Interval
 
 object YeloReader{
 
@@ -133,7 +133,7 @@ class YeloReader(ws: WSClient) {
   
   private val logger = Logger("application.yelo")
 
-  def fetchDay(day: DateMidnight, channelFilter: List[String] = List.empty): Future[Seq[YeloEvent]] = {
+  def fetchDay(day: LocalDate, channelFilter: List[String] = List.empty): Future[Seq[YeloEvent]] = {
     fetchChannels().flatMap{ channels =>
       logger.info("selected channels: " + channels.map(_.name).mkString(", "))
       fetchDayData(day, channels)
@@ -161,13 +161,13 @@ class YeloReader(ws: WSClient) {
     }
   }
 
-  private def fetchDayData(day: DateMidnight, channels: Seq[Channel]): Future[Seq[YeloReader.YeloEvent]] = {
-    val dateFormat = DateTimeFormat.forPattern("YYYY-MM-dd")
+  private def fetchDayData(day: LocalDate, channels: Seq[Channel]): Future[Seq[YeloReader.YeloEvent]] = {
+    val dateFormat = DateTimeFormatter.ofPattern("YYYY-MM-dd")
     val baseUrl = s"$pubbaBase/v1/events/schedule-day/outformat/json/lng/en/"
     val orderedChannelIds = channels.map(_.id).sorted
 
     val channelsPart = orderedChannelIds.map(c => s"channel/$c/").mkString("")
-    val dayPart = s"day/${dateFormat.print(day)}/"
+    val dayPart = s"day/${dateFormat.format(day)}/"
     val platformPart = "platform/web/"
     val url = baseUrl + channelsPart + dayPart + platformPart
     logger.info(s"Fetching $url")
@@ -198,7 +198,7 @@ class YeloReader(ws: WSClient) {
         .map(_.name)
         .getOrElse("UNKNOWN")
       schedule.broadcast.map{ broadcast =>
-        val interval = new Interval(broadcast.starttime * 1000, broadcast.endtime * 1000)
+        val interval = Interval.of(Instant.ofEpochSecond(broadcast.starttime), Instant.ofEpochSecond(broadcast.endtime))
         val url = "https://www.yeloplay.be" + broadcast.mapurl
         YeloEvent(
           broadcast.eventid,

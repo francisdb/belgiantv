@@ -1,8 +1,14 @@
 package models.helper
 
-import org.joda.time.format.DateTimeFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 import scala.util.Try
+import TmdbMovie._
+
+object TmdbMovie{
+  private final val fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+}
 
 case class TmdbMovie(
     
@@ -44,8 +50,8 @@ case class TmdbMovie(
 
   def getYear = {
     released.flatMap { rel =>
-      val fmt = DateTimeFormat.forPattern("yyyy-MM-dd")
-      Try(fmt.parseDateTime(rel).getYear).toOption
+
+      Try(LocalDate.parse(rel, fmt).getYear).toOption
     }
   }
     

@@ -1,14 +1,15 @@
 package services
 
+import java.time.format.DateTimeFormatter
+import java.time.{Instant, LocalDate, LocalTime}
+
 import global.Globals
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import akka.actor.Scheduler
-import org.joda.time.{DateMidnight, DateTime, DateTimeZone, LocalTime}
-import org.joda.time.format.DateTimeFormat
 import play.api.Logger
 import play.api.http.Status
 import models.Channel
@@ -16,23 +17,18 @@ import play.api.libs.ws.WSClient
 
 import scala.util.control.NonFatal
 
-object HumoReader{
-
-  final val timezone = DateTimeZone.forID("Europe/Brussels")
-}
-
 class HumoReader(ws: WSClient) {
 
 
   private val logger = Logger("application.humo")
   
-  private val dateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
+  private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
   private val idBetweenSlashesPattern = """/(\d+)/""".r
   private val yearInBracketsPattern = """\(([0-9][0-9][0-9][0-9])\)""".r
 
   private val timePattern = """([0-2][0-9]u[0-5][0-9])""".r
-  private val timeFormat = DateTimeFormat.forPattern("HH'u'mm")
+  private val timeFormat = DateTimeFormatter.ofPattern("HH'u'mm")
 
 
   // channels json
@@ -44,7 +40,7 @@ class HumoReader(ws: WSClient) {
   // https://www.humo.be/api/epg/humosite/schedule/rest/2015-02-08/full
 
   
-  def fetchDayRetryOnGatewayTimeout(day: DateMidnight, channelFilter: List[String] = List())(implicit scheduler:Scheduler):Future[Seq[HumoEvent]] = {
+  def fetchDayRetryOnGatewayTimeout(day: LocalDate, channelFilter: List[String] = List())(implicit scheduler:Scheduler):Future[Seq[HumoEvent]] = {
     // TODO better would be to actually use a delay between the retries, we could also use a throttled WS
     val dayData = fetchDay(day, channelFilter)
     dayData.recoverWith{
@@ -54,14 +50,14 @@ class HumoReader(ws: WSClient) {
     }
   }
 
-  def fetchDay(day: DateMidnight, channelFilter: List[String] = List()):Future[Seq[HumoEvent]] = {
+  def fetchDay(day: LocalDate, channelFilter: List[String] = List()):Future[Seq[HumoEvent]] = {
     val futures = urlsForDay(day)
       .map( url => fetchPage(url, day, channelFilter))
 
     Future.sequence(futures).map(_.flatten)
   }
 
-  def fetchPage(url: String, day: DateMidnight, channelFilter: List[String] = List()):Future[Seq[HumoEvent]] = {
+  def fetchPage(url: String, day: LocalDate, channelFilter: List[String] = List()):Future[Seq[HumoEvent]] = {
     logger.info("Fetching " + url)
     ws.url(url).get().flatMap{ response =>
       response.status match {
@@ -82,15 +78,15 @@ class HumoReader(ws: WSClient) {
 
   case class GatewayTimeoutException(msg: String) extends RuntimeException(msg)
   
-  private def urlsForDay(day: DateMidnight) = {
-    val dayFormatted = dateFormat.print(day)
+  private def urlsForDay(day: LocalDate) = {
+    val dayFormatted = dateFormat.format(day)
     Seq(
       s"https://www.humo.be/api/epg/humosite/schedule/main/$dayFormatted/full",
       s"https://www.humo.be/api/epg/humosite/schedule/rest/$dayFormatted/full"
     )
   }
   
-  private def parseDay(day: DateMidnight, body: JsValue): List[HumoEvent] = {
+  private def parseDay(day: LocalDate, body: JsValue): List[HumoEvent] = {
     import HumoProtocol._
     Json.fromJson[HumoSchedule](body)(scheduleFormat) match {
       case JsSuccess(schedule:HumoSchedule, _) =>
@@ -101,7 +97,7 @@ class HumoReader(ws: WSClient) {
 
   }
 
-  private def toEvents(humoSchedule: HumoProtocol.HumoSchedule, day: DateMidnight): List[HumoEvent] = {
+  private def toEvents(humoSchedule: HumoProtocol.HumoSchedule, day: LocalDate): List[HumoEvent] = {
 
     humoSchedule.broadcasters.flatMap{ broadcaster =>
       broadcaster.events.filter(_.isMovie) map { event =>
@@ -129,7 +125,7 @@ object HumoProtocol {
 
   case class HumoEvent(id: Long, url: String, event_id: String, starttime: Long, endtime: Long, labels: Option[Seq[String]], program: HumoProgram) {
     val isMovie = labels.exists(_.contains("film"))
-    lazy val startLocalTime = new DateTime(starttime * 1000).withZone(HumoReader.timezone).toLocalTime
+    lazy val startLocalTime = Instant.ofEpochSecond(starttime).atZone(Globals.timezone).toLocalTime
   }
 
   case class HumoProgram(
@@ -156,19 +152,20 @@ object HumoProtocol {
 case class HumoEvent(
     id:String,
     url:String,
-    day: DateMidnight, 
+    day: LocalDate,
     channel: String,
     time: LocalTime,
     title: String,
     year: Option[Int]){
   
-  def toDateTime = {
+  def toDateTime: Instant = {
+    // artificial check, we say 6:00 starts the day
+    val dayStart = LocalTime.of(6,0)
     try{
-      // artificial check, we say 6:00 starts the day
-      if(time.isBefore(LocalTime.parse("6:00"))){
-        time.toDateTime(day.plusDays(1).withZoneRetainFields(Globals.timezone))
+      if(time.isBefore(LocalTime.of(6,0))){
+        time.atDate(day.plusDays(1)).atZone(Globals.timezone).toInstant
       }else{
-        time.toDateTime(day.withZoneRetainFields(Globals.timezone))
+        time.atDate(day).atZone(Globals.timezone).toInstant
       }
     }catch{
       case NonFatal(ex) =>

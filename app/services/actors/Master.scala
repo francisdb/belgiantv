@@ -1,14 +1,17 @@
 package services.actors
 
+import java.time.LocalDate
+
 import _root_.akka.actor.{Actor, ActorLogging, Props}
 import akka.routing.RoundRobinPool
 import play.api.Logger
-import org.joda.time.DateMidnight
 import models.{BroadcastRepository, MovieRepository}
 import services._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import akka.event.LoggingReceive
+
+import _root_.global.Globals
 
 object Master{
   def props(
@@ -60,7 +63,7 @@ class Master(
   def receive: Receive = LoggingReceive {
     case Start =>
       Logger.info("[" + this + "] - Received [start] from " + sender)
-      val today = new DateMidnight()
+      val today = LocalDate.now(Globals.timezone)
       for(day <- 0 until 7){
         belgianTvRef ! FetchHumo(today.plusDays(day))
       }

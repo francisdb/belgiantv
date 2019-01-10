@@ -5,7 +5,6 @@ import java.time.LocalDate
 import models.Channel
 import play.api.Logger
 import _root_.akka.actor.{Actor, Props}
-import org.joda.time.DateTimeZone
 
 import scala.util.Failure
 import scala.util.Success
@@ -28,17 +27,7 @@ object BelgianTvActor{
     tmdbApiService: TmdbApiService,
     tomatoesApiService: TomatoesApiService) =
 
-    Props(
-      classOf[BelgianTvActor],
-      broadcastRepository,
-      movieRepository,
-      humoReader,
-      yeloReader,
-      belgacomReader,
-      imdbApiService,
-      tmdbApiService,
-      tomatoesApiService
-    )
+    Props(new BelgianTvActor(broadcastRepository, movieRepository, humoReader, yeloReader, belgacomReader, imdbApiService, tmdbApiService, tomatoesApiService))
 }
 
 class BelgianTvActor(
@@ -173,7 +162,10 @@ class BelgianTvActor(
           // println(movies.groupBy{_.channel}.map{_._1})
           msg.events.foreach { broadcast =>
             if (broadcast.yeloUrl.isEmpty) {
-              val found = movies.find(yeloMovie => Channel.unify(yeloMovie.channel).toLowerCase == broadcast.channel.toLowerCase && yeloMovie.startDateTime.withZone(DateTimeZone.UTC) == broadcast.datetime.withZone(DateTimeZone.UTC))
+              val found = movies.find(yeloMovie =>
+                Channel.unify(yeloMovie.channel).toLowerCase == broadcast.channel.toLowerCase
+                  && yeloMovie.startDateTime.toEpochMilli == broadcast.datetime.toEpochMilli
+              )
               found.map { event =>
                 broadcastRepository.setYelo(broadcast, event.id.toString, event.url)
               }.getOrElse {
@@ -186,7 +178,7 @@ class BelgianTvActor(
     case msg: FetchBelgacom =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
 
-      belgacomReader.searchMovies(LocalDate.parse(msg.day.toLocalDate.toString)).onComplete{
+      belgacomReader.searchMovies(msg.day).onComplete{
         case Failure(e) =>
           logger.error("Failed to read belgacom day: " + e.getMessage, e)
         case Success(movies) =>
@@ -194,7 +186,7 @@ class BelgianTvActor(
             if (broadcast.belgacomUrl.isEmpty) {
               val found = movies.find{ belgacomMovie =>
                 Channel.unify(belgacomMovie.channel.name).toLowerCase == broadcast.channel.toLowerCase &&
-                  belgacomMovie.program.toDateTime.toEpochMilli == broadcast.datetime.withZone(DateTimeZone.UTC).getMillis
+                  belgacomMovie.program.toDateTime.toEpochMilli == broadcast.datetime.toEpochMilli
               }
               found.map { event =>
                 broadcastRepository.setBelgacom(broadcast, event.program.programReferenceNumber, event.program.detailUrl)

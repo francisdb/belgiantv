@@ -2,8 +2,6 @@ package services.actors
 
 import akka.actor.{Props, Actor}
 import play.api.Logger
-import org.joda.time.DateMidnight
-import models.Broadcast
 import services.TomatoesApiService
 
 import scala.concurrent.ExecutionContext.Implicits.global

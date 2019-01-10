@@ -27,7 +27,7 @@ class ReactiveMongoTest extends Specification{
       val q = dbFuture.flatMap { db =>
         val broadcastCollection = db[BSONCollection]("broadcasts")
         broadcastCollection
-          .find(BSONDocument())
+          .find(BSONDocument(), None)
           .cursor[Broadcast]()
           .collect[List](1, Cursor.FailOnError[List[Broadcast]]())
       }

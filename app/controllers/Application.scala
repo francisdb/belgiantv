@@ -1,15 +1,17 @@
 package controllers
 
+import java.time.{Duration, Instant}
+
 import _root_.models.helper.BroadcastInfo
 import akka.actor.ActorSystem
 import models.{Broadcast, BroadcastRepository, Movie, MovieRepository}
-import org.joda.time.{DateMidnight, DateTime, Interval}
+import org.threeten.extra.Interval
 import org.webjars.play.WebJarsUtil
 import play.api.Logger
 import play.api.mvc._
 import services._
 import services.actors.{Master, Start, StartTomatoes}
-import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
+import play.modules.reactivemongo.{ReactiveMongoApi, ReactiveMongoComponents}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -53,10 +55,11 @@ class Application(
   def index = Action.async{ implicit request =>
 
     // anything that has started more than an hour ago is not interesting
-    val start = new DateTime().minusHours(1)
+    val now = Instant.now()
+    val start = now.minus(Duration.ofHours(1))
     // for seven days in the future (midnight)
-    val end = new DateMidnight().plusDays(7)
-    val interval = new Interval(start, end)
+    val end = now.plus(Duration.ofDays(7))
+    val interval = Interval.of(start, end)// new Interval(start, end)
 
     for{
       broadcasts <- broadcastRepository.findByInterval(interval)

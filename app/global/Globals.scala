@@ -1,8 +1,8 @@
 package global
 
-import org.joda.time.DateTimeZone
+import java.time.ZoneId
 
 object Globals {
 
-  val timezone = DateTimeZone.forID("Europe/Brussels")
+  val timezone = ZoneId.of("Europe/Brussels")
 }

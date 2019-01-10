@@ -1,19 +1,22 @@
 package models
 
+import java.time.Instant
+
 import models.Broadcast._
-import org.joda.time.{DateTime, Interval}
+import org.threeten.extra.Interval
 import play.api.Logger
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoSupport {
+class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionContext: ExecutionContext) extends MongoSupport {
   // TODO inject MongoSupport to get rid of the mailer dependency?
 
-  import play.api.libs.concurrent.Execution.Implicits.defaultContext
+  // TODO create specific executioncontext for mongo
+  private implicit val ec: ExecutionContext = executionContext
 
   private lazy val dbFuture = reactiveMongoApi.connection.database(dbName, herokuMLabFailover)
   private lazy val broadcastCollectionFuture = dbFuture.map(_.collection[BSONCollection]("broadcasts"))
@@ -24,13 +27,14 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
 
   // TODO make all these properly anync
 
-  def create(broadcast: Broadcast) = {
+  def create(broadcast: Broadcast): Broadcast = {
     val id = BSONObjectID.generate
     val withId = broadcast.copy(id = Some(id))
     implicit val writer = Broadcast.BroadcastBSONWriter
     broadcastCollectionFuture.flatMap{ broadcastCollection =>
       broadcastCollection.insert(withId)(writer, scala.concurrent.ExecutionContext.Implicits.global)
-    }.onComplete(le => mongoLogger(le, "saved broadcast " + withId + " with id " + id))
+    }.onComplete(le =>
+      mongoLogger(le, "saved broadcast " + withId + " with id " + id))
     withId
   }
 
@@ -50,10 +54,10 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
 
     broadcastCollection.find(BSONDocument(
         "datetime" -> BSONDocument(
-          "$gt" -> BSONLong(interval.getStart.getMillis)
+          "$gt" -> BSONLong(interval.getStart.toEpochMilli)
         ),
         "datetime" -> BSONDocument(
-          "$lt" ->  BSONLong(interval.getEnd.getMillis)
+          "$lt" ->  BSONLong(interval.getEnd.toEpochMilli)
         )
       ))
       .sort(BSONDocument(
@@ -90,20 +94,20 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
     //      .sort(Json.obj("datetime" -> 1)).cursor[Broadcast].toList
   }
 
-  def findByDateTimeAndChannel(datetime: DateTime, channel: String): Future[Option[Broadcast]] = broadcastCollectionFuture.flatMap{ broadcastCollection =>
+  def findByDateTimeAndChannel(datetime: Instant, channel: String): Future[Option[Broadcast]] = broadcastCollectionFuture.flatMap{ broadcastCollection =>
     //    broadcastCollectionJson.find(Json.obj(
     //      "datetime" -> datetime.getMillis,
     //      "channel" -> channel
     //    )).cursor[Broadcast].headOption
 
     broadcastCollection.find(BSONDocument(
-        "datetime" -> BSONLong(datetime.getMillis),
+        "datetime" -> BSONLong(datetime.toEpochMilli),
         "channel" -> BSONString(channel)))
       .cursor[Broadcast]()
       .headOption
   }
 
-  def setYelo(b:Broadcast, yeloId:String, yeloUrl:Option[String]) = {
+  def setYelo(b:Broadcast, yeloId:String, yeloUrl:Option[String]): Unit = {
     broadcastCollectionFuture.flatMap{ broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> b.id),
@@ -117,7 +121,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
     }.onComplete(le => mongoLogger(le, s"updated yelo for $b"))
   }
 
-  def setBelgacom(b:Broadcast, belgacomId:String, belgacomUrl:String) = {
+  def setBelgacom(b:Broadcast, belgacomId:String, belgacomUrl:String): Unit = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> b.id),
@@ -131,7 +135,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
     }.onComplete(le => mongoLogger(le, s"updated belgacom for $b"))
   }
 
-  def setImdb(b:Broadcast, imdbId:String) = {
+  def setImdb(b:Broadcast, imdbId:String): Unit = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> b.id),
@@ -144,7 +148,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
     }.onComplete(le => mongoLogger(le, s"updated imdb for $b"))
   }
 
-  def setTomatoes(broadcastId:BSONObjectID, tomatoesId:String, tomatoesRating:Option[String]) = {
+  def setTomatoes(broadcastId:BSONObjectID, tomatoesId:String, tomatoesRating:Option[String]): Unit = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> broadcastId),
@@ -158,7 +162,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
     }.onComplete(le => mongoLogger(le, s"updated tomatoes for $broadcastId"))
   }
 
-  def setTmdb(b:Broadcast, tmdbId:String, tmdbRating: Option[String]) = {
+  def setTmdb(b:Broadcast, tmdbId:String, tmdbRating: Option[String]): Unit = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> b.id),
@@ -172,7 +176,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi) extends MongoS
     }.onComplete(le => mongoLogger(le, s"updated tmdb for $b"))
   }
 
-  def setTmdbImg(b:Broadcast, tmdbImg:String) = {
+  def setTmdbImg(b:Broadcast, tmdbImg:String): Unit = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> b.id),

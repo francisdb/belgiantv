@@ -33,6 +33,7 @@ libraryDependencies ++= Seq(
   "org.webjars" %% "webjars-play" % "2.6.3",
   "org.webjars" % "bootstrap" % "3.3.5",
   "org.webjars" % "jquery" % "2.1.4",
+  "org.threeten" % "threeten-extra" % "1.4",
 
   "io.sentry" % "sentry-logback" % "1.7.16",
 

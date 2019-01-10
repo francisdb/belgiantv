@@ -1,17 +1,18 @@
 package models
 
+import java.time.Instant
+import java.time.format.DateTimeFormatter
+
 import global.Globals
-
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
-
 import reactivemongo.bson._
+
+import Broadcast._
 
 case class Broadcast(
   id: Option[BSONObjectID],
   name: String,
   channel: String,
-  datetime: DateTime,
+  datetime: Instant,
   year: Option[Int] = None,
   humoId: Option[String] = None,
   humoUrl: Option[String] = None,
@@ -28,8 +29,7 @@ case class Broadcast(
 ){
 
   def humanDate() = {
-    val format = DateTimeFormat.forPattern("dd MMM HH:mm")
-    format.print(datetime.withZone(Globals.timezone))
+    format.format(datetime.atZone(Globals.timezone))
   }
 
   def imdbUrl = imdbId.map("http://www.imdb.com/title/%s".format(_))
@@ -42,6 +42,8 @@ case class Broadcast(
 
 object Broadcast{
 
+  private final val format = DateTimeFormatter.ofPattern("dd MMM HH:mm")
+
 // TODO use this
   //implicit val broadcastFormat = Json.format[Broadcast]
 
@@ -51,7 +53,7 @@ object Broadcast{
         doc.getAs[BSONObjectID]("_id"),
         doc.getAs[String]("name").get,
         doc.getAs[String]("channel").get,
-        doc.getAs[BSONLong]("datetime").map(dt => new DateTime(dt.value)).get,
+        doc.getAs[BSONLong]("datetime").map(dt => Instant.ofEpochMilli(dt.value)).get,
         doc.getAs[BSONInteger]("year").map(y => y.value),
         doc.getAs[String]("humoId"),
         doc.getAs[String]("humoUrl"),
@@ -76,7 +78,7 @@ object Broadcast{
         "name" -> BSONString(broadcast.name),
         "channel" -> BSONString(broadcast.channel),
         //"datetime" -> movie.datetime.map(dt => BSONDateTime(dt.getMillis)),
-        "datetime" -> BSONLong(broadcast.datetime.getMillis),
+        "datetime" -> BSONLong(broadcast.datetime.toEpochMilli),
         "year" -> broadcast.year.map(BSONInteger),
         "humoId" -> broadcast.humoId.map(BSONString),
         "humoUrl" -> broadcast.humoUrl.map(BSONString),

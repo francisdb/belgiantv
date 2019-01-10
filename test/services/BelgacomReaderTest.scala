@@ -4,7 +4,6 @@ package services
 import java.time.LocalDate
 
 import helper.WithWsClient
-import org.joda.time.DateMidnight
 import org.specs2.mutable._
 
 import scala.concurrent._
