@@ -1,12 +1,12 @@
-package services
+package services.tmdb
 
+import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.WSClient
-import play.api.Logger
-import models.helper._
+import services.PlayUtil
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import concurrent.Future
+import scala.concurrent.Future
 
 object TmdbProtocol{
   implicit val tmdbImageReads = Json.reads[TmdbImage]

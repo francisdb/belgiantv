@@ -5,6 +5,7 @@ import java.time.LocalDate
 
 import helper.WithWsClient
 import org.specs2.mutable._
+import services.proximus.BelgacomReader
 
 import scala.concurrent._
 import scala.concurrent.duration._

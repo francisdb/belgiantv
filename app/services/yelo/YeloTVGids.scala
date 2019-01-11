@@ -1,4 +1,4 @@
-package models.helper
+package services.yelo
 
 import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
 

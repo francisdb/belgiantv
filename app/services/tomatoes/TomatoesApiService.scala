@@ -1,15 +1,17 @@
-package services
-import play.api.libs.ws.WSClient
-import play.api.Logger
-import models.helper.{TomatoesMovie, TomatoesSearch}
+package services.tomatoes
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.Logger
 import play.api.libs.json.Json
+import play.api.libs.ws.WSClient
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-class TomatoesApiService(tomatoesConfig: TomatoesConfig, ws: WSClient){
+import TomatoesReaders._
+
+class TomatoesApiService(tomatoesConfig: TomatoesConfig, ws: WSClient) {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   def find(title:String, year:Option[Int] = None): Future[Option[TomatoesMovie]] = {
     val url = "http://api.rottentomatoes.com/api/public/v1.0/movies.json"
@@ -30,8 +32,6 @@ class TomatoesApiService(tomatoesConfig: TomatoesConfig, ws: WSClient){
         Logger.warn(response.body)
         None
       } else {
-
-        import models.helper.TomatoesReaders._
         val search = Json.fromJson[TomatoesSearch](json)
         search.fold(
           invalid => {
@@ -59,7 +59,7 @@ class TomatoesApiService(tomatoesConfig: TomatoesConfig, ws: WSClient){
 //    //http://api.rottentomatoes.com/api/public/v1.0/movies/13863.json
 //  }
 
-  private def yearMatchIfExists(year: Option[Int], movies: List[models.helper.TomatoesMovie]) = {
+  private def yearMatchIfExists(year: Option[Int], movies: List[TomatoesMovie]) = {
     year.map { y =>
       movies.find(m => m.year.getOrElse(Int.MinValue) == y).orElse(movies.headOption)
     } getOrElse {

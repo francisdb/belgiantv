@@ -1,4 +1,4 @@
-package models.helper
+package services.tmdb
 
 case class TmdbMovieSearch(
   backdrop_path: Option[String],

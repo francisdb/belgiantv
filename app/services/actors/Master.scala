@@ -11,6 +11,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import akka.event.LoggingReceive
 import _root_.global.Globals
 import akka.stream.Materializer
+import services.omdb.OmdbApiService
+import services.proximus.BelgacomReader
+import services.tmdb.TmdbApiService
+import services.tomatoes.{TomatoesApiService, TomatoesConfig}
+import services.yelo.YeloReader
 
 object Master{
   def props(

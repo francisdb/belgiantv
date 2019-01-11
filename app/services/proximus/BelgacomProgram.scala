@@ -1,4 +1,4 @@
-package models.helper
+package services.proximus
 
 import java.time.Instant
 

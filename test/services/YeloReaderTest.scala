@@ -9,6 +9,7 @@ import org.specs2.mutable._
 import scala.concurrent._
 import scala.concurrent.duration._
 import models.Channel
+import services.yelo.YeloReader
 
 class YeloReaderTest extends Specification with WithWsClient {
 

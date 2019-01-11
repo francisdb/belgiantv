@@ -6,6 +6,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import helper.{ConfigSpec, WithWsClient}
 import play.api.{Configuration, Environment}
+import services.tomatoes.{TomatoesApiService, TomatoesConfig}
 
 class TomatoesTest extends Specification with ConfigSpec with WithWsClient {
 

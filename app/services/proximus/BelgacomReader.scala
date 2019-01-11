@@ -1,20 +1,20 @@
-package services
+package services.proximus
 
 import java.time.{LocalDate, ZoneId}
 import java.util.Locale
 
 import models.Channel
+import models.helper._
+import org.slf4j.LoggerFactory
 import play.api.Logger
+import play.api.http.Status
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.WSClient
-import models.helper._
+import services.proximus.BelgacomReader._
 
-import concurrent.Future
 import scala.collection.immutable.Seq
 import scala.concurrent.ExecutionContext.Implicits.global
-import play.api.http.Status
-import BelgacomReader._
-import org.slf4j.LoggerFactory
+import scala.concurrent.Future
 
 object BelgacomProtocol{
 

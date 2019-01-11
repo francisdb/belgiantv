@@ -14,6 +14,11 @@ import akka.stream.{Materializer, OverflowStrategy}
 import akka.stream.scaladsl.{Sink, Source}
 import models._
 import services._
+import services.omdb.OmdbApiService
+import services.proximus.BelgacomReader
+import services.tmdb.TmdbApiService
+import services.tomatoes.{TomatoesApiService, TomatoesConfig}
+import services.yelo.YeloReader
 
 object BelgianTvActor{
   def props(

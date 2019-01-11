@@ -5,6 +5,7 @@ import org.specs2.mutable._
 import scala.concurrent._
 import scala.concurrent.duration._
 import helper.{ConfigSpec, WithWsClient}
+import services.tmdb.TmdbApiService
 
 class TmdbTest extends Specification with ConfigSpec with WithWsClient {
 

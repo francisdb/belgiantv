@@ -13,6 +13,11 @@ import play.api.mvc._
 import services._
 import services.actors.{Master, Start, StartTomatoes}
 import play.modules.reactivemongo.{ReactiveMongoApi, ReactiveMongoComponents}
+import services.omdb.OmdbApiService
+import services.proximus.BelgacomReader
+import services.tmdb.TmdbApiService
+import services.tomatoes.{TomatoesApiService, TomatoesConfig}
+import services.yelo.YeloReader
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -1,21 +1,19 @@
-package services
+package services.yelo
 
-import java.time.{Instant, LocalDate}
 import java.time.format.DateTimeFormatter
+import java.time.{Instant, LocalDate}
 import java.util.Locale
 
-import play.api.libs.json._
+import models.Channel
+import org.threeten.extra.Interval
 import play.api.Logger
+import play.api.http.Status
+import play.api.libs.json._
 import play.api.libs.ws.WSClient
+import services.yelo.YeloReader._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import models.Channel
-
-import concurrent.Future
-import play.api.http.Status
-import services.YeloReader.{ScheduleDay, YeloEvent}
-import YeloReader._
-import org.threeten.extra.Interval
+import scala.concurrent.Future
 
 object YeloReader{
 

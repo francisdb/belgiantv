@@ -11,6 +11,11 @@ import services._
 import play.api.libs.ws.ahc.AhcWSComponents
 import controllers.AssetsComponents
 import play.api.{ApplicationLoader, LoggerConfigurator}
+import services.omdb.OmdbApiService
+import services.proximus.BelgacomReader
+import services.tmdb.TmdbApiService
+import services.tomatoes.{TomatoesApiService, TomatoesConfig}
+import services.yelo.YeloReader
 
 class TvApplicationLoader extends ApplicationLoader {
   def load(context: Context) = {

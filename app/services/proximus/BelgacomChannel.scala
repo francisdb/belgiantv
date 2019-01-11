@@ -1,4 +1,4 @@
-package models.helper
+package services.proximus
 
 case class BelgacomChannelListing(
   count: Int,

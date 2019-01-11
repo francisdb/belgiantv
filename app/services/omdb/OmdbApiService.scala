@@ -1,11 +1,10 @@
-package services
+package services.omdb
 
-import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.Logger
-import models.helper.ImdbApiMovie
+import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.WSClient
+import services.PlayUtil
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
@@ -18,6 +17,9 @@ object OmdbApiService {
 }
 
 class OmdbApiService(ws: WSClient){
+
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   private val logger = Logger("application.omdb")
 

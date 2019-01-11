@@ -1,11 +1,11 @@
 package services.actors
 
-import akka.actor.{Props, Actor}
+import akka.actor.{Actor, Props}
 import play.api.Logger
-import services.TomatoesApiService
+import services.tomatoes.TomatoesApiService
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 object TomatoesActor{
   def props(tomatoesApiService: TomatoesApiService) = Props(new TomatoesActor(tomatoesApiService))

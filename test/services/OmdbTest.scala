@@ -2,6 +2,7 @@ package services
 
 import org.specs2.mutable._
 import helper.{ConfigSpec, WithWsClient}
+import services.omdb.OmdbApiService
 
 import scala.concurrent._
 import scala.concurrent.duration._

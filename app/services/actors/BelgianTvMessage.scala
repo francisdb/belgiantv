@@ -2,9 +2,9 @@ package services.actors
 import java.time.LocalDate
 
 import models.Broadcast
-import models.helper.TomatoesMovie
 import reactivemongo.bson.BSONObjectID
 import services.HumoEvent
+import services.tomatoes.TomatoesMovie
 
 import scala.util.Try
 
@@ -26,7 +26,7 @@ case class LinkTomatoes(broadcast:Broadcast) extends BelgianTvMessage
 
 // TODO how do I avoid sending the broadcastId?
 case class FetchTomatoes(title:String, year: Option[Int], broadcastId: BSONObjectID) extends BelgianTvMessage
-case class FetchTomatoesResult(tomatoesMovie:TomatoesMovie, broadcastId: BSONObjectID) extends BelgianTvMessage
+case class FetchTomatoesResult(tomatoesMovie: TomatoesMovie, broadcastId: BSONObjectID) extends BelgianTvMessage
 
 case class FetchHumo(day:LocalDate) extends BelgianTvMessage
 case class FetchHumoResult(day:LocalDate, events:Try[Seq[HumoEvent]]) extends BelgianTvMessage

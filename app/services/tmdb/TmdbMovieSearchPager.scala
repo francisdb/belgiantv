@@ -1,4 +1,4 @@
-package models.helper
+package services.tmdb
 
 case class TmdbMovieSearchPager(
 	total_pages:Int,

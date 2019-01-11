@@ -1,7 +1,8 @@
-package services
+package services.tomatoes
 
-import TomatoesConfig._
 import play.api.Configuration
+import services.PlayUtil
+import services.tomatoes.TomatoesConfig._
 
 object TomatoesConfig{
   final val configKey = "tomatoes.apiKey"

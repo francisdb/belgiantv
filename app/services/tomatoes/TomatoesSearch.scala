@@ -1,8 +1,8 @@
-package models.helper
+package services.tomatoes
 
 import play.api.libs.json._
 
-object TomatoesReaders{
+private[tomatoes] object TomatoesReaders{
   implicit val idsReads = Json.reads[TomatoesAlternateIds]
   implicit val ratingsReads = Json.reads[TomatoesRatings]
   //implicit val movieReads = Json.reads[TomatoesMovie]

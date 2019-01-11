@@ -1,10 +1,11 @@
-package models.helper
+package services.tmdb
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+import services.tmdb.TmdbMovie._
+
 import scala.util.Try
-import TmdbMovie._
 
 object TmdbMovie{
   private final val fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd")
