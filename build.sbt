@@ -29,7 +29,6 @@ libraryDependencies ++= Seq(
   "commons-lang" % "commons-lang" % "2.6",
   "org.reactivemongo" %% "reactivemongo" % reactiveMongoVersion,
   "org.reactivemongo" %% "play2-reactivemongo" % reactiveMongoPluginVersion,
-  "com.typesafe.akka" %% "akka-contrib" % akkaVersion,
   "org.webjars" %% "webjars-play" % "2.6.3",
   "org.webjars" % "bootstrap" % "3.3.5",
   "org.webjars" % "jquery" % "2.1.4",

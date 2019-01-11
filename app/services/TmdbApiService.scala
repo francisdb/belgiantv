@@ -42,8 +42,8 @@ class TmdbApiService(ws: WSClient){
 		
 		logger.info(url)
 		val response = ws.url(url)
-		  .withHeaders("Accept" -> "application/json")
-		  .withQueryString(qs2:_*).get()
+		  .addHttpHeaders("Accept" -> "application/json")
+		  .addQueryStringParameters(qs2:_*).get()
 		  
 		response.flatMap{ request =>
 		  logger.info(url + " " + request.status)

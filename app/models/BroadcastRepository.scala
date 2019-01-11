@@ -59,7 +59,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
         "datetime" -> BSONDocument(
           "$lt" ->  BSONLong(interval.getEnd.toEpochMilli)
         )
-      ))
+      ), Option.empty[Broadcast])
       .sort(BSONDocument(
         "datetime" -> BSONInteger(1))
       )
@@ -81,7 +81,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
         "tomatoesId" -> BSONDocument(
           "$exists" -> BSONBoolean(value=false)
         )
-      ))
+      ), Option.empty[Broadcast])
       .sort(BSONDocument("datetime" -> BSONInteger(1)))
       .cursor[Broadcast]()
       .collect[List](1000, Cursor.FailOnError[List[Broadcast]]())
@@ -102,7 +102,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
 
     broadcastCollection.find(BSONDocument(
         "datetime" -> BSONLong(datetime.toEpochMilli),
-        "channel" -> BSONString(channel)))
+        "channel" -> BSONString(channel)), Option.empty[Broadcast])
       .cursor[Broadcast]()
       .headOption
   }

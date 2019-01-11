@@ -19,9 +19,9 @@ import org.threeten.extra.Interval
 
 object YeloReader{
 
-  val pubbaBase = "https://www.yeloplay.be/api/pubba"
+  private val pubbaBase = "https://www.yeloplay.be/api/pubba"
 
-  val headers = Seq(
+  private val headers = Seq(
     "Referer" -> "https://www.yeloplay.be/tv-gids"
   )
 
@@ -105,13 +105,13 @@ object YeloReader{
     lazy val startDateTime = interval.getStart
   }
 
-  implicit val channelFormat = Json.format[Channel]
-  implicit val channelsFormat = Json.format[Channels]
+  private implicit val channelFormat = Json.format[Channel]
+  private implicit val channelsFormat = Json.format[Channels]
 
-  implicit val broadcastFormat = Json.format[Broadcast]
-  implicit val scheduleFormat = Json.format[Schedule]
-  implicit val epgFormat = Json.format[Epg]
-  implicit val scheduleDayForamt = Json.format[ScheduleDay]
+  private implicit val broadcastFormat = Json.format[Broadcast]
+  private implicit val scheduleFormat = Json.format[Schedule]
+  private implicit val epgFormat = Json.format[Epg]
+  private implicit val scheduleDayForamt = Json.format[ScheduleDay]
 }
 
 //
@@ -172,7 +172,7 @@ class YeloReader(ws: WSClient) {
     val url = baseUrl + channelsPart + dayPart + platformPart
     logger.info(s"Fetching $url")
 
-    ws.url(url).withHeaders(headers:_*).get().map { response =>
+    ws.url(url).addHttpHeaders(headers:_*).get().map { response =>
       if(response.status != Status.OK){
         throw new RuntimeException(s"Got ${response.status} while fetching $url -> ${response.body}")
       }
@@ -186,7 +186,7 @@ class YeloReader(ws: WSClient) {
     }
   }
 
-  def createFilter(channelFilter: List[String]): (YeloReader.YeloEvent) => Boolean = { result =>
+  def createFilter(channelFilter: List[String]): YeloEvent => Boolean = { result =>
     val unifiedChannel = Channel.unify(result.channel).toLowerCase
     channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(unifiedChannel)
   }

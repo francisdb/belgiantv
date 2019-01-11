@@ -41,7 +41,7 @@ class MyComponents(context: Context)
   with AssetsComponents{
 
   lazy val broadcastRepository = new BroadcastRepository(reactiveMongoApi, executionContext)
-  lazy val movieRepository = new MovieRepository(reactiveMongoApi)
+  lazy val movieRepository = new MovieRepository(reactiveMongoApi, executionContext)
 
   lazy val humoReader = new HumoReader(wsClient)
   lazy val yeloReader = new YeloReader(wsClient)

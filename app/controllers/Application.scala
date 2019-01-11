@@ -4,6 +4,7 @@ import java.time.{Duration, Instant}
 
 import _root_.models.helper.BroadcastInfo
 import akka.actor.ActorSystem
+import akka.stream.Materializer
 import models.{Broadcast, BroadcastRepository, Movie, MovieRepository}
 import org.threeten.extra.Interval
 import org.webjars.play.WebJarsUtil
@@ -29,7 +30,7 @@ class Application(
   tmdbApiService: TmdbApiService,
   tomatoesApiService: TomatoesApiService,
   tomatoesConfig: TomatoesConfig
-  )(implicit ec: ExecutionContext) extends AbstractController(components) with ReactiveMongoComponents {
+  )(implicit ec: ExecutionContext, mat: Materializer) extends AbstractController(components) with ReactiveMongoComponents {
 
   implicit val wu: WebJarsUtil = webJarsUtil
 
@@ -46,7 +47,8 @@ class Application(
       imdbApiService,
       tmdbApiService,
       tomatoesApiService,
-      tomatoesConfig
+      tomatoesConfig,
+      mat
     ),
     name = "masterActor"
   )

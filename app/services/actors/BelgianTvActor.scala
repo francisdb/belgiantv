@@ -1,7 +1,5 @@
 package services.actors
 
-import java.time.LocalDate
-
 import models.Channel
 import play.api.Logger
 import _root_.akka.actor.{Actor, Props}
@@ -11,8 +9,9 @@ import scala.util.Success
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration._
-import _root_.akka.contrib.throttle.TimerBasedThrottler
-import _root_.akka.contrib.throttle.Throttler._
+import akka.NotUsed
+import akka.stream.{Materializer, OverflowStrategy}
+import akka.stream.scaladsl.{Sink, Source}
 import models._
 import services._
 
@@ -26,9 +25,23 @@ object BelgianTvActor{
     imdbApiService: OmdbApiService,
     tmdbApiService: TmdbApiService,
     tomatoesApiService: TomatoesApiService,
-    tomatoesConfig: TomatoesConfig) =
+    tomatoesConfig: TomatoesConfig,
+    materializer: Materializer) =
 
-    Props(new BelgianTvActor(broadcastRepository, movieRepository, humoReader, yeloReader, belgacomReader, imdbApiService, tmdbApiService, tomatoesApiService, tomatoesConfig))
+    Props(
+      new BelgianTvActor(
+        broadcastRepository,
+        movieRepository,
+        humoReader,
+        yeloReader,
+        belgacomReader,
+        imdbApiService,
+        tmdbApiService,
+        tomatoesApiService,
+        tomatoesConfig,
+        materializer
+      )
+    )
 }
 
 class BelgianTvActor(
@@ -40,17 +53,32 @@ class BelgianTvActor(
   imdbApiService: OmdbApiService,
   tmdbApiService: TmdbApiService,
   tomatoesApiService: TomatoesApiService,
-  tomatoesConfig: TomatoesConfig) extends Actor with LoggingActor{
+  tomatoesConfig: TomatoesConfig,
+  materializer: Materializer) extends Actor with LoggingActor{
+
+  private implicit val mat: Materializer = materializer
   
   val logger = Logger("application.actor")
 
-  private val tomatoesRef = context.actorOf(TomatoesActor.props(tomatoesApiService), name = "Tomatoes")
-  private val tomatoesThrottler = context.actorOf(Props(new TimerBasedThrottler(2 msgsPer 1.second)), name = "TomatoesThrottler")
-  tomatoesThrottler ! SetTarget(Some(tomatoesRef))
+  private val tomatoesThrottler = {
+    logger.info("Starting tomatoes throttler")
+    val tomatoesRef = context.actorOf(TomatoesActor.props(tomatoesApiService), name = "Tomatoes")
+    Source.actorRef(bufferSize = 1000, OverflowStrategy.fail)
+      .throttle(2, 1.second)
+      .watchTermination()(loggingWatcher("Tomatoes"))
+      .to(Sink.actorRef(tomatoesRef, NotUsed))
+      .run()
+  }
 
-  private val humoRef = context.actorOf(HumoActor.props(humoReader), name = "Humo")
-  private val humoThrottler = context.actorOf(Props(new TimerBasedThrottler(1 msgsPer 5.second)), name = "HumoThrottler")
-  humoThrottler ! SetTarget(Some(humoRef))
+  private val humoThrottler = {
+    logger.info("Starting humo throttler")
+    val humoRef = context.actorOf(HumoActor.props(humoReader), name = "Humo")
+    Source.actorRef(bufferSize = 1000, OverflowStrategy.fail)
+      .throttle(1, 5.seconds)
+      .watchTermination()(loggingWatcher("Humo"))
+      .to(Sink.actorRef(humoRef, NotUsed))
+      .run()
+  }
   
   override def preRestart(reason: Throwable, message: Option[Any]) {
     logger.error(s"Restarting due to [${reason.getMessage}}] when processing [${message.getOrElse("")}]", reason)
@@ -198,6 +226,14 @@ class BelgianTvActor(
             }
           }
       }
+  }
+
+  private def loggingWatcher[M,T](what: String)(m:M, f:Future[T]): M ={
+    f.onComplete{
+      case Success(_) => logger.info(s"$what throttler terminated")
+      case Failure(e) => logger.error(s"$what throttler terminated with error", e)
+    }
+    m
   }
 }
 

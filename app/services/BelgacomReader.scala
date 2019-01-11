@@ -80,14 +80,15 @@ class BelgacomReader(ws: WSClient){
       "language" -> "nl",
       "userId" -> ""
     )
-    ws.url(url).withQueryStringParameters(qs:_*).get().map { response =>
+    val req = ws.url(url).withQueryStringParameters(qs:_*)
+    req.get().map { response =>
       response.status match {
         case Status.OK =>
           import BelgacomProtocol._
           response.json.validate[BelgacomChannelListing] match {
             case JsSuccess(listing, _) => listing
             case JsError(errors) =>
-              throw new RuntimeException(s"Failed to parse $url response to JSON: $errors ${response.body.take(500)}")
+              throw new RuntimeException(s"Failed to parse ${req.uri} response to JSON: $errors ${response.body.take(500)}")
           }
         case otherStatus =>
           throw new RuntimeException(s"Got $otherStatus for $url : ${response.body.take(500)}")
@@ -143,7 +144,8 @@ class BelgacomReader(ws: WSClient){
 
     qs.foreach(println)
 
-    ws.url(url).withQueryStringParameters(qs:_*).get().map{ response =>
+    val req = ws.url(url).withQueryStringParameters(qs:_*)
+    req.get().map{ response =>
       response.status match {
         case Status.OK =>
           import BelgacomProtocol._
@@ -156,7 +158,7 @@ class BelgacomReader(ws: WSClient){
                 programWithChannel
               }.to[Seq]
             case JsError(errors) =>
-              log.error(s"Failed to parse $url response to JSON: $errors ${response.body.take(500)}")
+              log.error(s"Failed to parse ${req.uri} response to JSON: $errors ${response.body.take(500)}")
               Seq.empty
           }
         case other =>

@@ -7,13 +7,13 @@ import reactivemongo.play.json._
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.bson.BSONObjectID
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 
-class MovieRepository(reactiveMongoApi: ReactiveMongoApi) extends MongoSupport {
+class MovieRepository(reactiveMongoApi: ReactiveMongoApi, executionContext: ExecutionContext) extends MongoSupport {
   // TODO inject MongoSupport to get rid of the mailer dependency?
 
-  import play.api.libs.concurrent.Execution.Implicits.defaultContext
+  private implicit val ec: ExecutionContext = executionContext
 
   protected override val logger = Logger("application.db")
 
@@ -23,7 +23,7 @@ class MovieRepository(reactiveMongoApi: ReactiveMongoApi) extends MongoSupport {
   //private lazy val movieCollection:JSONCollection = reactiveMongoApi.db.collection[JSONCollection]("movies")
 
 
-  def create(movie: Movie) = movieCollectionFuture.flatMap{ movieCollection =>
+  def create(movie: Movie): Future[Movie] = movieCollectionFuture.flatMap{ movieCollection =>
     val id = BSONObjectID.generate
     val withId = movie.copy(id = Some(id))
     val insert = movieCollection.insert(withId)
@@ -32,7 +32,7 @@ class MovieRepository(reactiveMongoApi: ReactiveMongoApi) extends MongoSupport {
   }
 
 
-  def find(name:String, year:Option[Int] = None) = movieCollectionFuture.flatMap{ movieCollection =>
+  def find(name:String, year:Option[Int] = None): Future[Option[Movie]] = movieCollectionFuture.flatMap{ movieCollection =>
     year match {
       case None => findByName(name)
       case Some(y) => findByNameAndYear(name, y)
@@ -41,27 +41,31 @@ class MovieRepository(reactiveMongoApi: ReactiveMongoApi) extends MongoSupport {
 
   def findByName(name: String): Future[Option[Movie]] = movieCollectionFuture.flatMap{ movieCollection =>
     movieCollection.find(
-      Json.obj("name" -> name)
+      Json.obj(
+        "name" -> name
+      ),
+      Option.empty[JsObject]
     ).cursor[Movie]().headOption
   }
 
   def findByImdbId(imdbId: String): Future[Option[Movie]] = movieCollectionFuture.flatMap{ movieCollection =>
     movieCollection.find(
-      Json.obj("imdbId" -> imdbId)
+      Json.obj(
+        "imdbId" -> imdbId
+      ),
+      Option.empty[JsObject]
     ).cursor[Movie]().headOption
 
   }
 
   def findByNameAndYear(name: String, year:Int): Future[Option[Movie]] = movieCollectionFuture.flatMap{ movieCollection =>
     movieCollection.find(
-      Json.obj("name" -> name, "year" -> year)
+      Json.obj(
+        "name" -> name,
+        "year" -> year
+      ),
+      Option.empty[JsObject]
     ).cursor[Movie]().headOption
-  }
-
-  private def ratingToDouble(rating:String) = try{
-    rating.toDouble
-  } catch {
-    case e : NumberFormatException => 0.0
   }
 
 }
