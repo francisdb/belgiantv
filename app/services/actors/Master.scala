@@ -22,18 +22,20 @@ object Master{
     belgacomReader: BelgacomReader,
     imdbApiService: OmdbApiService,
     tmdbApiService: TmdbApiService,
-    tomatoesApiService: TomatoesApiService
+    tomatoesApiService: TomatoesApiService,
+    tomatoesConfig: TomatoesConfig
   )
   = Props(
-    classOf[Master],
-    broadcastRepository,
-    movieRepository,
-    humoReader,
-    yeloReader,
-    belgacomReader,
-    imdbApiService,
-    tmdbApiService,
-    tomatoesApiService
+    new Master(
+      broadcastRepository,
+      movieRepository,
+      humoReader,
+      yeloReader,
+      belgacomReader,
+      imdbApiService,
+      tmdbApiService,
+      tomatoesApiService,
+      tomatoesConfig)
   )
 }
 

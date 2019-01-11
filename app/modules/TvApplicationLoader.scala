@@ -3,14 +3,14 @@ package modules
 import controllers.Assets
 import global.{ErrorReportingHttpErrorHandler, LoggingFilter}
 import models.{BroadcastRepository, MovieRepository}
-import org.webjars.play.{RequireJS, WebJarComponents, WebJarsUtil}
+import org.webjars.play.{RequireJS, WebJarComponents}
 import play.api.ApplicationLoader.Context
 import play.api.http.HttpErrorHandler
 import play.modules.reactivemongo._
 import services._
 import play.api.libs.ws.ahc.AhcWSComponents
 import controllers.AssetsComponents
-import play.api.{ApplicationLoader, BuiltInComponents, LoggerConfigurator}
+import play.api.{ApplicationLoader, LoggerConfigurator}
 
 class TvApplicationLoader extends ApplicationLoader {
   def load(context: Context) = {
@@ -63,7 +63,8 @@ class MyComponents(context: Context)
     belgacomReader,
     imdbApiService,
     tmdbApiService,
-    tomatoesApiService
+    tomatoesApiService,
+    tomatoesConfig
   )
 
   override lazy val httpErrorHandler: HttpErrorHandler =

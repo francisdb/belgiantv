@@ -27,7 +27,8 @@ class Application(
   belgacomReader: BelgacomReader,
   imdbApiService: OmdbApiService,
   tmdbApiService: TmdbApiService,
-  tomatoesApiService: TomatoesApiService
+  tomatoesApiService: TomatoesApiService,
+  tomatoesConfig: TomatoesConfig
   )(implicit ec: ExecutionContext) extends AbstractController(components) with ReactiveMongoComponents {
 
   implicit val wu: WebJarsUtil = webJarsUtil
@@ -44,7 +45,8 @@ class Application(
       belgacomReader,
       imdbApiService,
       tmdbApiService,
-      tomatoesApiService
+      tomatoesApiService,
+      tomatoesConfig
     ),
     name = "masterActor"
   )
