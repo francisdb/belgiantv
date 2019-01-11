@@ -48,7 +48,8 @@ class MyComponents(context: Context)
   lazy val belgacomReader = new BelgacomReader(wsClient)
   lazy val imdbApiService = new OmdbApiService(wsClient)
   lazy val tmdbApiService = new TmdbApiService(wsClient)
-  lazy val tomatoesApiService = new TomatoesApiService(wsClient)
+  lazy val tomatoesConfig = new TomatoesConfig(configuration)
+  lazy val tomatoesApiService = new TomatoesApiService(tomatoesConfig, wsClient)
 
   lazy val applicationController = new controllers.Application(
     controllerComponents,

@@ -8,7 +8,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
 
 object TomatoesActor{
-  def props(tomatoesApiService: TomatoesApiService) = Props(classOf[TomatoesActor], tomatoesApiService)
+  def props(tomatoesApiService: TomatoesApiService) = Props(new TomatoesActor(tomatoesApiService))
 }
 
 /**
@@ -29,10 +29,11 @@ class TomatoesActor(tomatoesApiService: TomatoesApiService) extends Actor with L
         case Failure(e) =>
           logger.error("Failed to find tomatoes: " + e.getMessage, e)
         case Success(tomatoesMovie) =>
-          tomatoesMovie.map( m =>
-            senderCopy ! FetchTomatoesResult(m, msg.broadcastId)
-          ).getOrElse{
-            logger.warn("No Tomatoes movie found for %s (%s)".format(msg.title, msg.year))
+          tomatoesMovie match {
+            case Some( m) =>
+              senderCopy ! FetchTomatoesResult(m, msg.broadcastId)
+            case None =>
+              logger.warn("No Tomatoes movie found for %s (%s)".format(msg.title, msg.year))
           }
       }
   }

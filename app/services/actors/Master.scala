@@ -45,7 +45,8 @@ class Master(
   belgacomReader: BelgacomReader,
   imdbApiService: OmdbApiService,
   tmdbApiService: TmdbApiService,
-  tomatoesApiService: TomatoesApiService) extends Actor with LoggingActor with ActorLogging{
+  tomatoesApiService: TomatoesApiService,
+  tomatoesConfig: TomatoesConfig) extends Actor with LoggingActor with ActorLogging{
 
   val belgianTvRef = context
     .actorOf(BelgianTvActor.props(
@@ -56,7 +57,8 @@ class Master(
       belgacomReader,
       imdbApiService,
       tmdbApiService,
-      tomatoesApiService)
+      tomatoesApiService,
+      tomatoesConfig)
     .withRouter(RoundRobinPool(2)), name = "BelgianTV")
 
   // TODO check the LoggingReceive docs and see if we can enable it on heroku
@@ -68,10 +70,12 @@ class Master(
         belgianTvRef ! FetchHumo(today.plusDays(day))
       }
     case StartTomatoes =>
-      for{
-        broadcasts <- broadcastRepository.findMissingTomatoes()
-      }yield{
-        broadcasts.foreach(belgianTvRef ! LinkTomatoes(_))
+      if(tomatoesConfig.isApiEnabled){
+        for{
+          broadcasts <- broadcastRepository.findMissingTomatoes()
+        }yield{
+          broadcasts.foreach(belgianTvRef ! LinkTomatoes(_))
+        }
       }
   }
 }

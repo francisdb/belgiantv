@@ -5,21 +5,22 @@ import org.specs2.mutable._
 import scala.concurrent._
 import scala.concurrent.duration._
 import helper.{ConfigSpec, WithWsClient}
+import play.api.{Configuration, Environment}
 
 class TomatoesTest extends Specification with ConfigSpec with WithWsClient {
 
   // we no longer have access
   skipAll
-
-  private val configProperty = "tomatoes.apikey"
+  private val configuration = Configuration.load(Environment.simple())
+  private val tomatoesConfig = new TomatoesConfig(configuration)
 
   // TODO see if we can read the play config without starting the application
   // skipAllUnless(PlayUtil.configExists("tomatoes.apikey"))
 
   "the search for Pulp Fiction" should {
     "return the correct movie" in {
-      skipIfMissingConfig(configProperty)
-      val tomatoes = new TomatoesApiService(ws)
+      skipIfMissingConfig(TomatoesConfig.configKey)
+      val tomatoes = new TomatoesApiService(tomatoesConfig, ws)
       val movie = Await.result(tomatoes.find("Pulp Fiction"), 30.seconds).get
       movie.title must startWith("Pulp Fiction")
       movie.year.get must beEqualTo(1994)
@@ -29,8 +30,8 @@ class TomatoesTest extends Specification with ConfigSpec with WithWsClient {
   "the search for don 2006" should {
 
     "return the correct movie" in {
-      skipIfMissingConfig(configProperty)
-      val tomatoes = new TomatoesApiService(ws)
+      skipIfMissingConfig(TomatoesConfig.configKey)
+      val tomatoes = new TomatoesApiService(tomatoesConfig, ws)
       val movieOption = Await.result(tomatoes.find("don", Option(2006)), 30.seconds)
       movieOption must beSome
       val movie = movieOption.get
@@ -42,8 +43,8 @@ class TomatoesTest extends Specification with ConfigSpec with WithWsClient {
   "the search for The Beach 2000" should {
 
     "return the correct movie" in {
-      skipIfMissingConfig(configProperty)
-      val tomatoes = new TomatoesApiService(ws)
+      skipIfMissingConfig(TomatoesConfig.configKey)
+      val tomatoes = new TomatoesApiService(tomatoesConfig,ws)
       val movieOption = Await.result(tomatoes.find("The Beach", Option(2000)), 30.seconds)
       movieOption must beSome
       val movie = movieOption.get
@@ -55,8 +56,8 @@ class TomatoesTest extends Specification with ConfigSpec with WithWsClient {
   "the search for Cape Fear 1962" should {
 
     "return the correct movie" in {
-      skipIfMissingConfig(configProperty)
-      val tomatoes = new TomatoesApiService(ws)
+      skipIfMissingConfig(TomatoesConfig.configKey)
+      val tomatoes = new TomatoesApiService(tomatoesConfig, ws)
       val movieOption = Await.result(tomatoes.find("Cape Fear", Option(1962)), 30.seconds)
       movieOption must beSome
       val movie = movieOption.get
@@ -68,8 +69,8 @@ class TomatoesTest extends Specification with ConfigSpec with WithWsClient {
   "the search for This Is England 2006" should {
 
     "return the correct movie" in {
-      skipIfMissingConfig(configProperty)
-      val tomatoes = new TomatoesApiService(ws)
+      skipIfMissingConfig(TomatoesConfig.configKey)
+      val tomatoes = new TomatoesApiService(tomatoesConfig, ws)
       val movieOption = Await.result(tomatoes.find("This Is England", Option(2006)), 30.seconds)
       movieOption must beSome
       val movie = movieOption.get
@@ -81,8 +82,8 @@ class TomatoesTest extends Specification with ConfigSpec with WithWsClient {
   "the search for a movie with the wrong year" should {
 
     "still return the correct movie" in {
-      skipIfMissingConfig(configProperty)
-      val tomatoes = new TomatoesApiService(ws)
+      skipIfMissingConfig(TomatoesConfig.configKey)
+      val tomatoes = new TomatoesApiService(tomatoesConfig, ws)
       val movieOption = Await.result(tomatoes.find("Spring Breakdown", Option(2000)), 30.seconds)
       movieOption must beSome
       val movie = movieOption.get
@@ -94,8 +95,8 @@ class TomatoesTest extends Specification with ConfigSpec with WithWsClient {
   "the search for hafsjkdhfkdjshadslkfhaskf" should {
 
     "return nothing" in {
-      skipIfMissingConfig(configProperty)
-      val tomatoes = new TomatoesApiService(ws)
+      skipIfMissingConfig(TomatoesConfig.configKey)
+      val tomatoes = new TomatoesApiService(tomatoesConfig, ws)
       val movieOption = Await.result(tomatoes.find("hafsjkdhfkdjshadslkfhaskf"), 30 seconds)
       movieOption must beNone
     }

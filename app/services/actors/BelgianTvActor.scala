@@ -25,9 +25,10 @@ object BelgianTvActor{
     belgacomReader: BelgacomReader,
     imdbApiService: OmdbApiService,
     tmdbApiService: TmdbApiService,
-    tomatoesApiService: TomatoesApiService) =
+    tomatoesApiService: TomatoesApiService,
+    tomatoesConfig: TomatoesConfig) =
 
-    Props(new BelgianTvActor(broadcastRepository, movieRepository, humoReader, yeloReader, belgacomReader, imdbApiService, tmdbApiService, tomatoesApiService))
+    Props(new BelgianTvActor(broadcastRepository, movieRepository, humoReader, yeloReader, belgacomReader, imdbApiService, tmdbApiService, tomatoesApiService, tomatoesConfig))
 }
 
 class BelgianTvActor(
@@ -38,16 +39,17 @@ class BelgianTvActor(
   belgacomReader: BelgacomReader,
   imdbApiService: OmdbApiService,
   tmdbApiService: TmdbApiService,
-  tomatoesApiService: TomatoesApiService) extends Actor with LoggingActor{
+  tomatoesApiService: TomatoesApiService,
+  tomatoesConfig: TomatoesConfig) extends Actor with LoggingActor{
   
   val logger = Logger("application.actor")
 
-  val tomatoesRef = context.actorOf(TomatoesActor.props(tomatoesApiService), name = "Tomatoes")
-  val tomatoesThrottler = context.actorOf(Props(new TimerBasedThrottler(2 msgsPer 1.second)), name = "TomatoesThrottler")
+  private val tomatoesRef = context.actorOf(TomatoesActor.props(tomatoesApiService), name = "Tomatoes")
+  private val tomatoesThrottler = context.actorOf(Props(new TimerBasedThrottler(2 msgsPer 1.second)), name = "TomatoesThrottler")
   tomatoesThrottler ! SetTarget(Some(tomatoesRef))
 
-  val humoRef = context.actorOf(HumoActor.props(humoReader), name = "Humo")
-  val humoThrottler = context.actorOf(Props(new TimerBasedThrottler(1 msgsPer 5.second)), name = "HumoThrottler")
+  private val humoRef = context.actorOf(HumoActor.props(humoReader), name = "Humo")
+  private val humoThrottler = context.actorOf(Props(new TimerBasedThrottler(1 msgsPer 5.second)), name = "HumoThrottler")
   humoThrottler ! SetTarget(Some(humoRef))
   
   override def preRestart(reason: Throwable, message: Option[Any]) {
@@ -59,18 +61,16 @@ class BelgianTvActor(
     case msg: LinkTmdb =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
 
-      val tmdbmovie = tmdbApiService.find(msg.broadcast.name, msg.broadcast.year)
-
-      tmdbmovie.map { mOption =>
-        mOption.map{ m =>
+      val tmdbMovie = tmdbApiService.find(msg.broadcast.name, msg.broadcast.year)
+      tmdbMovie.onComplete{
+        case Success(Some(m)) =>
           broadcastRepository.setTmdb(msg.broadcast, m.id.toString, m.fixedAverage.map(_.toString))
-           m.posterUrl.map(broadcastRepository.setTmdbImg(msg.broadcast, _))
-        }.getOrElse{
-        	logger.warn("No TMDb movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
-        	None
-        }
-      }.onFailure{
-        case e: Exception =>
+          m.posterUrl.foreach(
+            broadcastRepository.setTmdbImg(msg.broadcast, _)
+          )
+        case Success(None) =>
+          logger.warn("No TMDb movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
+        case Failure(e) =>
           logger.error(e.getMessage, e)
       }
 
@@ -115,7 +115,7 @@ class BelgianTvActor(
     case msg: FetchHumoResult =>
       msg.events match {
         case Failure(e) =>
-          logger.error("Failed to read humo day: " + e.getMessage, e)
+          logger.error(s"Failed to read humo day: ${e.getMessage}", e)
         case Success(humoEvents) =>
           val broadcasts:Future[Seq[Broadcast]] = Future.traverse(humoEvents){ event =>
             val broadcast = new Broadcast(
@@ -136,7 +136,9 @@ class BelgianTvActor(
                 val saved = broadcastRepository.create(broadcast)
                 self ! LinkImdb(saved)
                 self ! LinkTmdb(saved)
-                self ! LinkTomatoes(saved)
+                if(tomatoesConfig.isApiEnabled) {
+                  self ! LinkTomatoes(saved)
+                }
                 saved
 
             }
@@ -144,7 +146,7 @@ class BelgianTvActor(
 
           broadcasts.onComplete{
             case Failure(e) =>
-              logger.error("Failed to find broadcasts for humo events: " + e.getMessage, e)
+              logger.error(s"Failed to find broadcasts for humo events: ${e.getMessage}", e)
             case Success(foundBroadcast) =>
               self ! FetchYelo(msg.day, foundBroadcast)
               self ! FetchBelgacom(msg.day, foundBroadcast)
@@ -156,7 +158,7 @@ class BelgianTvActor(
 
       yeloReader.fetchDay(msg.day, Channel.channelFilter).onComplete {
         case Failure(e) =>
-          logger.error("Failed to read yelo day: " + msg.day + " - " + e.getMessage, e)
+          logger.error(s"Failed to read yelo day: ${msg.day} - ${e.getMessage}", e)
         case Success(movies) =>
           // all unique channels
           // println(movies.groupBy{_.channel}.map{_._1})

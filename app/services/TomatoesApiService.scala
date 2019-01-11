@@ -9,14 +9,12 @@ import play.api.libs.json.Json
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-class TomatoesApiService(ws: WSClient){
-  
-  private lazy val apikey = PlayUtil.config("tomatoes.apikey")
-  
+class TomatoesApiService(tomatoesConfig: TomatoesConfig, ws: WSClient){
+
   def find(title:String, year:Option[Int] = None): Future[Option[TomatoesMovie]] = {
     val url = "http://api.rottentomatoes.com/api/public/v1.0/movies.json"
     val q = title + year.map(" " + _).getOrElse("")
-    val response = ws.url(url).withQueryString("q" -> q, "apikey" -> apikey).get()
+    val response = ws.url(url).addQueryStringParameters("q" -> q, "apikey" -> tomatoesConfig.apiKey).get()
     response.map { response =>
       val json = try{
         response.json
@@ -57,9 +55,9 @@ class TomatoesApiService(ws: WSClient){
     }
   }
   
-  def getById(id:String) = {
-    //http://api.rottentomatoes.com/api/public/v1.0/movies/13863.json
-  }
+//  def getById(id:String) = {
+//    //http://api.rottentomatoes.com/api/public/v1.0/movies/13863.json
+//  }
 
   private def yearMatchIfExists(year: Option[Int], movies: List[models.helper.TomatoesMovie]) = {
     year.map { y =>
