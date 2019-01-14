@@ -19,21 +19,18 @@ class TomatoesActor(tomatoesApiService: TomatoesApiService) extends Actor with L
   val logger = Logger("application.actor.tomatoes")
 
   override def receive: Receive = {
-    case msg:FetchTomatoes =>
+    case msg@FetchTomatoes(title, year, broadcastId, recipient) =>
       logger.info(s"[$this] - Received [$msg] from $sender")
 
-      // copy the sender as we will reference it in a different thread
-      val senderCopy = sender
-
-      tomatoesApiService.find(msg.title, msg.year).onComplete{
+      tomatoesApiService.find(title, year).onComplete{
         case Failure(e) =>
           logger.error("Failed to find tomatoes: " + e.getMessage, e)
         case Success(tomatoesMovie) =>
           tomatoesMovie match {
             case Some( m) =>
-              senderCopy ! FetchTomatoesResult(m, msg.broadcastId)
+              recipient ! FetchTomatoesResult(m, broadcastId)
             case None =>
-              logger.warn("No Tomatoes movie found for %s (%s)".format(msg.title, msg.year))
+              logger.warn("No Tomatoes movie found for %s (%s)".format(title, year))
           }
       }
   }

@@ -133,7 +133,7 @@ class BelgianTvActor(
 
     case msg: LinkTomatoes =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
-      tomatoesThrottler ! FetchTomatoes(msg.broadcast.name, msg.broadcast.year, msg.broadcast.id.get)
+      tomatoesThrottler ! FetchTomatoes(msg.broadcast.name, msg.broadcast.year, msg.broadcast.id.get, self)
 
     case msg: FetchTomatoesResult =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
@@ -141,9 +141,9 @@ class BelgianTvActor(
       val scoreOpt = Option(mergedScore).filter(_ != 0)
       broadcastRepository.setTomatoes(msg.broadcastId, msg.tomatoesMovie.id.toString, scoreOpt.map(_.toString))
 
-    case msg: FetchHumo =>
+    case msg: FetchDay =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
-      humoThrottler ! msg
+      humoThrottler ! FetchHumo(msg.day, self)
 
     case msg: FetchHumoResult =>
       msg.events match {

@@ -77,7 +77,7 @@ class Master(
       Logger.info(s"[$this] - Received [start] from $sender")
       val today = LocalDate.now(Globals.timezone)
       for(day <- 0 until 7){
-        belgianTvRef ! FetchHumo(today.plusDays(day))
+        belgianTvRef ! FetchDay(today.plusDays(day))
       }
     case StartTomatoes =>
       if(tomatoesConfig.isApiEnabled){
