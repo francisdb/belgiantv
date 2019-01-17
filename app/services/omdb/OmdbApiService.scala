@@ -1,6 +1,7 @@
 package services.omdb
 
 import play.api.Logger
+import play.api.http.Status
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.WSClient
 import services.PlayUtil
@@ -41,25 +42,34 @@ class OmdbApiService(ws: WSClient){
     logger.info("Fetching " + requestExtended)
 
     requestExtended.get().map{ response =>
-      val json = try{
-        response.json
-      }catch{
-        case NonFatal(e) =>
-          sys.error(s"Failed to parse $url response to JSON: ${e.getMessage} ${response.body.take(500)}")
-      }
-      val errorOpt = (json \ "Error").asOpt[String]
-      errorOpt match {
-        case None =>
-          import OmdbProtocol._
-          Json.fromJson[ImdbApiMovie](response.json) match {
-            case JsSuccess(movie, _) => Option(movie)
-            case JsError(errors) => sys.error(errors.toString())
+      response.status match {
+        case Status.OK =>
+          val json = try{
+            response.json
+          }catch{
+            case NonFatal(e) =>
+              sys.error(s"Failed to parse $url response to JSON: ${e.getMessage} ${response.body.take(500)}")
           }
-        case Some(error) =>
-          logger.warn(s"Omdb api internal error for $title $year: $error")
-          // TODO should we also fail the future here?
+          // TODO does this actually still happen now that we have the status code check?
+          val errorOpt = (json \ "Error").asOpt[String]
+          errorOpt match {
+            case None =>
+              import OmdbProtocol._
+              Json.fromJson[ImdbApiMovie](response.json) match {
+                case JsSuccess(movie, _) => Option(movie)
+                case JsError(errors) => sys.error(errors.toString())
+              }
+            case Some(error) =>
+              logger.warn(s"Omdb api internal error for $title $year: $error")
+              // TODO should we also fail the future here?
+              None
+          }
+        case Status.NOT_FOUND =>
           None
+        case otherStatus =>
+          sys.error(s"Got $otherStatus for $url with body: ${response.body.take(500)}")
       }
+
     }
   }
 
