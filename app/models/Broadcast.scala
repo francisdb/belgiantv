@@ -25,7 +25,9 @@ case class Broadcast(
   tomatoesRating: Option[String] = None,
   tmdbId: Option[String] = None,
   tmdbImg: Option[String] = None,
-  tmdbRating: Option[String] = None
+  tmdbRating: Option[String] = None,
+  traktId: Option[Int] = None,
+  traktRating: Option[Double] = None
 ){
 
   def humanDate() = {
@@ -35,6 +37,7 @@ case class Broadcast(
   def imdbUrl = imdbId.map("http://www.imdb.com/title/%s".format(_))
   def tmdbUrl = tmdbId.map("http://www.themoviedb.org/movie/%s".format(_))
   def tomatoesUrl = tomatoesId.map("http://www.rottentomatoes.com/m/%s".format(_))
+  def traktUrl = traktId.map("https://trakt.tv/movies/%s".format(_))
 
   override def toString = name + " " + channel + "@" + datetime
 }
@@ -66,7 +69,9 @@ object Broadcast{
         doc.getAs[String]("tomatoesRating"),
         doc.getAs[String]("tmdbId"),
         doc.getAs[String]("tmdbImg"),
-        doc.getAs[String]("tmdbRating")
+        doc.getAs[String]("tmdbRating"),
+        doc.getAs[Int]("traktId"),
+        doc.getAs[Double]("traktRating")
       )
     }
   }
@@ -91,7 +96,9 @@ object Broadcast{
         "tomatoesRating" -> broadcast.tomatoesRating.map(BSONString),
         "tmdbId" -> broadcast.tmdbId.map(BSONString),
         "tmdbImg" -> broadcast.tmdbImg.map(BSONString),
-        "tmdbRating" -> broadcast.tmdbRating.map(BSONString)
+        "tmdbRating" -> broadcast.tmdbRating.map(BSONString),
+        "traktId" -> broadcast.traktId.map(BSONInteger),
+        "traktRating" -> broadcast.traktRating.map(BSONDouble),
       )
     }
   }

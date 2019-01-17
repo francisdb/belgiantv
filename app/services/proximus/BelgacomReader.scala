@@ -142,7 +142,7 @@ class BelgacomReader(ws: WSClient){
       "unixDate" -> date.atStartOfDay(timeZone).toEpochSecond.toString
     )
 
-    qs.foreach(println)
+    //qs.foreach(println)
 
     val req = ws.url(url).withQueryStringParameters(qs:_*)
     req.get().map{ response =>
@@ -154,7 +154,7 @@ class BelgacomReader(ws: WSClient){
               listing.values.flatten.filter(_.category == BelgacomProgram.CATEGORY_MOVIES).map{ program =>
                 val channel = channels.find(_.id == program.channelId).get
                 val programWithChannel = BelgacomProgramWithChannel(program, channel)
-                println(programWithChannel)
+                //println(programWithChannel)
                 programWithChannel
               }.to[Seq]
             case JsError(errors) =>

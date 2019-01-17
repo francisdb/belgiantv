@@ -15,6 +15,7 @@ import services.omdb.OmdbApiService
 import services.proximus.BelgacomReader
 import services.tmdb.TmdbApiService
 import services.tomatoes.{TomatoesApiService, TomatoesConfig}
+import services.trakt.{TraktApiService, TraktConfig}
 import services.yelo.YeloReader
 
 object Master{
@@ -28,6 +29,8 @@ object Master{
     tmdbApiService: TmdbApiService,
     tomatoesApiService: TomatoesApiService,
     tomatoesConfig: TomatoesConfig,
+    traktApiService: TraktApiService,
+    traktConfig: TraktConfig,
     materializer: Materializer
   )
   = Props(
@@ -41,6 +44,8 @@ object Master{
       tmdbApiService,
       tomatoesApiService,
       tomatoesConfig,
+      traktApiService,
+      traktConfig,
       materializer)
   )
 }
@@ -55,6 +60,8 @@ class Master(
   tmdbApiService: TmdbApiService,
   tomatoesApiService: TomatoesApiService,
   tomatoesConfig: TomatoesConfig,
+  traktApiService: TraktApiService,
+  traktConfig: TraktConfig,
   materializer: Materializer) extends Actor with LoggingActor with ActorLogging{
 
   val belgianTvRef = context
@@ -68,6 +75,8 @@ class Master(
       tmdbApiService,
       tomatoesApiService,
       tomatoesConfig,
+      traktApiService,
+      traktConfig,
       materializer)
     /*.withRouter(RoundRobinPool(2))*/, name = "BelgianTV")
 

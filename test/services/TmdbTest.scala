@@ -58,7 +58,7 @@ class TmdbTest extends Specification with ConfigSpec with WithWsClient {
       skipIfMissingConfig(configProperty)
       val tmdb = new TmdbApiService(ws)
       val movie = Await.result(tmdb.find("L'immortel", Option.apply(2010)), 30.seconds).get
-      println(movie)
+      //println(movie)
       // international title
       movie.title must startWith("22 Bullets")
       movie.release_date must startWith("2010")

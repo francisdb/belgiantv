@@ -57,7 +57,7 @@ class TraktApiService(traktConfig: TraktConfig, ws: WSClient) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private val logger = Logger("application.omdb")
+  private val logger = Logger("application.trakt")
 
   private val base = "https://api.trakt.tv"
 
@@ -93,7 +93,7 @@ class TraktApiService(traktConfig: TraktConfig, ws: WSClient) {
     }
   }
 
-  def movieRating(traktId: Int): Future[Option[Float]] = {
+  def movieRating(traktId: Int): Future[Option[Double]] = {
 
     val request = ws
       .url(base + s"/movies/$traktId/ratings")
@@ -104,7 +104,7 @@ class TraktApiService(traktConfig: TraktConfig, ws: WSClient) {
     request.get().map { response =>
       response.status match {
         case Status.OK =>
-          Some((response.json \ "rating").as[Float])
+          Some((response.json \ "rating").as[Double])
         case other =>
           logger.error(s"Got $other for ${request.uri} - ${response.body}")
           None

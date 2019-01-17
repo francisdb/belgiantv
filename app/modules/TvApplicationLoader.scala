@@ -15,6 +15,7 @@ import services.omdb.OmdbApiService
 import services.proximus.BelgacomReader
 import services.tmdb.TmdbApiService
 import services.tomatoes.{TomatoesApiService, TomatoesConfig}
+import services.trakt.{TraktApiService, TraktConfig}
 import services.yelo.YeloReader
 
 class TvApplicationLoader extends ApplicationLoader {
@@ -55,6 +56,8 @@ class MyComponents(context: Context)
   lazy val tmdbApiService = new TmdbApiService(wsClient)
   lazy val tomatoesConfig = new TomatoesConfig(configuration)
   lazy val tomatoesApiService = new TomatoesApiService(tomatoesConfig, wsClient)
+  lazy val traktConfig = new TraktConfig(configuration)
+  lazy val traktApiService = new TraktApiService(traktConfig, wsClient)
 
   lazy val applicationController = new controllers.Application(
     controllerComponents,
@@ -69,7 +72,9 @@ class MyComponents(context: Context)
     imdbApiService,
     tmdbApiService,
     tomatoesApiService,
-    tomatoesConfig
+    tomatoesConfig,
+    traktApiService,
+    traktConfig
   )
 
   override lazy val httpErrorHandler: HttpErrorHandler =

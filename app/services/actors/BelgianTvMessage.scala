@@ -27,6 +27,8 @@ case class LinkTmdb(broadcast:Broadcast) extends BelgianTvMessage
 
 case class LinkTomatoes(broadcast:Broadcast) extends BelgianTvMessage
 
+case class LinkTrakt(broadcast:Broadcast) extends BelgianTvMessage
+
 // TODO how do I avoid sending the broadcastId?
 case class FetchTomatoes(title:String, year: Option[Int], broadcastId: BSONObjectID, recipient: ActorRef) extends BelgianTvMessage
 case class FetchTomatoesResult(tomatoesMovie: TomatoesMovie, broadcastId: BSONObjectID) extends BelgianTvMessage

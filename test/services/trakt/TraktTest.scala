@@ -39,8 +39,9 @@ class TraktTest extends Specification with WithWsClient with ConfigSpec{
 
     "return movie rating" in {
       skipIfMissingConfig(configPropertyId)
-      val movieOpt = Await.result(trakt.movieRating(554), 30.seconds)
-      movieOpt must beSome
+      val ratingOpt = Await.result(trakt.movieRating(554), 30.seconds)
+      //println(ratingOpt)
+      ratingOpt must beSome
     }
   }
 

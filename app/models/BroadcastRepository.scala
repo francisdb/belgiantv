@@ -13,7 +13,6 @@ import reactivemongo.bson._
 import scala.concurrent.{ExecutionContext, Future}
 
 class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionContext: ExecutionContext) extends MongoSupport {
-  // TODO inject MongoSupport to get rid of the mailer dependency?
 
   // TODO create specific executioncontext for mongo
   private implicit val ec: ExecutionContext = executionContext
@@ -135,8 +134,8 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
     }.onComplete(le => mongoLogger(le, s"updated belgacom for $b"))
   }
 
-  def setImdb(b:Broadcast, imdbId:String): Unit = {
-    broadcastCollectionFuture.flatMap { broadcastCollection =>
+  def setImdb(b:Broadcast, imdbId:String): Future[Unit] = {
+    val res = broadcastCollectionFuture.flatMap { broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> b.id),
         BSONDocument(
@@ -145,7 +144,9 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
           )
         )
       )
-    }.onComplete(le => mongoLogger(le, s"updated imdb for $b"))
+    }
+    res.onComplete(le => mongoLogger(le, s"updated imdb for $b"))
+    res.map(_ => ())
   }
 
   def setTomatoes(broadcastId:BSONObjectID, tomatoesId:String, tomatoesRating:Option[String]): Unit = {
@@ -183,6 +184,20 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
         BSONDocument(
           "$set" -> BSONDocument(
             "tmdbImg" -> tmdbImg
+          )
+        )
+      )
+    }.onComplete(le => mongoLogger(le, s"updated tmdb img for $b"))
+  }
+
+  def setTrakt(b:Broadcast, traktId: Int, traktRating: Option[Double]): Unit = {
+    broadcastCollectionFuture.flatMap { broadcastCollection =>
+      broadcastCollection.update(
+        BSONDocument("_id" -> b.id),
+        BSONDocument(
+          "$set" -> BSONDocument(
+            "traktId" -> traktId,
+            "traktRating" -> traktRating
           )
         )
       )

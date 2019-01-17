@@ -7,7 +7,6 @@ import _root_.akka.actor.{Actor, Props}
 import scala.util.Failure
 import scala.util.Success
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent._
 import scala.concurrent.duration._
 import akka.NotUsed
 import akka.stream.{Materializer, OverflowStrategy}
@@ -18,7 +17,10 @@ import services.omdb.OmdbApiService
 import services.proximus.BelgacomReader
 import services.tmdb.TmdbApiService
 import services.tomatoes.{TomatoesApiService, TomatoesConfig}
+import services.trakt.{TraktApiService, TraktConfig}
 import services.yelo.YeloReader
+
+import scala.concurrent.Future
 
 object BelgianTvActor{
   def props(
@@ -31,6 +33,8 @@ object BelgianTvActor{
     tmdbApiService: TmdbApiService,
     tomatoesApiService: TomatoesApiService,
     tomatoesConfig: TomatoesConfig,
+    traktApiService: TraktApiService,
+    traktConfig: TraktConfig,
     materializer: Materializer) =
 
     Props(
@@ -44,6 +48,8 @@ object BelgianTvActor{
         tmdbApiService,
         tomatoesApiService,
         tomatoesConfig,
+        traktApiService,
+        traktConfig,
         materializer
       )
     )
@@ -55,14 +61,16 @@ class BelgianTvActor(
   humoReader: HumoReader,
   yeloReader: YeloReader,
   belgacomReader: BelgacomReader,
-  imdbApiService: OmdbApiService,
+  omdbApiService: OmdbApiService,
   tmdbApiService: TmdbApiService,
   tomatoesApiService: TomatoesApiService,
   tomatoesConfig: TomatoesConfig,
+  traktApiService: TraktApiService,
+  traktConfig: TraktConfig,
   materializer: Materializer) extends Actor with LoggingActor{
 
   private implicit val mat: Materializer = materializer
-  
+
   val logger = Logger("application.actor")
 
   private val tomatoesThrottler = {
@@ -84,7 +92,7 @@ class BelgianTvActor(
       .to(Sink.actorRef(humoRef, NotUsed))
       .run()
   }
-  
+
   override def preRestart(reason: Throwable, message: Option[Any]) {
     logger.error(s"Restarting due to [${reason.getMessage}}] when processing [${message.getOrElse("")}]", reason)
   }
@@ -109,31 +117,49 @@ class BelgianTvActor(
 
     case msg: LinkImdb =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
-
-      movieRepository.find(msg.broadcast.name, msg.broadcast.year).onComplete{
-        case Failure(e) =>
-          logger.error("Failed to find imdb: " + e.getMessage, e)
-        case Success(movie) =>
-          val movie2 = movie.orElse {
-            // FIXME this is blocking
-            val movie = Await.result(imdbApiService.find(msg.broadcast.name, msg.broadcast.year), 30.seconds)
-
-            movie.map { m =>
+      val res = movieRepository.find(msg.broadcast.name, msg.broadcast.year).flatMap {
+        case Some(m) => Future.successful(Some(m))
+        case None =>
+          omdbApiService.find(msg.broadcast.name, msg.broadcast.year).flatMap {
+            case Some(m) =>
               val dbMovie = new Movie(None, m.title, m.id, m.rating, m.year, m.poster)
-              val created = Await.result(movieRepository.create(dbMovie), 30.seconds)
-              created
-            }
+              movieRepository.create(dbMovie).map(Some.apply)
+            case None =>
+              Future.successful(None)
           }
+      }.flatMap{
+        case Some(m) =>
+          broadcastRepository.setImdb(msg.broadcast, m.imdbId)
+        case None =>
+          logger.warn(s"No IMDB movie found for ${msg.broadcast.name} (${msg.broadcast.year})")
+          Future.unit
+      }
+      res.failed.foreach{ e =>
+          logger.error(s"Error during imdb lookup: ${e.getMessage}", e)
 
-          movie2 match{
-            case Some(m) => broadcastRepository.setImdb(msg.broadcast, m.imdbId)
-            case None    => logger.warn("No IMDB movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
-          }
       }
 
     case msg: LinkTomatoes =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
       tomatoesThrottler ! FetchTomatoes(msg.broadcast.name, msg.broadcast.year, msg.broadcast.id.get, self)
+
+    case msg: LinkTrakt =>
+      logger.info(s"[$this] - Received [$msg] from ${sender()}")
+      val result = traktApiService.find(msg.broadcast.name, msg.broadcast.year).flatMap {
+        case Some(tm) =>
+          traktApiService.movieRating(tm.ids.trakt).map{ rating =>
+            broadcastRepository.setTrakt(msg.broadcast, tm.ids.trakt, rating)
+          }
+        case None =>
+          logger.warn("No Trakt movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
+          Future.unit
+      }
+      result.onComplete{
+        case Failure(e) =>
+          logger.error(s"Failed to link trakt for ${msg.broadcast.name} ${msg.broadcast.year}: ${e.getMessage}", e)
+        case Success(_) =>
+          logger.debug(s"Linked trakt for ${msg.broadcast.name} ${msg.broadcast.year}")
+      }
 
     case msg: FetchTomatoesResult =>
       logger.info(s"[$this] - Received [$msg] from ${sender()}")
@@ -150,7 +176,7 @@ class BelgianTvActor(
         case Failure(e) =>
           logger.error(s"Failed to read humo day: ${e.getMessage}", e)
         case Success(humoEvents) =>
-          val broadcasts:Future[Seq[Broadcast]] = Future.traverse(humoEvents){ event =>
+          val broadcasts: Future[Seq[Broadcast]] = Future.traverse(humoEvents){ event =>
             val broadcast = new Broadcast(
               None,
               event.title,
@@ -171,6 +197,9 @@ class BelgianTvActor(
                 self ! LinkTmdb(saved)
                 if(tomatoesConfig.isApiEnabled) {
                   self ! LinkTomatoes(saved)
+                }
+                if(traktConfig.isApiEnabled){
+                  self ! LinkTrakt(saved)
                 }
                 saved
 

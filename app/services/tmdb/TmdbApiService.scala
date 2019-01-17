@@ -34,7 +34,7 @@ class TmdbApiService(ws: WSClient){
 	
 	
 	def search(title:String, year:Option[Int] = None): Future[List[TmdbMovieSearch]] = {
-	  println(apiKey)
+	  //println(apiKey)
 		val url = BASE + "/search/movie"
 		
 		val qs = List("api_key"-> apiKey, "query" -> title)

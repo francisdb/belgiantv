@@ -17,6 +17,7 @@ import services.omdb.OmdbApiService
 import services.proximus.BelgacomReader
 import services.tmdb.TmdbApiService
 import services.tomatoes.{TomatoesApiService, TomatoesConfig}
+import services.trakt.{TraktApiService, TraktConfig}
 import services.yelo.YeloReader
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,7 +35,9 @@ class Application(
   imdbApiService: OmdbApiService,
   tmdbApiService: TmdbApiService,
   tomatoesApiService: TomatoesApiService,
-  tomatoesConfig: TomatoesConfig
+  tomatoesConfig: TomatoesConfig,
+  traktApiService: TraktApiService,
+  traktConfig: TraktConfig,
   )(implicit ec: ExecutionContext, mat: Materializer) extends AbstractController(components) with ReactiveMongoComponents {
 
   implicit val wu: WebJarsUtil = webJarsUtil
@@ -53,6 +56,8 @@ class Application(
       tmdbApiService,
       tomatoesApiService,
       tomatoesConfig,
+      traktApiService,
+      traktConfig,
       mat
     ),
     name = "masterActor"

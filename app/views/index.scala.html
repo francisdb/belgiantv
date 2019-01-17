@@ -63,6 +63,9 @@
                 @info.broadcast.tomatoesUrl.map{ u =>
                     <li><a href="@u">Tomatoes @{info.broadcast.tomatoesRating.map(_ + "%")}</a></li>
                 }
+                    @info.broadcast.traktUrl.map{ u =>
+                        <li><a href="@u">Trakt @{info.broadcast.traktRating.map(rating => f"$rating%1.1f").getOrElse("")}</a></li>
+                    }
                 </ul>
                 <p>
 

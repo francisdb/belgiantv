@@ -34,7 +34,7 @@ class ReactiveMongoTest extends Specification{
 
       val result = Await.result(q, 20.seconds)
 
-      result.foreach(println)
+      //result.foreach(println)
 
       connection.askClose()(10.seconds)
       driver.close()
