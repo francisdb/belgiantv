@@ -47,4 +47,13 @@ class OmdbTest extends Specification with WithWsClient with ConfigSpec{
 
     }
   }
+
+  "the search for The Little Rascals Save the Day Some(2013)" should {
+    "return nothing" in {
+      skipIfMissingConfig(configProperty)
+      val omdb = new OmdbApiService(ws)
+      val movieOption = Await.result(omdb.find("Little Rascals Save the Day", Some(2013)), 30.seconds)
+      movieOption must beNone
+    }
+  }
 }

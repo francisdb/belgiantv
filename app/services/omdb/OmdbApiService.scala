@@ -52,6 +52,7 @@ class OmdbApiService(ws: WSClient){
           }
           // TODO does this actually still happen now that we have the status code check?
           val errorOpt = (json \ "Error").asOpt[String]
+          println(Json.prettyPrint(json))
           errorOpt match {
             case None =>
               import OmdbProtocol._
@@ -59,8 +60,13 @@ class OmdbApiService(ws: WSClient){
                 case JsSuccess(movie, _) => Option(movie)
                 case JsError(errors) => sys.error(errors.toString())
               }
+            case Some("Movie not found!") =>
+              // meh, they should just send a 404
+              // https://www.patreon.com/posts/24121334
+              logger.warn(s"No OMDb match for $title $year")
+              None
             case Some(error) =>
-              logger.warn(s"Omdb api internal error for $title $year: $error")
+              logger.warn(s"OMDb api internal error for $title $year: $error")
               // TODO should we also fail the future here?
               None
           }
