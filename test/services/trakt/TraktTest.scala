@@ -45,4 +45,42 @@ class TraktTest extends Specification with WithWsClient with ConfigSpec{
     }
   }
 
+  "the search for Taxi Driver 1976"  should  {
+    "yield the correct result" in {
+      skipIfMissingConfig(configPropertyId)
+      val movieOpt = Await.result(trakt.find("Taxi Driver", Some(1976)), 30.seconds)
+      movieOpt must beSome(
+        TraktMovie(
+          "Taxi Driver",
+          Some(1976),
+          TraktIds(
+            trakt = 72,
+            slug = "taxi-driver-1976",
+            imdb = Some("tt0075314"),
+            tmdb = 103
+          )
+        )
+      )
+    }
+  }
+
+  "the search for Taxi 2004"  should  {
+    "yield the correct result" in {
+      skipIfMissingConfig(configPropertyId)
+      val movieOpt = Await.result(trakt.find("Taxi", Some(2004)), 30.seconds)
+      movieOpt must beSome(
+        TraktMovie(
+          "Taxi",
+          Some(2004),
+          TraktIds(
+            trakt = 6182,
+            slug = "taxi-2004",
+            imdb = Some("tt0316732"),
+            tmdb = 11045
+          )
+        )
+      )
+    }
+  }
+
 }

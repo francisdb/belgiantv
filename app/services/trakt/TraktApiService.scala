@@ -69,7 +69,11 @@ class TraktApiService(traktConfig: TraktConfig, ws: WSClient) {
 
     logger.info(s"Fetching $request")
 
-    request.get().map { response =>
+    val requestWithYear = year.fold(request){ year =>
+      request.addQueryStringParameters("years" -> year.toString)
+    }
+
+    requestWithYear.get().map { response =>
 
       response.status match {
         case Status.OK =>
@@ -78,10 +82,7 @@ class TraktApiService(traktConfig: TraktConfig, ws: WSClient) {
               val movies = list
                 .filter(_.score > 1)
                 .map(_.movie)
-              val withYearFilter = year.fold(movies){ year =>
-                movies.filter(_.year.contains(year))
-              }
-              withYearFilter.headOption
+              movies.headOption
             case JsError(e) =>
               throw new IllegalStateException(e.toString())
           }

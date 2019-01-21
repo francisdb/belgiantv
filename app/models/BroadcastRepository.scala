@@ -190,13 +190,14 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
     }.onComplete(le => mongoLogger(le, s"updated tmdb img for $b"))
   }
 
-  def setTrakt(b:Broadcast, traktId: Int, traktRating: Option[Double]): Unit = {
+  def setTrakt(b:Broadcast, traktId: Int, traktSlug: String, traktRating: Option[Double]): Unit = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
       broadcastCollection.update(
         BSONDocument("_id" -> b.id),
         BSONDocument(
           "$set" -> BSONDocument(
             "traktId" -> traktId,
+            "traktSlug" -> traktSlug,
             "traktRating" -> traktRating
           )
         )

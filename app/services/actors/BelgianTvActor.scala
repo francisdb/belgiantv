@@ -148,7 +148,7 @@ class BelgianTvActor(
       val result = traktApiService.find(msg.broadcast.name, msg.broadcast.year).flatMap {
         case Some(tm) =>
           traktApiService.movieRating(tm.ids.trakt).map{ rating =>
-            broadcastRepository.setTrakt(msg.broadcast, tm.ids.trakt, rating)
+            broadcastRepository.setTrakt(msg.broadcast, tm.ids.trakt, tm.ids.slug, rating)
           }
         case None =>
           logger.warn("No Trakt movie found for %s (%s)".format(msg.broadcast.name, msg.broadcast.year))
