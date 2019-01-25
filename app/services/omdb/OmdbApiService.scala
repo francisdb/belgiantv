@@ -52,7 +52,6 @@ class OmdbApiService(ws: WSClient){
           }
           // TODO does this actually still happen now that we have the status code check?
           val errorOpt = (json \ "Error").asOpt[String]
-          println(Json.prettyPrint(json))
           errorOpt match {
             case None =>
               import OmdbProtocol._
