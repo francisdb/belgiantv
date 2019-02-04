@@ -17,10 +17,15 @@ import play.api.libs.ws.WSClient
 
 import scala.util.control.NonFatal
 
+import HumoReader._
+
+object HumoReader {
+  val logger = Logger("application.humo")
+}
+
 class HumoReader(ws: WSClient) {
 
 
-  private val logger = Logger("application.humo")
   
   private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
@@ -169,7 +174,7 @@ case class HumoEvent(
       }
     }catch{
       case NonFatal(ex) =>
-        Logger.error(ex.getMessage, ex)
+        logger.error(ex.getMessage, ex)
         throw ex
     }
   }

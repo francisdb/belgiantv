@@ -42,7 +42,9 @@ class Application(
 
   implicit val wu: WebJarsUtil = webJarsUtil
 
-  Logger.info("Scheduling actor trigger")
+  private final val logger = Logger("application")
+
+  logger.info("Scheduling actor trigger")
   // TODO better location for the actor?
   // TODO create an actor module that is enabled in the application.conf
   private val masterActorRef = actorSystem.actorOf(

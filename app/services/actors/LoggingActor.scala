@@ -5,13 +5,15 @@ import play.api.Logger
 
 trait LoggingActor extends Actor{
 
+  private val logger = Logger("application")
+
   override def unhandled(message: Any): Unit = {
-    Logger.warn("[" + this + "] - Received unknown message [" + message + "] from " + sender)
+    logger.warn(s"[$this] - Received unknown message [$message] from $sender")
     super.unhandled(message)
   }
 
   override def postRestart(reason: Throwable) {
-    Logger.error("Actor restarted: " + reason.getMessage, reason)
+    logger.error(s"Actor restarted: ${reason.getMessage}", reason)
     super.postRestart(reason)
   }
 

@@ -78,7 +78,7 @@ class MyComponents(context: Context)
   )
 
   override lazy val httpErrorHandler: HttpErrorHandler =
-    new ErrorReportingHttpErrorHandler(environment, configuration, sourceMapper, Some(router))
+    new ErrorReportingHttpErrorHandler(environment, configuration, devContext.map(_.sourceMapper), Some(router))
 
 
   lazy val loggingFilter = new LoggingFilter()

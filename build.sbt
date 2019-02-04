@@ -29,7 +29,7 @@ libraryDependencies ++= Seq(
   "commons-lang" % "commons-lang" % "2.6",
   "org.reactivemongo" %% "reactivemongo" % reactiveMongoVersion,
   "org.reactivemongo" %% "play2-reactivemongo" % reactiveMongoPluginVersion,
-  "org.webjars" %% "webjars-play" % "2.6.3",
+  "org.webjars" %% "webjars-play" % "2.7.0-RC9",
   "org.webjars" % "bootstrap" % "3.3.5",
   "org.webjars" % "jquery" % "2.1.4",
   "org.threeten" % "threeten-extra" % "1.4",

@@ -64,6 +64,8 @@ class Master(
   traktConfig: TraktConfig,
   materializer: Materializer) extends Actor with LoggingActor with ActorLogging{
 
+  private val logger = Logger("application")
+
   val belgianTvRef = context
     .actorOf(BelgianTvActor.props(
       broadcastRepository,
@@ -83,7 +85,7 @@ class Master(
   // TODO check the LoggingReceive docs and see if we can enable it on heroku
   def receive: Receive = LoggingReceive {
     case Start =>
-      Logger.info(s"[$this] - Received [start] from $sender")
+      logger.info(s"[$this] - Received [start] from $sender")
       val today = LocalDate.now(Globals.timezone)
       for(day <- 0 until 7){
         belgianTvRef ! FetchDay(today.plusDays(day))

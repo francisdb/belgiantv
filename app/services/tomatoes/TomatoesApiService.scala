@@ -11,6 +11,8 @@ import TomatoesReaders._
 
 class TomatoesApiService(tomatoesConfig: TomatoesConfig, ws: WSClient) {
 
+  val logger = Logger("application.tomatoes")
+
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def find(title:String, year:Option[Int] = None): Future[Option[TomatoesMovie]] = {
@@ -28,8 +30,8 @@ class TomatoesApiService(tomatoesConfig: TomatoesConfig, ws: WSClient) {
       }
       val error = (json \ "error").asOpt[String]
       if (error.isDefined) {
-        Logger.warn("Tomatoes api error: " + error.get)
-        Logger.warn(response.body)
+        logger.warn("Tomatoes api error: " + error.get)
+        logger.warn(response.body)
         None
       } else {
         val search = Json.fromJson[TomatoesSearch](json)
