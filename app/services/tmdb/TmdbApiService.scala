@@ -46,20 +46,23 @@ class TmdbApiService(ws: WSClient){
 		  .addQueryStringParameters(qs2:_*).get()
 		  
 		response.flatMap{ request =>
-		  logger.info(url + " " + request.status)
+		  logger.info(s"$url ${request.status}")
 		  request.status match {
-		    case 503 => 
-		      logger.error(request.status + " " + request.statusText + " " + request.body)
-		      Future.successful(List())
-        case 401 =>
-          logger.error(request.status + " " + request.statusText + " " + request.body)
-          Future.successful(List())
-		    case _ =>
+		    case 200 =>
           import TmdbProtocol._
 		      Json.fromJson[TmdbMovieSearchPager](request.json) match {
             case JsSuccess(pager, _) => Future.successful(pager.results)
-            case JsError(errors) => Future.failed(new RuntimeException(errors.toString()))
+            case JsError(errors) => Future.failed(new RuntimeException(errors.toString() + " " + request.body))
           }
+        case 503 =>
+          logger.error(s"${request.status} ${request.statusText} ${request.body}")
+          Future.successful(List())
+        case 401 =>
+          logger.error(s"${request.status} ${request.statusText} ${request.body}")
+          Future.successful(List())
+        case other =>
+          logger.error(s"$other ${request.statusText} ${request.body}")
+          Future.successful(List())
 		  }
 	      
 		}
