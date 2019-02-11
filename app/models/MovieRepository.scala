@@ -26,7 +26,7 @@ class MovieRepository(reactiveMongoApi: ReactiveMongoApi, executionContext: Exec
   def create(movie: Movie): Future[Movie] = movieCollectionFuture.flatMap{ movieCollection =>
     val id = BSONObjectID.generate
     val withId = movie.copy(id = Some(id))
-    val insert = movieCollection.insert(withId)
+    val insert = movieCollection.insert(ordered = false).one(withId)
     insert.onComplete(le => mongoLogger(le, s"saved movie $withId with id $id"))
     insert.map(_ => withId)
   }

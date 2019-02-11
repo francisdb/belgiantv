@@ -14,8 +14,8 @@ javaOptions in test ++= List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI")
 includeFilter in (Assets, LessKeys.less) := "*.less"
 excludeFilter in (Assets, LessKeys.less) := "_*.less"
 
-val reactiveMongoVersion = "0.16.0"
-val reactiveMongoPluginVersion = "0.16.0-play26"
+val reactiveMongoVersion = "0.16.2"
+val reactiveMongoPluginVersion = "0.16.2-play27"
 val akkaVersion = "2.5.19" // TODO update when migrating to newer play
 val specs2Version = "4.3.4"
 

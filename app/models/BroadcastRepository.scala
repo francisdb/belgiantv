@@ -31,7 +31,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
     val withId = broadcast.copy(id = Some(id))
     implicit val writer = Broadcast.BroadcastBSONWriter
     broadcastCollectionFuture.flatMap{ broadcastCollection =>
-      broadcastCollection.insert(withId)(writer, scala.concurrent.ExecutionContext.Implicits.global)
+      broadcastCollection.insert(ordered = false).one(withId)(scala.concurrent.ExecutionContext.Implicits.global, writer)
     }.onComplete(le =>
       mongoLogger(le, "saved broadcast " + withId + " with id " + id))
     withId
@@ -108,7 +108,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
 
   def setYelo(b:Broadcast, yeloId:String, yeloUrl:Option[String]): Unit = {
     broadcastCollectionFuture.flatMap{ broadcastCollection =>
-      broadcastCollection.update(
+      broadcastCollection.update(ordered = false).one(
         BSONDocument("_id" -> b.id),
         BSONDocument(
           "$set" -> BSONDocument(
@@ -122,7 +122,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
 
   def setBelgacom(b:Broadcast, belgacomId:String, belgacomUrl:String): Unit = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
-      broadcastCollection.update(
+      broadcastCollection.update(ordered = false).one(
         BSONDocument("_id" -> b.id),
         BSONDocument(
           "$set" -> BSONDocument(
@@ -136,7 +136,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
 
   def setImdb(b:Broadcast, imdbId:String): Future[Unit] = {
     val res = broadcastCollectionFuture.flatMap { broadcastCollection =>
-      broadcastCollection.update(
+      broadcastCollection.update(ordered = false).one(
         BSONDocument("_id" -> b.id),
         BSONDocument(
           "$set" -> BSONDocument(
@@ -151,7 +151,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
 
   def setTomatoes(broadcastId:BSONObjectID, tomatoesId:String, tomatoesRating:Option[String]): Unit = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
-      broadcastCollection.update(
+      broadcastCollection.update(ordered = false).one(
         BSONDocument("_id" -> broadcastId),
         BSONDocument(
           "$set" -> BSONDocument(
@@ -165,7 +165,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
 
   def setTmdb(b:Broadcast, tmdbId:String, tmdbRating: Option[String]): Unit = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
-      broadcastCollection.update(
+      broadcastCollection.update(ordered = false).one(
         BSONDocument("_id" -> b.id),
         BSONDocument(
           "$set" -> BSONDocument(
@@ -179,7 +179,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
 
   def setTmdbImg(b:Broadcast, tmdbImg:String): Unit = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
-      broadcastCollection.update(
+      broadcastCollection.update(ordered = false).one(
         BSONDocument("_id" -> b.id),
         BSONDocument(
           "$set" -> BSONDocument(
@@ -192,7 +192,7 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
 
   def setTrakt(b:Broadcast, traktId: Int, traktSlug: String, traktRating: Option[Double]): Unit = {
     broadcastCollectionFuture.flatMap { broadcastCollection =>
-      broadcastCollection.update(
+      broadcastCollection.update(ordered = false).one(
         BSONDocument("_id" -> b.id),
         BSONDocument(
           "$set" -> BSONDocument(
