@@ -17,7 +17,8 @@ import scala.concurrent.Future
 
 object YeloReader{
 
-  private val pubbaBase = "https://www.yeloplay.be/api/pubba"
+  private val pubbaBase = "https://pubba.yelo.prd.telenet-ops.be"
+  private val apiBase = "https://api.yeloplay.be/api"
 
   private val headers = Seq(
     "Referer" -> "https://www.yeloplay.be/tv-gids"
@@ -35,6 +36,32 @@ object YeloReader{
     name: String,         // "VTM HD"
     priority: Long,       // 1
     stbuniquename: String // "vtmhd"
+  )
+
+  case class ChannelsResponse(
+    serviceCatalog: ChannelsServiceCatalog
+  )
+
+  case class ChannelsServiceCatalog (
+    tvChannels: Seq[ChannelNew]
+  )
+
+  case class ChannelNew(
+    id: String,             // "207"
+    channelIdentification: ChannelIdentification,
+    channelProperties: ChannelProperties
+  )
+
+  case class ChannelIdentification(
+    channelId: Int, //207
+    stbUniqueName: String, //"vtmhd"
+    name: String, //"VTM HD"
+    url: String, //"vtm-hd"
+    pvrId: String, //"MM0BE"
+  )
+
+  case class ChannelProperties(
+    mainLanguage: String //"nl"
   )
 
   case class ScheduleDay(
@@ -103,13 +130,19 @@ object YeloReader{
     lazy val startDateTime = interval.getStart
   }
 
+  private implicit val channelIdentificationFormat = Json.format[ChannelIdentification]
+  private implicit val channelPropertiesFormat = Json.format[ChannelProperties]
+  private implicit val channelNewFormat = Json.format[ChannelNew]
+  private implicit val channelsServiceCatalogFormat = Json.format[ChannelsServiceCatalog]
+  private implicit val channelsResponseFormat = Json.format[ChannelsResponse]
+
   private implicit val channelFormat = Json.format[Channel]
   private implicit val channelsFormat = Json.format[Channels]
 
   private implicit val broadcastFormat = Json.format[Broadcast]
   private implicit val scheduleFormat = Json.format[Schedule]
   private implicit val epgFormat = Json.format[Epg]
-  private implicit val scheduleDayForamt = Json.format[ScheduleDay]
+  private implicit val scheduleDayFormat = Json.format[ScheduleDay]
 }
 
 //
@@ -138,7 +171,7 @@ class YeloReader(ws: WSClient) {
     }
   }
 
-  private def fetchChannels() = {
+  private def fetchChannels(): Future[Seq[Channel]] = {
     val url = s"$pubbaBase/v3/channels/all/outformat/json/platform/web/"
     ws.url(url).withHttpHeaders(headers:_*).get().map { response =>
       if (response.status != Status.OK) {
@@ -153,6 +186,41 @@ class YeloReader(ws: WSClient) {
           val lowerFilter = Channel.channelFilter.map(_.toLowerCase(Locale.ENGLISH))
           channels.channels.filter{ channel =>
             val unifiedName = models.Channel.unify(channel.name).toLowerCase(Locale.ENGLISH)
+            lowerFilter.contains(unifiedName)
+          }
+      }
+    }
+  }
+
+  // curl 'https://api.yeloplay.be/api/v1/epg/channel/list?platform=Web&postalCode=9250'
+  // -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0'
+  // -H 'Accept: application/json, text/plain, */*'
+  // -H 'Accept-Language: en' --compressed
+  // -H 'Referer: https://www.yeloplay.be/tv-guide'
+  // -H 'X-Yelo-DeviceId: 6124f455-10e5-4be1-904b-fb8cc57bb370'
+  // -H 'Authorization: Bearer xxx'
+  // -H 'Origin: https://www.yeloplay.be'
+  // -H 'DNT: 1'
+  // -H 'Connection: keep-alive'
+  // -H 'Pragma: no-cache'
+  // -H 'Cache-Control: no-cache'
+
+  // TODO we might have to migrate to this version but for now the other api still works
+  private def fetchChannelsNew(): Future[Seq[ChannelNew]] = {
+    val url = s"$apiBase/v1/epg/channel/list"
+    ws.url(url).withHttpHeaders(headers:_*).get().map { response =>
+      if (response.status != Status.OK) {
+        throw new RuntimeException(s"Got ${response.status} while fetching $url -> ${response.body}")
+      }
+      response.json.validate[ChannelsResponse] match {
+        case e:JsError =>
+          val errors = JsError.toFlatForm(e).mkString(", ")
+          throw new RuntimeException(s"Failed to parse reponse for $url to json: ${response.body.take(100)}... $errors"  )
+        case JsSuccess(channels,_) =>
+          logger.debug("all channels: " + channels.serviceCatalog.tvChannels.map(_.channelIdentification.name).mkString(", "))
+          val lowerFilter = Channel.channelFilter.map(_.toLowerCase(Locale.ENGLISH))
+          channels.serviceCatalog.tvChannels.filter{ channel =>
+            val unifiedName = models.Channel.unify(channel.channelIdentification.name).toLowerCase(Locale.ENGLISH)
             lowerFilter.contains(unifiedName)
           }
       }
