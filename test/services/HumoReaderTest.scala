@@ -17,9 +17,9 @@ class HumoReaderTest(implicit ee: ExecutionEnv) extends Specification with WithW
     "return data" in {
       val humo = new HumoReader(ws)
       // if their cache is not warmed up and we get a 504 then we retry after 1 min
-      val size = humo.fetchDay(LocalDate.now(Globals.timezone), Channel.channelFilter).map(_.size)
-      //list.foreach(println)
-      size must be_>(0).awaitFor(2.minutes)
+      val list = humo.fetchDay(LocalDate.now(Globals.timezone), Channel.channelFilter)
+      //list.foreach(_.foreach(println))
+      list.map(_.size) must be_>(0).awaitFor(2.minutes)
     }
   }
   

@@ -67,10 +67,11 @@ class HumoReader(ws: WSClient) {
     ws.url(url).get().flatMap{ response =>
       response.status match {
         case Status.OK =>
-          val dayData = parseDay(day, response.json)
+          val dayData = parseDay(day, response.json).map{ e =>
+            e.copy(channel = Channel.unify(e.channel))
+          }
           val interestingData = dayData.filter { result =>
-            val unifiedChannel = Channel.unify(result.channel).toLowerCase
-            channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(unifiedChannel)
+            channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(result.channel.toLowerCase)
           }
           Future.successful(interestingData)
         case Status.GATEWAY_TIMEOUT =>
