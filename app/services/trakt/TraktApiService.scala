@@ -105,7 +105,7 @@ class TraktApiService(traktConfig: TraktConfig, ws: WSClient) {
     request.get().map { response =>
       response.status match {
         case Status.OK =>
-          Some((response.json \ "rating").as[Double])
+          Some((response.json \ "rating").as[Double]).filter(_ != 0.0)
         case other =>
           logger.error(s"Got $other for ${request.uri} - ${response.body}")
           None
