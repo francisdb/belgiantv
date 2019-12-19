@@ -83,7 +83,7 @@ class TmdbTest extends Specification with ConfigSpec with WithWsClient {
       skipIfMissingConfig(configProperty)
       val tmdb = new TmdbApiService(ws)
       val movieOption = Await.result(tmdb.find("Islander", Some(2018)), 30.seconds)
-      movieOption.map(_.fixedAverage) must beSome(None)
+      movieOption.map(_.fixedAverage) must be equalTo Some(None)
     }
   }
 }

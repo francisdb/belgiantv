@@ -4,7 +4,7 @@ import java.util.Calendar
 import java.util.Date
 
 object TimeUtil {
-	def merge(date:Date, time:Date) {
+	def merge(date:Date, time:Date): Unit = {
 		val hourCal = Calendar.getInstance()
 		hourCal.setTime(time)
 		val cal = Calendar.getInstance()

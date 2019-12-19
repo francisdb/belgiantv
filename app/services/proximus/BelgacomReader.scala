@@ -67,7 +67,7 @@ class BelgacomReader(ws: WSClient){
       val filteredChannels = channels.channels.filter{ channel =>
         val unifiedName = models.Channel.unify(channel.name).toLowerCase(Locale.ENGLISH)
         lowerFilter.contains(unifiedName)
-      }.to[Seq]
+      }
 
       //filteredChannels.foreach(println)
 

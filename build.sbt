@@ -1,6 +1,6 @@
 name := "belgiantv"
 version := "1.0-SNAPSHOT"
-scalaVersion := "2.12.10"
+scalaVersion := "2.13.1"
 
 scalacOptions ++= Seq("-feature")
 // copying jvm parameters for testing:
@@ -14,22 +14,22 @@ javaOptions in test ++= List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI")
 includeFilter in (Assets, LessKeys.less) := "*.less"
 excludeFilter in (Assets, LessKeys.less) := "_*.less"
 
-val reactiveMongoVersion = "0.16.2"
+val reactiveMongoVersion = "0.19.4"
 val reactiveMongoPluginVersion = reactiveMongoVersion + "-play27"
-val akkaVersion = "2.5.26" // TODO update when migrating to newer play
+val akkaVersion = "2.6.1" // TODO update when migrating to newer play
 val specs2Version = "4.8.1"
 
 libraryDependencies ++= Seq(
   // Add your project dependencies here,
   //jdbc,
   ws,
-  "com.typesafe.play" %% "play-json" % "2.7.4",
+  "com.typesafe.play" %% "play-json" % "2.8.0",
   // "com.typesafe.play" %% "play-iteratees" % "2.6.1" // do we need this?
   "org.jsoup" % "jsoup" % "1.12.1",
   //"commons-lang" % "commons-lang" % "2.6",
   "org.reactivemongo" %% "reactivemongo" % reactiveMongoVersion,
   "org.reactivemongo" %% "play2-reactivemongo" % reactiveMongoPluginVersion,
-  "org.webjars" %% "webjars-play" % "2.7.0-RC9",
+  "org.webjars" %% "webjars-play" % "2.8.0",
   "org.webjars" % "bootstrap" % "3.3.5",
   "org.webjars" % "jquery" % "2.1.4",
   "org.threeten" % "threeten-extra" % "1.5.0",

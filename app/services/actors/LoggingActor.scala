@@ -12,7 +12,7 @@ trait LoggingActor extends Actor{
     super.unhandled(message)
   }
 
-  override def postRestart(reason: Throwable) {
+  override def postRestart(reason: Throwable): Unit = {
     logger.error(s"Actor restarted: ${reason.getMessage}", reason)
     super.postRestart(reason)
   }

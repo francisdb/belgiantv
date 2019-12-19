@@ -1,6 +1,7 @@
 package helper
 
 import akka.stream._
+import akka.stream.testkit.NoMaterializer
 import org.specs2.specification.AfterAll
 import play.api.libs.ws.ahc.{AhcWSClient, StandaloneAhcWSClient}
 import play.shaded.ahc.org.asynchttpclient.{DefaultAsyncHttpClient, DefaultAsyncHttpClientConfig}
@@ -17,7 +18,7 @@ trait BaseAfterAll extends AfterAll{
 
 trait WithMaterializer extends BaseAfterAll{
   //implicit val sys = ActorSystem("test")
-  private val actorMaterializer = play.api.test.NoMaterializer// ActorMaterializer()
+  private val actorMaterializer = NoMaterializer// ActorMaterializer()
   implicit val mat: Materializer = actorMaterializer
 
   override def afterAll = {
