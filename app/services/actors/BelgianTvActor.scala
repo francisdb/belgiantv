@@ -253,7 +253,10 @@ class BelgianTvActor(
                   belgacomMovie.program.toDateTime.toEpochMilli == broadcast.datetime.toEpochMilli
               }
               found.map { event =>
-                broadcastRepository.setBelgacom(broadcast, event.program.programReferenceNumber, event.program.detailUrl)
+                val url = event.program.detailUrl.getOrElse(
+                  "https://www.proximus.be/pickx/nl/televisie/tv-gids/" + event.program.trailId
+                )
+                broadcastRepository.setBelgacom(broadcast, event.program.programReferenceNumber, url)
               }.getOrElse {
                 logger.warn("No belgacom match for " + broadcast.channel + " " + broadcast.humanDate + " " + broadcast.name)
               }

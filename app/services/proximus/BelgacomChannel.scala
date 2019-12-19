@@ -1,7 +1,6 @@
 package services.proximus
 
 case class BelgacomChannelListing(
-  count: Int,
   channels: Seq[BelgacomChannel]
 )
 

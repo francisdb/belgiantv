@@ -6,7 +6,7 @@ case class BelgacomProgramWithChannel(
   program: BelgacomProgram,
   channel: BelgacomChannel
 ){
-  override def toString = s"${program.title} ${channel.name}@${program.toDateTime}"
+  override def toString = program.toString
 }
 
 object BelgacomProgram{
@@ -14,6 +14,7 @@ object BelgacomProgram{
 }
 
 case class BelgacomProgram(
+  trailId: String,
   programReferenceNumber: String,
   channelId: String,
   title: String,
@@ -21,9 +22,9 @@ case class BelgacomProgram(
   startTime: Int,
   endTime: Int,
   description: String,
-  shortDescription: String,
+  shortDescription: Option[String],
   category: String,
-  detailUrl: String){
+  detailUrl: Option[String]){
 
 
 //        "trailId": "2017020711357",
@@ -66,6 +67,6 @@ case class BelgacomProgram(
   
   lazy val toDateTime = Instant.ofEpochSecond(startTime)
 
-  override def toString = title + " " + channelId + "@" + toDateTime
+  override def toString = s"$title on $channelId at ${getStart.atZone(BelgacomReader.timeZone)} -> ${getEnd.atZone(BelgacomReader.timeZone)}"
   
 }

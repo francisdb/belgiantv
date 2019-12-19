@@ -23,8 +23,9 @@ class BelgacomReaderTest extends Specification with WithWsClient {
       //	          println(movie)
       //	      }
       val movie = result.head
+//      println(today)
+//      println(movie)
       movie.program.getStart.atZone(BelgacomReader.timeZone).toLocalDate must be equalTo today
-      movie.program.detailUrl must not contain "null"
       movie.program.title must not beEmpty
       //result must not be empty
     }
@@ -41,8 +42,11 @@ class BelgacomReaderTest extends Specification with WithWsClient {
       //	          println(movie)
       //	      }
       val movie = result.head
-      movie.program.getStart.atZone(BelgacomReader.timeZone).toLocalDate must be equalTo tomorrow
-      movie.program.detailUrl must not contain "null"
+//      println(tomorrow)
+//      println(movie)
+      (movie.program.getStart.atZone(BelgacomReader.timeZone).toLocalDate must be equalTo tomorrow) or (
+        movie.program.getEnd.atZone(BelgacomReader.timeZone).toLocalDate must be equalTo tomorrow
+      )
       movie.program.title must not beEmpty
       //result must not be empty
 
