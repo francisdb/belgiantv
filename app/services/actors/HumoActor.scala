@@ -7,11 +7,11 @@ import play.api.Logger
 import services.HumoReader
 import models.Channel
 
-object HumoActor{
+object HumoActor {
   def props(humoReader: HumoReader) = Props(new HumoActor(humoReader))
 }
 
-class HumoActor(humoReader: HumoReader) extends Actor with LoggingActor{
+class HumoActor(humoReader: HumoReader) extends Actor with LoggingActor {
 
   val logger = Logger("application.actor.humo")
 

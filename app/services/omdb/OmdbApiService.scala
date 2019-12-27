@@ -9,16 +9,13 @@ import services.PlayUtil
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-object OmdbProtocol{
+object OmdbProtocol {
   implicit val omdbApiMovieReads = Json.reads[ImdbApiMovie]
 }
 
-object OmdbApiService {
+object OmdbApiService {}
 
-}
-
-class OmdbApiService(ws: WSClient){
-
+class OmdbApiService(ws: WSClient) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -26,27 +23,24 @@ class OmdbApiService(ws: WSClient){
 
   private lazy val apiKey = PlayUtil.config("omdb.apikey")
 
-
   def find(title: String, year: Option[Int] = None): Future[Option[ImdbApiMovie]] = {
 
     // TODO fallback to a search without year if no result was found for a search including the year
     val url = "http://www.omdbapi.com/"
-    val request = ws.url(url)
+    val request = ws
+      .url(url)
       .addQueryStringParameters("t" -> title)
       .addQueryStringParameters("apikey" -> apiKey)
-    val requestExtended = year.map(year =>
-      request.addQueryStringParameters("y" -> year.toString)
-    ).getOrElse(request)
-
+    val requestExtended = year.map(year => request.addQueryStringParameters("y" -> year.toString)).getOrElse(request)
 
     logger.info("Fetching " + requestExtended)
 
-    requestExtended.get().map{ response =>
+    requestExtended.get().map { response =>
       response.status match {
         case Status.OK =>
-          val json = try{
+          val json = try {
             response.json
-          }catch{
+          } catch {
             case NonFatal(e) =>
               sys.error(s"Failed to parse $url response to JSON: ${e.getMessage} ${response.body.take(500)}")
           }
@@ -57,7 +51,7 @@ class OmdbApiService(ws: WSClient){
               import OmdbProtocol._
               Json.fromJson[ImdbApiMovie](response.json) match {
                 case JsSuccess(movie, _) => Option(movie)
-                case JsError(errors) => sys.error(errors.toString())
+                case JsError(errors)     => sys.error(errors.toString())
               }
             case Some("Movie not found!") =>
               // meh, they should just send a 404

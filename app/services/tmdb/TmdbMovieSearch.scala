@@ -10,13 +10,13 @@ case class TmdbMovieSearch(
   release_date: String,
   title: String,
   vote_average: Option[Double],
-  vote_count:Long,
-  adult:Boolean) {
+  vote_count: Long,
+  adult: Boolean
+) {
 
-  def posterUrl = {
+  def posterUrl =
     // http://help.themoviedb.org/kb/api/configuration
     poster_path.map("http://cf2.imgobject.com/t/p/w154/" + _)
-  }
 
   lazy val fixedAverage = vote_average.filter(_ != 0.0)
 }

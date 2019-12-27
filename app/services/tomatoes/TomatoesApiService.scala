@@ -15,18 +15,19 @@ class TomatoesApiService(tomatoesConfig: TomatoesConfig, ws: WSClient) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def find(title:String, year:Option[Int] = None): Future[Option[TomatoesMovie]] = {
-    val url = "http://api.rottentomatoes.com/api/public/v1.0/movies.json"
-    val q = title + year.map(" " + _).getOrElse("")
+  def find(title: String, year: Option[Int] = None): Future[Option[TomatoesMovie]] = {
+    val url      = "http://api.rottentomatoes.com/api/public/v1.0/movies.json"
+    val q        = title + year.map(" " + _).getOrElse("")
     val response = ws.url(url).addQueryStringParameters("q" -> q, "apikey" -> tomatoesConfig.apiKey).get()
     response.map { response =>
-      val json = try{
+      val json = try {
         response.json
-      }catch{
+      } catch {
         // fake error response for non-json response
-        case NonFatal(e) => Json.obj(
-          "error" -> response.body.take(100)
-        )
+        case NonFatal(e) =>
+          Json.obj(
+            "error" -> response.body.take(100)
+          )
       }
       val error = (json \ "error").asOpt[String]
       if (error.isDefined) {
@@ -56,17 +57,16 @@ class TomatoesApiService(tomatoesConfig: TomatoesConfig, ws: WSClient) {
       }
     }
   }
-  
+
 //  def getById(id:String) = {
 //    //http://api.rottentomatoes.com/api/public/v1.0/movies/13863.json
 //  }
 
-  private def yearMatchIfExists(year: Option[Int], movies: List[TomatoesMovie]) = {
+  private def yearMatchIfExists(year: Option[Int], movies: List[TomatoesMovie]) =
     year.map { y =>
       movies.find(m => m.year.getOrElse(Int.MinValue) == y).orElse(movies.headOption)
     } getOrElse {
       movies.headOption
     }
-  }
 
 }

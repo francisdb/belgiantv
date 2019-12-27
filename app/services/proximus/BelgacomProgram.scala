@@ -5,11 +5,11 @@ import java.time.Instant
 case class BelgacomProgramWithChannel(
   program: BelgacomProgram,
   channel: BelgacomChannel
-){
+) {
   override def toString = program.toString
 }
 
-object BelgacomProgram{
+object BelgacomProgram {
   final val CATEGORY_MOVIES = "C.Movies"
 }
 
@@ -18,14 +18,13 @@ case class BelgacomProgram(
   programReferenceNumber: String,
   channelId: String,
   title: String,
-
   startTime: Int,
   endTime: Int,
   description: String,
   shortDescription: Option[String],
   category: String,
-  detailUrl: Option[String]){
-
+  detailUrl: Option[String]
+) {
 
 //        "trailId": "2017020711357",
 //        "programReferenceNumber": "005045664380",
@@ -56,7 +55,6 @@ case class BelgacomProgram(
 //        "width": 12.5,
 //        "isFeaturedEvening": false
 
-
   lazy val getStart = {
     Instant.ofEpochSecond(startTime)
   }
@@ -64,9 +62,10 @@ case class BelgacomProgram(
   lazy val getEnd = {
     Instant.ofEpochSecond(endTime)
   }
-  
+
   lazy val toDateTime = Instant.ofEpochSecond(startTime)
 
-  override def toString = s"$title on $channelId at ${getStart.atZone(BelgacomReader.timeZone)} -> ${getEnd.atZone(BelgacomReader.timeZone)}"
-  
+  override def toString =
+    s"$title on $channelId at ${getStart.atZone(BelgacomReader.timeZone)} -> ${getEnd.atZone(BelgacomReader.timeZone)}"
+
 }

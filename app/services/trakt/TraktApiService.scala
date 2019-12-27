@@ -9,9 +9,9 @@ import services.trakt.TraktApiService.{TraktMovie, TraktMovieSearchResult}
 import scala.concurrent.Future
 
 /**
-  * Docs available at https://trakt.docs.apiary.io
-  */
-object TraktApiService{
+ * Docs available at https://trakt.docs.apiary.io
+ */
+object TraktApiService {
 
   case class TraktIds(
     trakt: Int,
@@ -26,12 +26,12 @@ object TraktApiService{
   )
   case class TraktMovieSearchResult(
     movie: TraktMovie,
-    score: Double,
+    score: Double
     // distribution not used
   )
 
-  implicit val traktIdsReads = Json.reads[TraktIds]
-  implicit val traktMovieReads = Json.reads[TraktMovie]
+  implicit val traktIdsReads               = Json.reads[TraktIds]
+  implicit val traktMovieReads             = Json.reads[TraktMovie]
   implicit val traktMovieSearchResultReads = Json.reads[TraktMovieSearchResult]
 
   // movies
@@ -49,7 +49,6 @@ object TraktApiService{
 //        }
 //      }
 //    }, ...
-
 
 }
 
@@ -69,12 +68,11 @@ class TraktApiService(traktConfig: TraktConfig, ws: WSClient) {
 
     logger.info(s"Fetching $request")
 
-    val requestWithYear = year.fold(request){ year =>
+    val requestWithYear = year.fold(request) { year =>
       request.addQueryStringParameters("years" -> year.toString)
     }
 
     requestWithYear.get().map { response =>
-
       response.status match {
         case Status.OK =>
           response.json.validate[Seq[TraktMovieSearchResult]] match {

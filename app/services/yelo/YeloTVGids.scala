@@ -1,28 +1,22 @@
 package services.yelo
 
-import com.fasterxml.jackson.annotation.{JsonProperty, JsonIgnoreProperties}
+import com.fasterxml.jackson.annotation.{JsonIgnoreProperties, JsonProperty}
 
-case class YeloTVGids(
-  @JsonProperty("Succes") succes: String,
-
-  @JsonProperty("Result") result: Result)
+case class YeloTVGids(@JsonProperty("Succes") succes: String, @JsonProperty("Result") result: Result)
 
 case class Result(
   @JsonProperty("IsToday") isToday: Boolean,
-
   @JsonProperty("ViewStart") viewStart: String,
-
   @JsonProperty("ViewEnd") viewEnd: String,
-
   @JsonProperty("Channel") channelsHtml: String,
-
   @JsonProperty("Events") eventsHtml: String,
-
-  @JsonProperty("Meta") meta: Meta)
+  @JsonProperty("Meta") meta: Meta
+)
 
 case class Meta(
   //schedules;
-  pvrbroadcasts: Map[String, Broadcast])
+  pvrbroadcasts: Map[String, Broadcast]
+)
 
 case class Broadcast(
   event_id: String,
@@ -31,8 +25,9 @@ case class Broadcast(
   title: String,
   start_time: Long,
   end_time: Long,
-  channel_webpvr_id: String)
-	
+  channel_webpvr_id: String
+)
+
 //	
 //	 <li channel="1"><img src="http://img.yelo.be/uploads/channels/detail/MM067.png?v=0.1.11" alt="VTM" class="thumb_channel" width="100" height="50" border="0" /></li>
 //     <li channel="2"><img src="http://img.yelo.be/uploads/channels/detail/MM065.png?v=0.1.11" alt="één" class="thumb_channel" width="100" height="50" border="0" /></li>

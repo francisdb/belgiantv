@@ -18,7 +18,7 @@ import services.tomatoes.{TomatoesApiService, TomatoesConfig}
 import services.trakt.{TraktApiService, TraktConfig}
 import services.yelo.YeloReader
 
-object Master{
+object Master {
   def props(
     broadcastRepository: BroadcastRepository,
     movieRepository: MovieRepository,
@@ -32,8 +32,7 @@ object Master{
     traktApiService: TraktApiService,
     traktConfig: TraktConfig,
     materializer: Materializer
-  )
-  = Props(
+  ) = Props(
     new Master(
       broadcastRepository,
       movieRepository,
@@ -46,7 +45,8 @@ object Master{
       tomatoesConfig,
       traktApiService,
       traktConfig,
-      materializer)
+      materializer
+    )
   )
 }
 
@@ -62,39 +62,46 @@ class Master(
   tomatoesConfig: TomatoesConfig,
   traktApiService: TraktApiService,
   traktConfig: TraktConfig,
-  materializer: Materializer) extends Actor with LoggingActor with ActorLogging{
+  materializer: Materializer
+) extends Actor
+    with LoggingActor
+    with ActorLogging {
 
   private val logger = Logger("application")
 
   val belgianTvRef = context
-    .actorOf(BelgianTvActor.props(
-      broadcastRepository,
-      movieRepository,
-      humoReader,
-      yeloReader,
-      belgacomReader,
-      imdbApiService,
-      tmdbApiService,
-      tomatoesApiService,
-      tomatoesConfig,
-      traktApiService,
-      traktConfig,
-      materializer)
-    /*.withRouter(RoundRobinPool(2))*/, name = "BelgianTV")
+    .actorOf(
+      BelgianTvActor.props(
+        broadcastRepository,
+        movieRepository,
+        humoReader,
+        yeloReader,
+        belgacomReader,
+        imdbApiService,
+        tmdbApiService,
+        tomatoesApiService,
+        tomatoesConfig,
+        traktApiService,
+        traktConfig,
+        materializer
+      )
+      /*.withRouter(RoundRobinPool(2))*/,
+      name = "BelgianTV"
+    )
 
   // TODO check the LoggingReceive docs and see if we can enable it on heroku
   def receive: Receive = LoggingReceive {
     case Start =>
       logger.info(s"[$this] - Received [start] from $sender")
       val today = LocalDate.now(Globals.timezone)
-      for(day <- 0 until 7){
+      for (day <- 0 until 7) {
         belgianTvRef ! FetchDay(today.plusDays(day))
       }
     case StartTomatoes =>
-      if(tomatoesConfig.isApiEnabled){
-        for{
+      if (tomatoesConfig.isApiEnabled) {
+        for {
           broadcasts <- broadcastRepository.findMissingTomatoes()
-        }yield{
+        } yield {
           broadcasts.foreach(belgianTvRef ! LinkTomatoes(_))
         }
       }

@@ -1,7 +1,5 @@
 package services.tmdb
 
 case class TmdbPoster(
-  image:TmdbImage
-) {
-
-}
+  image: TmdbImage
+) {}

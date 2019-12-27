@@ -5,7 +5,7 @@ case class BelgacomChannelListing(
 )
 
 case class BelgacomChannel(
-  id: String, // "UID50037",
+  id: String,  // "UID50037",
   name: String //"name": "één",
 //"callLetter": "één",
 //"number": "1",
@@ -26,7 +26,6 @@ case class BelgacomChannel(
 //"NPVR"
 //],
 //"catchUpWindowInHours": 36
-
-){
+) {
   override def toString = s"$name [$id]"
 }

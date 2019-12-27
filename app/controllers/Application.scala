@@ -37,8 +37,10 @@ class Application(
   tomatoesApiService: TomatoesApiService,
   tomatoesConfig: TomatoesConfig,
   traktApiService: TraktApiService,
-  traktConfig: TraktConfig,
-  )(implicit ec: ExecutionContext, mat: Materializer) extends AbstractController(components) with ReactiveMongoComponents {
+  traktConfig: TraktConfig
+)(implicit ec: ExecutionContext, mat: Materializer)
+    extends AbstractController(components)
+    with ReactiveMongoComponents {
 
   implicit val wu: WebJarsUtil = webJarsUtil
 
@@ -68,30 +70,29 @@ class Application(
 
   //private implicit val wjAssets = webJarAssets
 
-  def index = Action.async{ implicit request =>
-
+  def index = Action.async { implicit request =>
     // anything that has started more than an hour ago is not interesting
-    val now = Instant.now()
+    val now   = Instant.now()
     val start = now.minus(Duration.ofHours(1))
     // for seven days in the future (midnight)
-    val end = now.plus(Duration.ofDays(7))
-    val interval = Interval.of(start, end)// new Interval(start, end)
+    val end      = now.plus(Duration.ofDays(7))
+    val interval = Interval.of(start, end) // new Interval(start, end)
 
-    for{
+    for {
       broadcasts <- broadcastRepository.findByInterval(interval)
-      infos <- Future.traverse(broadcasts)(broadcast => linkWithMovie(broadcast))
-    }yield{
+      infos      <- Future.traverse(broadcasts)(broadcast => linkWithMovie(broadcast))
+    } yield {
       val sorted = infos.sortWith(BroadcastInfo.scoreSorter)
       Ok(views.html.index(sorted))
     }
   }
 
   def linkWithMovie(broadcast: Broadcast): Future[BroadcastInfo] = {
-    implicit val reader = Movie.movieFormat//MovieBSONReader
+    implicit val reader = Movie.movieFormat //MovieBSONReader
 
     broadcast.imdbId match {
       case Some(imdbId) => movieRepository.findByImdbId(imdbId).map(BroadcastInfo(broadcast, _))
-      case None => Future.successful(BroadcastInfo(broadcast, None))
+      case None         => Future.successful(BroadcastInfo(broadcast, None))
     }
   }
 
@@ -106,7 +107,5 @@ class Application(
     Redirect(routes.Application.index())
       .flashing("message" -> "Started tomatoes update...")
   }
-  
-
 
 }

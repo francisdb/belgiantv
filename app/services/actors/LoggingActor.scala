@@ -3,7 +3,7 @@ package services.actors
 import akka.actor.Actor
 import play.api.Logger
 
-trait LoggingActor extends Actor{
+trait LoggingActor extends Actor {
 
   private val logger = Logger("application")
 

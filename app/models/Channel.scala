@@ -15,11 +15,31 @@ object Channel {
   val NPO3 = "NPO 3"
 
   val channelFilter = List(
-    "één", "Canvas", "Ketnet", "VTM", "2BE", "VIER", "VIJF", "ZES", "CAZ",
-    "JIM", "Ketnet", "Acht", NPO1, NPO2, NPO3,
-    "Vitaya", "VTM KIDS", "VTM KIDS Jr", "Q2", BBC1, BBC2, BBC3)
+    "één",
+    "Canvas",
+    "Ketnet",
+    "VTM",
+    "2BE",
+    "VIER",
+    "VIJF",
+    "ZES",
+    "CAZ",
+    "JIM",
+    "Ketnet",
+    "Acht",
+    NPO1,
+    NPO2,
+    NPO3,
+    "Vitaya",
+    "VTM KIDS",
+    "VTM KIDS Jr",
+    "Q2",
+    BBC1,
+    BBC2,
+    BBC3
+  )
 
-  def unify(name:String):String = {
+  def unify(name: String): String = {
 
     // TODO do this in a smarter way with a hash set
     val replaced = name

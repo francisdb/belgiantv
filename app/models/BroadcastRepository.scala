@@ -12,12 +12,13 @@ import reactivemongo.bson._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionContext: ExecutionContext) extends MongoSupport {
+class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionContext: ExecutionContext)
+    extends MongoSupport {
 
   // TODO create specific executioncontext for mongo
   private implicit val ec: ExecutionContext = executionContext
 
-  private lazy val dbFuture = reactiveMongoApi.connection.database(dbName, herokuMLabFailover)
+  private lazy val dbFuture                  = reactiveMongoApi.connection.database(dbName, herokuMLabFailover)
   private lazy val broadcastCollectionFuture = dbFuture.map(_.collection[BSONCollection]("broadcasts"))
 
   //private lazy val broadcastCollectionFuture = Future.successful(reactiveMongoApi.db.collection[BSONCollection]("broadcasts"))
@@ -27,181 +28,210 @@ class BroadcastRepository(val reactiveMongoApi: ReactiveMongoApi, executionConte
   // TODO make all these properly anync
 
   def create(broadcast: Broadcast): Broadcast = {
-    val id = BSONObjectID.generate
-    val withId = broadcast.copy(id = Some(id))
+    val id              = BSONObjectID.generate
+    val withId          = broadcast.copy(id = Some(id))
     implicit val writer = Broadcast.BroadcastBSONWriter
-    broadcastCollectionFuture.flatMap{ broadcastCollection =>
-      broadcastCollection.insert(ordered = false).one(withId)(scala.concurrent.ExecutionContext.Implicits.global, writer)
-    }.onComplete(le =>
-      mongoLogger(le, "saved broadcast " + withId + " with id " + id))
+    broadcastCollectionFuture
+      .flatMap { broadcastCollection =>
+        broadcastCollection
+          .insert(ordered = false)
+          .one(withId)(scala.concurrent.ExecutionContext.Implicits.global, writer)
+      }
+      .onComplete(le => mongoLogger(le, "saved broadcast " + withId + " with id " + id))
     withId
   }
 
-  def findByInterval(interval:Interval): Future[List[Broadcast]] = broadcastCollectionFuture.flatMap{ broadcastCollection =>
+  def findByInterval(interval: Interval): Future[List[Broadcast]] = broadcastCollectionFuture.flatMap {
+    broadcastCollection =>
+      //    val broadcastsInInterval = BSONDocument(
+      //      "$orderby" -> BSONDocument("datetime" -> BSONInteger(1)),
+      //      "$query" -> BSONDocument(
+      //        "datetime" -> BSONDocument("$gt" -> BSONLong(interval.getStart.getMillis)),
+      //        "datetime" -> BSONDocument("$lt" ->  BSONLong(interval.getEnd.getMillis))
+      //      )
+      //    )
 
-    //    val broadcastsInInterval = BSONDocument(
-    //      "$orderby" -> BSONDocument("datetime" -> BSONInteger(1)),
-    //      "$query" -> BSONDocument(
-    //        "datetime" -> BSONDocument("$gt" -> BSONLong(interval.getStart.getMillis)),
-    //        "datetime" -> BSONDocument("$lt" ->  BSONLong(interval.getEnd.getMillis))
-    //      )
-    //    )
+      //    val broadcastsInInterval = QueryBuilder().query( Json.obj(
+      //            "datetime" -> Json.obj("$gt" -> interval.getStart.getMillis),
+      //            "datetime" -> Json.obj("$lt" -> interval.getEnd.getMillis)))//.sort( "created" -> SortOrder.Descending)
 
-    //    val broadcastsInInterval = QueryBuilder().query( Json.obj(
-    //            "datetime" -> Json.obj("$gt" -> interval.getStart.getMillis),
-    //            "datetime" -> Json.obj("$lt" -> interval.getEnd.getMillis)))//.sort( "created" -> SortOrder.Descending)
-
-    broadcastCollection.find(BSONDocument(
-        "datetime" -> BSONDocument(
-          "$gt" -> BSONLong(interval.getStart.toEpochMilli)
-        ),
-        "datetime" -> BSONDocument(
-          "$lt" ->  BSONLong(interval.getEnd.toEpochMilli)
+      broadcastCollection
+        .find(
+          BSONDocument(
+            "datetime" -> BSONDocument(
+              "$gt" -> BSONLong(interval.getStart.toEpochMilli)
+            ),
+            "datetime" -> BSONDocument(
+              "$lt" -> BSONLong(interval.getEnd.toEpochMilli)
+            )
+          ),
+          Option.empty[Broadcast]
         )
-      ), Option.empty[Broadcast])
-      .sort(BSONDocument(
-        "datetime" -> BSONInteger(1))
-      )
-      .cursor[Broadcast]()
-      .collect[List](1000, Cursor.FailOnError[List[Broadcast]]())
+        .sort(BSONDocument("datetime" -> BSONInteger(1)))
+        .cursor[Broadcast]()
+        .collect[List](1000, Cursor.FailOnError[List[Broadcast]]())
 
-    //    broadcastCollectionJson.find(Json.obj(
-    //        "datetime" -> Json.obj("$gt" -> interval.getStart.getMillis),
-    //        "datetime" -> Json.obj("$lt" ->  interval.getEnd.getMillis)))
-    //      .sort(Json.obj("datetime" -> 1)).cursor[Broadcast].toList
+      //    broadcastCollectionJson.find(Json.obj(
+      //        "datetime" -> Json.obj("$gt" -> interval.getStart.getMillis),
+      //        "datetime" -> Json.obj("$lt" ->  interval.getEnd.getMillis)))
+      //      .sort(Json.obj("datetime" -> 1)).cursor[Broadcast].toList
   }
 
-  def findMissingTomatoes(): Future[List[Broadcast]] = broadcastCollectionFuture.flatMap{ broadcastCollection =>
-
-    broadcastCollection.find(BSONDocument(
-        "datetime" -> BSONDocument(
-          "$gt" -> BSONLong(System.currentTimeMillis())
+  def findMissingTomatoes(): Future[List[Broadcast]] = broadcastCollectionFuture.flatMap { broadcastCollection =>
+    broadcastCollection
+      .find(
+        BSONDocument(
+          "datetime" -> BSONDocument(
+            "$gt" -> BSONLong(System.currentTimeMillis())
+          ),
+          "tomatoesId" -> BSONDocument(
+            "$exists" -> BSONBoolean(value = false)
+          )
         ),
-        "tomatoesId" -> BSONDocument(
-          "$exists" -> BSONBoolean(value=false)
-        )
-      ), Option.empty[Broadcast])
+        Option.empty[Broadcast]
+      )
       .sort(BSONDocument("datetime" -> BSONInteger(1)))
       .cursor[Broadcast]()
       .collect[List](1000, Cursor.FailOnError[List[Broadcast]]())
-
-
-    //    broadcastCollectionJson
-    //      .find(Json.obj(
-    //        "datetime" -> Json.obj("$gt" -> System.currentTimeMillis()),
-    //        "tomatoesId" -> Json.obj("$exists" -> false)))
-    //      .sort(Json.obj("datetime" -> 1)).cursor[Broadcast].toList
+  //    broadcastCollectionJson
+  //      .find(Json.obj(
+  //        "datetime" -> Json.obj("$gt" -> System.currentTimeMillis()),
+  //        "tomatoesId" -> Json.obj("$exists" -> false)))
+  //      .sort(Json.obj("datetime" -> 1)).cursor[Broadcast].toList
   }
 
-  def findByDateTimeAndChannel(datetime: Instant, channel: String): Future[Option[Broadcast]] = broadcastCollectionFuture.flatMap{ broadcastCollection =>
-    //    broadcastCollectionJson.find(Json.obj(
-    //      "datetime" -> datetime.getMillis,
-    //      "channel" -> channel
-    //    )).cursor[Broadcast].headOption
-
-    broadcastCollection.find(BSONDocument(
-        "datetime" -> BSONLong(datetime.toEpochMilli),
-        "channel" -> BSONString(channel)), Option.empty[Broadcast])
-      .cursor[Broadcast]()
-      .headOption
-  }
-
-  def setYelo(b:Broadcast, yeloId:String, yeloUrl:Option[String]): Unit = {
-    broadcastCollectionFuture.flatMap{ broadcastCollection =>
-      broadcastCollection.update(ordered = false).one(
-        BSONDocument("_id" -> b.id),
-        BSONDocument(
-          "$set" -> BSONDocument(
-            "yeloId" -> yeloId,
-            "yeloUrl" -> yeloUrl
-          )
-        )
-      )
-    }.onComplete(le => mongoLogger(le, s"updated yelo for $b"))
-  }
-
-  def setBelgacom(b:Broadcast, belgacomId:String, belgacomUrl:String): Unit = {
+  def findByDateTimeAndChannel(datetime: Instant, channel: String): Future[Option[Broadcast]] =
     broadcastCollectionFuture.flatMap { broadcastCollection =>
-      broadcastCollection.update(ordered = false).one(
-        BSONDocument("_id" -> b.id),
-        BSONDocument(
-          "$set" -> BSONDocument(
-            "belgacomId" -> belgacomId,
-            "belgacomUrl" -> belgacomUrl
-          )
-        )
-      )
-    }.onComplete(le => mongoLogger(le, s"updated belgacom for $b"))
-  }
+      //    broadcastCollectionJson.find(Json.obj(
+      //      "datetime" -> datetime.getMillis,
+      //      "channel" -> channel
+      //    )).cursor[Broadcast].headOption
 
-  def setImdb(b:Broadcast, imdbId:String): Future[Unit] = {
+      broadcastCollection
+        .find(
+          BSONDocument("datetime" -> BSONLong(datetime.toEpochMilli), "channel" -> BSONString(channel)),
+          Option.empty[Broadcast]
+        )
+        .cursor[Broadcast]()
+        .headOption
+    }
+
+  def setYelo(b: Broadcast, yeloId: String, yeloUrl: Option[String]): Unit =
+    broadcastCollectionFuture
+      .flatMap { broadcastCollection =>
+        broadcastCollection
+          .update(ordered = false)
+          .one(
+            BSONDocument("_id" -> b.id),
+            BSONDocument(
+              "$set" -> BSONDocument(
+                "yeloId"  -> yeloId,
+                "yeloUrl" -> yeloUrl
+              )
+            )
+          )
+      }
+      .onComplete(le => mongoLogger(le, s"updated yelo for $b"))
+
+  def setBelgacom(b: Broadcast, belgacomId: String, belgacomUrl: String): Unit =
+    broadcastCollectionFuture
+      .flatMap { broadcastCollection =>
+        broadcastCollection
+          .update(ordered = false)
+          .one(
+            BSONDocument("_id" -> b.id),
+            BSONDocument(
+              "$set" -> BSONDocument(
+                "belgacomId"  -> belgacomId,
+                "belgacomUrl" -> belgacomUrl
+              )
+            )
+          )
+      }
+      .onComplete(le => mongoLogger(le, s"updated belgacom for $b"))
+
+  def setImdb(b: Broadcast, imdbId: String): Future[Unit] = {
     val res = broadcastCollectionFuture.flatMap { broadcastCollection =>
-      broadcastCollection.update(ordered = false).one(
-        BSONDocument("_id" -> b.id),
-        BSONDocument(
-          "$set" -> BSONDocument(
-            "imdbId" -> BSONString(imdbId)
+      broadcastCollection
+        .update(ordered = false)
+        .one(
+          BSONDocument("_id" -> b.id),
+          BSONDocument(
+            "$set" -> BSONDocument(
+              "imdbId" -> BSONString(imdbId)
+            )
           )
         )
-      )
     }
     res.onComplete(le => mongoLogger(le, s"updated imdb for $b"))
     res.map(_ => ())
   }
 
-  def setTomatoes(broadcastId:BSONObjectID, tomatoesId:String, tomatoesRating:Option[String]): Unit = {
-    broadcastCollectionFuture.flatMap { broadcastCollection =>
-      broadcastCollection.update(ordered = false).one(
-        BSONDocument("_id" -> broadcastId),
-        BSONDocument(
-          "$set" -> BSONDocument(
-            "tomatoesId" -> tomatoesId,
-            "tomatoesRating" -> tomatoesRating
+  def setTomatoes(broadcastId: BSONObjectID, tomatoesId: String, tomatoesRating: Option[String]): Unit =
+    broadcastCollectionFuture
+      .flatMap { broadcastCollection =>
+        broadcastCollection
+          .update(ordered = false)
+          .one(
+            BSONDocument("_id" -> broadcastId),
+            BSONDocument(
+              "$set" -> BSONDocument(
+                "tomatoesId"     -> tomatoesId,
+                "tomatoesRating" -> tomatoesRating
+              )
+            )
           )
-        )
-      )
-    }.onComplete(le => mongoLogger(le, s"updated tomatoes for $broadcastId"))
-  }
+      }
+      .onComplete(le => mongoLogger(le, s"updated tomatoes for $broadcastId"))
 
-  def setTmdb(b:Broadcast, tmdbId:String, tmdbRating: Option[String]): Unit = {
-    broadcastCollectionFuture.flatMap { broadcastCollection =>
-      broadcastCollection.update(ordered = false).one(
-        BSONDocument("_id" -> b.id),
-        BSONDocument(
-          "$set" -> BSONDocument(
-            "tmdbId" -> tmdbId,
-            "tmdbRating" -> tmdbRating
+  def setTmdb(b: Broadcast, tmdbId: String, tmdbRating: Option[String]): Unit =
+    broadcastCollectionFuture
+      .flatMap { broadcastCollection =>
+        broadcastCollection
+          .update(ordered = false)
+          .one(
+            BSONDocument("_id" -> b.id),
+            BSONDocument(
+              "$set" -> BSONDocument(
+                "tmdbId"     -> tmdbId,
+                "tmdbRating" -> tmdbRating
+              )
+            )
           )
-        )
-      )
-    }.onComplete(le => mongoLogger(le, s"updated tmdb for $b"))
-  }
+      }
+      .onComplete(le => mongoLogger(le, s"updated tmdb for $b"))
 
-  def setTmdbImg(b:Broadcast, tmdbImg:String): Unit = {
-    broadcastCollectionFuture.flatMap { broadcastCollection =>
-      broadcastCollection.update(ordered = false).one(
-        BSONDocument("_id" -> b.id),
-        BSONDocument(
-          "$set" -> BSONDocument(
-            "tmdbImg" -> tmdbImg
+  def setTmdbImg(b: Broadcast, tmdbImg: String): Unit =
+    broadcastCollectionFuture
+      .flatMap { broadcastCollection =>
+        broadcastCollection
+          .update(ordered = false)
+          .one(
+            BSONDocument("_id" -> b.id),
+            BSONDocument(
+              "$set" -> BSONDocument(
+                "tmdbImg" -> tmdbImg
+              )
+            )
           )
-        )
-      )
-    }.onComplete(le => mongoLogger(le, s"updated tmdb img for $b"))
-  }
+      }
+      .onComplete(le => mongoLogger(le, s"updated tmdb img for $b"))
 
-  def setTrakt(b:Broadcast, traktId: Int, traktSlug: String, traktRating: Option[Double]): Unit = {
-    broadcastCollectionFuture.flatMap { broadcastCollection =>
-      broadcastCollection.update(ordered = false).one(
-        BSONDocument("_id" -> b.id),
-        BSONDocument(
-          "$set" -> BSONDocument(
-            "traktId" -> traktId,
-            "traktSlug" -> traktSlug,
-            "traktRating" -> traktRating
+  def setTrakt(b: Broadcast, traktId: Int, traktSlug: String, traktRating: Option[Double]): Unit =
+    broadcastCollectionFuture
+      .flatMap { broadcastCollection =>
+        broadcastCollection
+          .update(ordered = false)
+          .one(
+            BSONDocument("_id" -> b.id),
+            BSONDocument(
+              "$set" -> BSONDocument(
+                "traktId"     -> traktId,
+                "traktSlug"   -> traktSlug,
+                "traktRating" -> traktRating
+              )
+            )
           )
-        )
-      )
-    }.onComplete(le => mongoLogger(le, s"updated tmdb img for $b"))
-  }
+      }
+      .onComplete(le => mongoLogger(le, s"updated tmdb img for $b"))
 }
