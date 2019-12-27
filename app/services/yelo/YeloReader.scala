@@ -15,10 +15,10 @@ import services.yelo.YeloReader._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-object YeloReader{
+object YeloReader {
 
   private val pubbaBase = "https://pubba.yelo.prd.telenet-ops.be"
-  private val apiBase = "https://api.yeloplay.be/api"
+  private val apiBase   = "https://api.yeloplay.be/api"
 
   private val headers = Seq(
     "Referer" -> "https://www.yeloplay.be/tv-gids"
@@ -42,22 +42,22 @@ object YeloReader{
     serviceCatalog: ChannelsServiceCatalog
   )
 
-  case class ChannelsServiceCatalog (
+  case class ChannelsServiceCatalog(
     tvChannels: Seq[ChannelNew]
   )
 
   case class ChannelNew(
-    id: String,             // "207"
+    id: String, // "207"
     channelIdentification: ChannelIdentification,
     channelProperties: ChannelProperties
   )
 
   case class ChannelIdentification(
-    channelId: Int, //207
+    channelId: Int,        //207
     stbUniqueName: String, //"vtmhd"
-    name: String, //"VTM HD"
-    url: String, //"vtm-hd"
-    pvrId: String, //"MM0BE"
+    name: String,          //"VTM HD"
+    url: String,           //"vtm-hd"
+    pvrId: String          //"MM0BE"
   )
 
   case class ChannelProperties(
@@ -72,22 +72,22 @@ object YeloReader{
 
   case class Schedule(
     eventpvrid: String, // "MM24E",
-    channelid: Long, // 198
-    name: String, // "één HD",
+    channelid: Long,    // 198
+    name: String,       // "één HD",
     broadcast: Seq[Broadcast]
   )
 
   // we had to remove some fields as we can only go up to ~22 fields
   case class Broadcast(
-    blackout: Option[String], // null
-    content: Option[String], // "3.1.1.1"
+    blackout: Option[String],     // null
+    content: Option[String],      // "3.1.1.1"
     contentlabel: Option[String], // "dagelijks nieuws"
 //    crid: String, //"crid://magnetmedia.be/14025651_18599981"
 //    dubbedlng: Option[String], // null
     endtime: Long, // 1479456000
 //    epgbacklandscape: String, // "https://cache.ps.yelo.prd.telenet-ops.be/yposter/images/epgbacklandscape/51082683.jpg"
 //    epgbackportrait: String, // ""
-    eventid: Long, // 39932155
+    eventid: Long,      // 39932155
     eventpvrid: String, // "MM24E2FC9"
 //    format: Option[String], // null
 //    formatlabel: Option[String], // null
@@ -106,42 +106,37 @@ object YeloReader{
 //    seriemmcode: String, // "8342089Z"
 //    seriescrid: String, // "crid://magnetmedia.be/show/8342089"
     shortdescription: Option[String], // null
-    standardid: Long, // 950699
-    starttime: Long, // 1479432300
-    subtitlelng: String, // ""
-    title: String, // "Journaallus"
-    url: String // "/programma/journaallus/seizoen_9999/aflevering_9999/het-journaal"
+    standardid: Long,                 // 950699
+    starttime: Long,                  // 1479432300
+    subtitlelng: String,              // ""
+    title: String,                    // "Journaallus"
+    url: String                       // "/programma/journaallus/seizoen_9999/aflevering_9999/het-journaal"
   )
 
   case class Epg(
-    date: String, // "2016-11-18"
+    date: String,    // "2016-11-18"
     datemin: String, //"2008-06-11",
     datemax: String, //"2016-12-02",
     language: String // "nl"
   )
 
-  case class YeloEvent (
-    id: Long,
-    name: String,
-    url: Option[String],
-    channel: String,
-    interval: Interval){
+  case class YeloEvent(id: Long, name: String, url: Option[String], channel: String, interval: Interval) {
 
     lazy val startDateTime = interval.getStart
   }
 
-  private implicit val channelIdentificationFormat = Json.format[ChannelIdentification]
-  private implicit val channelPropertiesFormat = Json.format[ChannelProperties]
-  private implicit val channelNewFormat = Json.format[ChannelNew]
+  private implicit val channelIdentificationFormat  = Json.format[ChannelIdentification]
+  private implicit val channelPropertiesFormat      = Json.format[ChannelProperties]
+  private implicit val channelNewFormat             = Json.format[ChannelNew]
   private implicit val channelsServiceCatalogFormat = Json.format[ChannelsServiceCatalog]
-  private implicit val channelsResponseFormat = Json.format[ChannelsResponse]
+  private implicit val channelsResponseFormat       = Json.format[ChannelsResponse]
 
-  private implicit val channelFormat = Json.format[Channel]
+  private implicit val channelFormat  = Json.format[Channel]
   private implicit val channelsFormat = Json.format[Channels]
 
-  private implicit val broadcastFormat = Json.format[Broadcast]
-  private implicit val scheduleFormat = Json.format[Schedule]
-  private implicit val epgFormat = Json.format[Epg]
+  private implicit val broadcastFormat   = Json.format[Broadcast]
+  private implicit val scheduleFormat    = Json.format[Schedule]
+  private implicit val epgFormat         = Json.format[Epg]
   private implicit val scheduleDayFormat = Json.format[ScheduleDay]
 }
 
@@ -161,30 +156,29 @@ object YeloReader{
 // https://www.yeloplay.be/api/pubba/v1/events/schedule-day/outformat/json/lng/nl/channel/8/channel/534/channel/585/channel/625/channel/801/day/2016-11-17/platform/web/
 
 class YeloReader(ws: WSClient) {
-  
+
   private val logger = Logger("application.yelo")
 
-  def fetchDay(day: LocalDate, channelFilter: List[String] = List.empty): Future[Seq[YeloEvent]] = {
-    fetchChannels().flatMap{ channels =>
+  def fetchDay(day: LocalDate, channelFilter: List[String] = List.empty): Future[Seq[YeloEvent]] =
+    fetchChannels().flatMap { channels =>
       logger.info("selected channels: " + channels.map(_.name).mkString(", "))
       fetchDayData(day, channels)
     }
-  }
 
   private def fetchChannels(): Future[Seq[Channel]] = {
     val url = s"$pubbaBase/v3/channels/all/outformat/json/platform/web/"
-    ws.url(url).withHttpHeaders(headers:_*).get().map { response =>
+    ws.url(url).withHttpHeaders(headers: _*).get().map { response =>
       if (response.status != Status.OK) {
         throw new RuntimeException(s"Got ${response.status} while fetching $url -> ${response.body}")
       }
       response.json.validate[Channels] match {
-        case e:JsError =>
+        case e: JsError =>
           val errors = JsError.toFlatForm(e).mkString(", ")
-          throw new RuntimeException(s"Failed to parse reponse for $url to json: ${response.body.take(100)}... $errors"  )
-        case JsSuccess(channels,_) =>
+          throw new RuntimeException(s"Failed to parse reponse for $url to json: ${response.body.take(100)}... $errors")
+        case JsSuccess(channels, _) =>
           logger.debug("all channels: " + channels.channels.map(_.name).mkString(", "))
           val lowerFilter = Channel.channelFilter.map(_.toLowerCase(Locale.ENGLISH))
-          channels.channels.filter{ channel =>
+          channels.channels.filter { channel =>
             val unifiedName = models.Channel.unify(channel.name).toLowerCase(Locale.ENGLISH)
             lowerFilter.contains(unifiedName)
           }
@@ -208,18 +202,20 @@ class YeloReader(ws: WSClient) {
   // TODO we might have to migrate to this version but for now the other api still works
   private def fetchChannelsNew(): Future[Seq[ChannelNew]] = {
     val url = s"$apiBase/v1/epg/channel/list"
-    ws.url(url).withHttpHeaders(headers:_*).get().map { response =>
+    ws.url(url).withHttpHeaders(headers: _*).get().map { response =>
       if (response.status != Status.OK) {
         throw new RuntimeException(s"Got ${response.status} while fetching $url -> ${response.body}")
       }
       response.json.validate[ChannelsResponse] match {
-        case e:JsError =>
+        case e: JsError =>
           val errors = JsError.toFlatForm(e).mkString(", ")
-          throw new RuntimeException(s"Failed to parse reponse for $url to json: ${response.body.take(100)}... $errors"  )
-        case JsSuccess(channels,_) =>
-          logger.debug("all channels: " + channels.serviceCatalog.tvChannels.map(_.channelIdentification.name).mkString(", "))
+          throw new RuntimeException(s"Failed to parse reponse for $url to json: ${response.body.take(100)}... $errors")
+        case JsSuccess(channels, _) =>
+          logger.debug(
+            "all channels: " + channels.serviceCatalog.tvChannels.map(_.channelIdentification.name).mkString(", ")
+          )
           val lowerFilter = Channel.channelFilter.map(_.toLowerCase(Locale.ENGLISH))
-          channels.serviceCatalog.tvChannels.filter{ channel =>
+          channels.serviceCatalog.tvChannels.filter { channel =>
             val unifiedName = models.Channel.unify(channel.channelIdentification.name).toLowerCase(Locale.ENGLISH)
             lowerFilter.contains(unifiedName)
           }
@@ -228,25 +224,25 @@ class YeloReader(ws: WSClient) {
   }
 
   private def fetchDayData(day: LocalDate, channels: Seq[Channel]): Future[Seq[YeloReader.YeloEvent]] = {
-    val dateFormat = DateTimeFormatter.ofPattern("YYYY-MM-dd")
-    val baseUrl = s"$pubbaBase/v1/events/schedule-day/outformat/json/lng/en/"
+    val dateFormat        = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val baseUrl           = s"$pubbaBase/v1/events/schedule-day/outformat/json/lng/en/"
     val orderedChannelIds = channels.map(_.id).sorted
 
     val channelsPart = orderedChannelIds.map(c => s"channel/$c/").mkString("")
-    val dayPart = s"day/${dateFormat.format(day)}/"
+    val dayPart      = s"day/${dateFormat.format(day)}/"
     val platformPart = "platform/web/"
-    val url = baseUrl + channelsPart + dayPart + platformPart
+    val url          = baseUrl + channelsPart + dayPart + platformPart
     logger.info(s"Fetching $url")
 
-    ws.url(url).addHttpHeaders(headers:_*).get().map { response =>
-      if(response.status != Status.OK){
+    ws.url(url).addHttpHeaders(headers: _*).get().map { response =>
+      if (response.status != Status.OK) {
         throw new RuntimeException(s"Got ${response.status} while fetching $url -> ${response.body}")
       }
       response.json.validate[ScheduleDay] match {
-        case e:JsError =>
+        case e: JsError =>
           val errors = JsError.toFlatForm(e).mkString(", ")
-          throw new RuntimeException(s"Failed to parse reponse for $url to json: ${response.body.take(100)}... $errors"  )
-        case JsSuccess(daySchedule,_) =>
+          throw new RuntimeException(s"Failed to parse reponse for $url to json: ${response.body.take(100)}... $errors")
+        case JsSuccess(daySchedule, _) =>
           parseDay(daySchedule, channels)
       }
     }
@@ -257,15 +253,15 @@ class YeloReader(ws: WSClient) {
     channelFilter.isEmpty || channelFilter.map(_.toLowerCase).contains(unifiedChannel)
   }
 
-  private def parseDay(daySchedule: ScheduleDay, channels: Seq[Channel]): Seq[YeloEvent] = {
-    daySchedule.schedule.flatMap{ schedule =>
+  private def parseDay(daySchedule: ScheduleDay, channels: Seq[Channel]): Seq[YeloEvent] =
+    daySchedule.schedule.flatMap { schedule =>
       val channel = channels
         .find(_.id == schedule.channelid)
         .map(_.name)
         .getOrElse("UNKNOWN")
-      schedule.broadcast.map{ broadcast =>
+      schedule.broadcast.map { broadcast =>
         val interval = Interval.of(Instant.ofEpochSecond(broadcast.starttime), Instant.ofEpochSecond(broadcast.endtime))
-        val url = "https://www.yeloplay.be" + broadcast.mapurl
+        val url      = "https://www.yeloplay.be" + broadcast.mapurl
         YeloEvent(
           broadcast.eventid,
           broadcast.title,
@@ -275,6 +271,5 @@ class YeloReader(ws: WSClient) {
         )
       }
     }
-  }
 
 }
