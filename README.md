@@ -12,6 +12,11 @@ MongoDB
 
 [![Codacy Badge](https://www.codacy.com/project/badge/4901ab784fc54ebe866f5613fa9f8450)](https://www.codacy.com/public/francisdb/belgiantv)
 
+# Alternative service
+
+<https://www.filmoptv.be/>
+with source code at https://github.com/WimObiwan/FxMovieAlert
+
 # Deploying
 
 This project uses heroku, [a guide is available on their website](https://devcenter.heroku.com/articles/getting-started-with-scala).
