@@ -36,11 +36,12 @@ object Channel {
     "Q2",
     BBC1,
     BBC2,
-    BBC3
+    BBC3,
+    "Studio 100 TV",
+    "Disney Channel VL"
   )
 
   def unify(name: String): String = {
-
     // TODO do this in a smarter way with a hash set
     val replaced = name
       .replace("Ketnet/OP12", "Ketnet")
@@ -59,6 +60,9 @@ object Channel {
       .replace("Ned 1", NPO1)
       .replace("Ned 2", NPO2)
       .replace("Ned 3", NPO3)
+      .replace("NPO-1", NPO1)
+      .replace("NPO-2", NPO2)
+      .replace("NPO-3", NPO3)
       .replace("BBC One London", BBC1)
       .replace("BBC One", BBC1)
       .replace("BBC one", BBC1)
