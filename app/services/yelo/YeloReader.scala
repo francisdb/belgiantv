@@ -4,6 +4,8 @@ import java.time.format.DateTimeFormatter
 import java.time.{Instant, LocalDate}
 import java.util.Locale
 
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Flow, RestartSource, RetryFlow, Sink, Source}
 import models.Channel
 import org.threeten.extra.Interval
 import play.api.Logger
@@ -12,6 +14,7 @@ import play.api.libs.json._
 import play.api.libs.ws.WSClient
 import services.yelo.YeloReader._
 
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -155,17 +158,33 @@ object YeloReader {
 //
 // https://www.yeloplay.be/api/pubba/v1/events/schedule-day/outformat/json/lng/nl/channel/8/channel/534/channel/585/channel/625/channel/801/day/2016-11-17/platform/web/
 
-class YeloReader(ws: WSClient) {
+class YeloReader(ws: WSClient)(implicit mat: Materializer) {
 
   private val logger = Logger("application.yelo")
 
-  def fetchDay(day: LocalDate, channelFilter: List[String] = List.empty): Future[Seq[YeloEvent]] =
-    fetchChannels().flatMap { channels =>
+  def fetchDay(day: LocalDate, channelFilter: Set[String] = Set.empty): Future[Seq[YeloEvent]] =
+    fetchChannels(channelFilter).flatMap { channels =>
       logger.info("selected channels: " + channels.map(_.name).mkString(", "))
-      fetchDayData(day, channels)
+      val fetchFlow = Flow[LocalDate].mapAsync(1) { day =>
+        fetchDayData(day, channels)
+      }
+      RestartSource
+        .onFailuresWithBackoff[Seq[YeloEvent]](
+          minBackoff = 200.millis,
+          maxBackoff = 5.second,
+          randomFactor = 0.2,
+          maxRestarts = 10
+        ) { () =>
+          Source
+            .single(day)
+            .mapAsync(1) { day =>
+              fetchDayData(day, channels)
+            }
+        }
+        .runWith(Sink.head)
     }
 
-  private def fetchChannels(): Future[Seq[Channel]] = {
+  private def fetchChannels(channelFilter: Set[String]): Future[Seq[Channel]] = {
     val url = s"$pubbaBase/v3/channels/all/outformat/json/platform/web/"
     ws.url(url).withHttpHeaders(headers: _*).get().map { response =>
       if (response.status != Status.OK) {
@@ -177,7 +196,7 @@ class YeloReader(ws: WSClient) {
           throw new RuntimeException(s"Failed to parse reponse for $url to json: ${response.body.take(100)}... $errors")
         case JsSuccess(channels, _) =>
           logger.debug("all channels: " + channels.channels.map(_.name).mkString(", "))
-          val lowerFilter = Channel.channelFilter.map(_.toLowerCase(Locale.ENGLISH))
+          val lowerFilter = channelFilter.map(_.toLowerCase(Locale.ENGLISH))
           channels.channels.filter { channel =>
             val unifiedName = models.Channel.unify(channel.name).toLowerCase(Locale.ENGLISH)
             lowerFilter.contains(unifiedName)
@@ -227,11 +246,10 @@ class YeloReader(ws: WSClient) {
     val dateFormat        = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val baseUrl           = s"$pubbaBase/v1/events/schedule-day/outformat/json/lng/en/"
     val orderedChannelIds = channels.map(_.id).sorted
-
-    val channelsPart = orderedChannelIds.map(c => s"channel/$c/").mkString("")
-    val dayPart      = s"day/${dateFormat.format(day)}/"
-    val platformPart = "platform/web/"
-    val url          = baseUrl + channelsPart + dayPart + platformPart
+    val channelsPart      = orderedChannelIds.map(c => s"channel/$c/").mkString("")
+    val dayPart           = s"day/${dateFormat.format(day)}/"
+    val platformPart      = "platform/web/"
+    val url               = baseUrl + channelsPart + dayPart + platformPart
     logger.info(s"Fetching $url")
 
     ws.url(url).addHttpHeaders(headers: _*).get().map { response =>

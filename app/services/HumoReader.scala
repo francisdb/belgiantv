@@ -28,7 +28,7 @@ class HumoReader(ws: WSClient) {
 
   private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-  def fetchDayRetryOnGatewayTimeout(day: LocalDate, channelFilter: List[String] = List())(
+  def fetchDayRetryOnGatewayTimeout(day: LocalDate, channelFilter: Set[String] = Set.empty)(
     implicit scheduler: Scheduler
   ): Future[Seq[HumoEvent]] = {
     // TODO better would be to actually use a delay between the retries, we could also use a throttled WS
@@ -40,10 +40,10 @@ class HumoReader(ws: WSClient) {
     }
   }
 
-  def fetchDay(day: LocalDate, channelFilter: List[String] = List()): Future[Seq[HumoEvent]] =
+  def fetchDay(day: LocalDate, channelFilter: Set[String] = Set.empty): Future[Seq[HumoEvent]] =
     fetchPage(day, channelFilter)
 
-  def fetchPage(day: LocalDate, channelFilter: List[String] = List()): Future[Seq[HumoEvent]] = {
+  def fetchPage(day: LocalDate, channelFilter: Set[String] = Set.empty): Future[Seq[HumoEvent]] = {
     val url = apiDayUrl(day)
     logger.info(s"Fetching $url")
     ws.url(url).get().flatMap { response =>

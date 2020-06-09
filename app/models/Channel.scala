@@ -14,7 +14,7 @@ object Channel {
   val NPO2 = "NPO 2"
   val NPO3 = "NPO 3"
 
-  val channelFilter = List(
+  val channelFilter = Set(
     "één",
     "Canvas",
     "Ketnet",
