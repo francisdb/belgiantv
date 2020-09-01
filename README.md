@@ -6,8 +6,6 @@ Playframework 2.6.x
 ReactiveMongo
 MongoDB
 
-<http://belgiantv.herokuapp.com>
-
 [![Build Status](https://travis-ci.org/francisdb/belgiantv.png?branch=master)](https://travis-ci.org/francisdb/belgiantv)
 
 [![Codacy Badge](https://www.codacy.com/project/badge/4901ab784fc54ebe866f5613fa9f8450)](https://www.codacy.com/public/francisdb/belgiantv)
