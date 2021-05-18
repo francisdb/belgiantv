@@ -6,7 +6,7 @@ Playframework 2.6.x
 ReactiveMongo
 MongoDB
 
-[![Build Status](https://travis-ci.org/francisdb/belgiantv.png?branch=master)](https://travis-ci.org/francisdb/belgiantv)
+[![Scala CI](https://github.com/francisdb/belgiantv/actions/workflows/scala.yml/badge.svg)](https://github.com/francisdb/belgiantv/actions/workflows/scala.yml)
 
 [![Codacy Badge](https://www.codacy.com/project/badge/4901ab784fc54ebe866f5613fa9f8450)](https://www.codacy.com/public/francisdb/belgiantv)
 
