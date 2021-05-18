@@ -98,13 +98,13 @@ class Application(
 
   def scan = Action {
     masterActorRef ! Start
-    Redirect(routes.Application.index())
+    Redirect(routes.Application.index)
       .flashing("message" -> "Started database update...")
   }
 
   def tomatoes = Action {
     masterActorRef ! StartTomatoes
-    Redirect(routes.Application.index())
+    Redirect(routes.Application.index)
       .flashing("message" -> "Started tomatoes update...")
   }
 
