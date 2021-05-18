@@ -20,3 +20,4 @@ test-result
 .idea
 .idea_modules
 *.iml
+/.bsp/sbt.json

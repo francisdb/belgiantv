@@ -1,11 +1,11 @@
 name := "belgiantv"
 version := "1.0-SNAPSHOT"
-scalaVersion := "2.13.1"
+scalaVersion := "2.13.6"
 
 scalacOptions ++= Seq("-feature")
 // copying jvm parameters for testing:
 // http://play.lighthouseapp.com/projects/82401/tickets/981-overriding-configuration-for-tests
-javaOptions in test ++= List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI").flatMap(
+Test / javaOptions ++= List("TMDB_API_KEY", "TOMATOES_API_KEY", "MONGOLAB_URI").flatMap(
   property =>
     Option(System.getProperty(property)).map { value =>
       "-D" + property + "=" + value
@@ -43,7 +43,7 @@ libraryDependencies ++= Seq(
 )
 
 // for specs2, see https://etorreborre.github.io/specs2/website/SPECS2-3.7.2/quickstart.html
-scalacOptions in Test ++= Seq("-Yrangepos")
+Test / scalacOptions ++= Seq("-Yrangepos")
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayScala)

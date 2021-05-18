@@ -11,6 +11,8 @@ import scala.concurrent.duration._
 
 class BelgacomReaderTest extends Specification with WithWsClient {
 
+  skipAll
+
   "the movie search for today" should {
 
     "return data" in {

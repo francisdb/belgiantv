@@ -11,7 +11,9 @@ import org.specs2.concurrent.ExecutionEnv
 import scala.concurrent.duration._
 
 class HumoReaderTest(implicit ee: ExecutionEnv) extends Specification with WithWsClient {
-  
+
+  skipAll
+
   "the humo reader" should {
 
     "return data" in {
@@ -22,5 +24,5 @@ class HumoReaderTest(implicit ee: ExecutionEnv) extends Specification with WithW
       list.map(_.size) must be_>(0).awaitFor(2.minutes)
     }
   }
-  
+
 }

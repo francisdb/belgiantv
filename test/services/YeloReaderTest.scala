@@ -13,6 +13,8 @@ import services.yelo.YeloReader
 
 class YeloReaderTest extends Specification with WithWsClient {
 
+  skipAll
+
   "the yelo reader" should {
 
     "return data" in {
